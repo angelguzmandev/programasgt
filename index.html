@@ -6,7 +6,7 @@
 <title>ProgramasGT | Desarrollo de software y automatización en Guatemala</title>
 <meta name="description" content="ProgramasGT (PGT) desarrolla software a la medida, páginas y aplicaciones web, apps móviles, automatización de procesos, almacenamiento en la nube y programas de despacho para empresas en Guatemala.">
 <meta name="author" content="ProgramasGT">
-<meta name="color-scheme" content="light dark">
+<meta name="color-scheme" content="light">
 <link rel="canonical" href="https://programasgt.com/">
 <meta property="og:type" content="website">
 <meta property="og:locale" content="es_GT">
@@ -74,31 +74,13 @@
   --max:1180px;
   --pad:clamp(20px,5vw,48px);
   --r:12px;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --bg:#04080F;
-    --surface:#0A121F;
-    --surface-2:#121C2C;
-    --ink:#E7EEF8;
-    --ink-2:#9FB0C6;
-    --ink-3:#6D7F96;
-    --line:#1D2A3D;
-    --line-soft:#152131;
-    --blue:#2A9BF5;
-    --blue-2:#5CB6FF;
-    --blue-ink:#03070E;
-    --blue-soft:rgba(42,155,245,.15);
-    --steel:#8FA3BC;
-    --circuit:rgba(90,175,255,.13);
-    --panel:#050B16;
-    --panel-line:rgba(120,180,255,.18);
-    --ok:#37C08C;
-    --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px -14px rgba(0,0,0,.7);
-    --shadow-lg:0 2px 6px rgba(0,0,0,.55), 0 40px 70px -30px rgba(0,0,0,.85);
-  }
+
+  /* La página SIEMPRE abre en claro, sin importar el tema del sistema.
+     Solo el botón de la barra superior activa el modo oscuro. */
+  color-scheme:light;
 }
 :root[data-theme="dark"]{
+  color-scheme:dark;
   --bg:#04080F;
   --surface:#0A121F;
   --surface-2:#121C2C;
@@ -918,8 +900,8 @@ form{background:var(--surface);border:1px solid var(--line-soft);border-radius:1
   /* ---- Tema ---- */
   var tbtn=document.getElementById("theme");
   function current(){
-    var s=root.getAttribute("data-theme");
-    return s || (window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light");
+    /* Sin atributo = tema claro. No consultamos el tema del sistema. */
+    return root.getAttribute("data-theme") || "light";
   }
   tbtn.addEventListener("click",function(){
     root.setAttribute("data-theme", current()==="dark"?"light":"dark");
