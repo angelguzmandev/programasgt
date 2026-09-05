@@ -43,6 +43,9 @@
 <!-- EmailJS SDK v4 -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
+<!-- Google reCAPTCHA v2 (casilla "No soy un robot") -->
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
 <style>
 /* ===========================================================
    PROGRAMASGT (PGT) — Sitio corporativo
@@ -829,6 +832,10 @@ form{background:var(--surface);border:1px solid var(--line-soft);border-radius:1
         <textarea id="f-msg" name="mensaje" placeholder="¿Qué problema quieres resolver? ¿Cómo lo hacen hoy? ¿Cuántas personas lo usarían?" required></textarea>
       </div>
 
+      <div class="field" style="margin-top:16px">
+        <div class="g-recaptcha" data-sitekey="6LeeN6otAAAAAJ46rjbLmttXBfwO3zBo2Zr_Gmfa"></div>
+      </div>
+
       <div class="form-actions">
         <button type="submit" class="btn btn-primary btn-lg" id="send-form">Enviar cotización</button>
         <button type="button" class="btn btn-wa btn-lg" id="send-wa">
@@ -911,6 +918,9 @@ form{background:var(--surface);border:1px solid var(--line-soft);border-radius:1
   if(window.emailjs && typeof emailjs.init==="function"){
     emailjs.init({ publicKey: EMAILJS.publicKey });
   }
+
+  /* ---- reCAPTCHA v2 ---- */
+  var RECAPTCHA_SITE_KEY = "6LeeN6otAAAAAJ46rjbLmttXBfwO3zBo2Zr_Gmfa";
 
   /* ---- Tema ---- */
   var tbtn=document.getElementById("theme");
@@ -1041,6 +1051,17 @@ form{background:var(--surface);border:1px solid var(--line-soft);border-radius:1
       return;
     }
 
+    if(!(window.grecaptcha && typeof grecaptcha.getResponse==="function")){
+      alert("No se pudo cargar la verificación de seguridad. Recarga la página e inténtalo de nuevo.");
+      return;
+    }
+
+    var captchaToken=grecaptcha.getResponse();
+    if(!captchaToken){
+      alert("Por favor confirma que no eres un robot marcando la casilla de reCAPTCHA.");
+      return;
+    }
+
     var nombre=val("f-nombre");
     var correo=val("f-correo");
 
@@ -1057,7 +1078,10 @@ form{background:var(--surface);border:1px solid var(--line-soft);border-radius:1
       email:     correo,
       reply_to:  correo,
       to_name:   nombre,
-      from_name: nombre
+      from_name: nombre,
+      // token de verificación anti-spam (reCAPTCHA v2), lo valida EmailJS
+      // contra la Secret Key configurada en el panel del servicio
+      "g-recaptcha-response": captchaToken
     };
 
     var original=sendBtn.textContent;
@@ -1080,6 +1104,7 @@ form{background:var(--surface);border:1px solid var(--line-soft);border-radius:1
         alert("No pudimos enviar la solicitud en este momento. Inténtalo de nuevo o escríbenos por WhatsApp / correo.");
       })
       .then(function(){
+        grecaptcha.reset();
         sendBtn.disabled=false;
         sendBtn.textContent=original;
       });
