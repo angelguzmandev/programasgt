@@ -1,0 +1,16 @@
+# programasgt.art
+User-agent: *
+Allow: /
+
+# Los rastreadores de IA si pueden leernos: nos interesa aparecer
+# cuando alguien le pregunta a un asistente por software en Guatemala.
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+Sitemap: https://programasgt.art/sitemap.xml

@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Ruta no encontrada · ProgramasGT</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Saira:wght@600;700&family=Karla:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <style>
+    /* Mismos tokens que index.html: la 404 no puede sentirse de otro sitio. */
+    :root {
+      --bg: #EEF2F7;
+      --surface: #FFFFFF;
+      --ink: #071120;
+      --ink-2: #42536B;
+      --ink-3: #748498;
+      --line: #CBD6E4;
+      --blue: #0B63C4;
+      --blue-2: #0A55A8;
+      --circuit: rgba(11, 99, 196, .10);
+      --f-display: "Saira", "Helvetica Neue", Arial, sans-serif;
+      --f-body: "Karla", system-ui, -apple-system, Segoe UI, sans-serif;
+      --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      color-scheme: light;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #04080F;
+        --surface: #0A121F;
+        --ink: #E7EEF8;
+        --ink-2: #9FB0C6;
+        --ink-3: #6D7F96;
+        --line: #1D2A3D;
+        --blue: #4FA3FF;
+        --circuit: rgba(120, 180, 255, .09);
+        color-scheme: dark;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.65 var(--f-body);
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* La misma malla de circuito del sitio, con su corriente. */
+    .circuito {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(to right, var(--circuit) 1px, transparent 1px),
+        linear-gradient(to bottom, var(--circuit) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: radial-gradient(ellipse 120% 80% at 50% 0%, #000 20%, transparent 78%);
+      -webkit-mask-image: radial-gradient(ellipse 120% 80% at 50% 0%, #000 20%, transparent 78%);
+    }
+
+    .circuito::after {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      background: linear-gradient(115deg, transparent 42%, var(--blue) 49%, transparent 56%);
+      opacity: .10;
+      animation: corriente 9s linear infinite;
+    }
+
+    @keyframes corriente {
+      0% { transform: translate3d(-30%, -30%, 0); }
+      100% { transform: translate3d(30%, 30%, 0); }
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 560px;
+      text-align: center;
+    }
+
+    .codigo {
+      font: 500 12px/1 var(--f-mono);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--blue);
+      margin: 0 0 18px;
+    }
+
+    /* El 404 dibujado como una traza de circuito que se conecta. */
+    svg.traza {
+      width: min(280px, 70vw);
+      height: auto;
+      margin-bottom: 26px;
+    }
+
+    svg.traza path,
+    svg.traza line {
+      fill: none;
+      stroke: var(--blue);
+      stroke-width: 3;
+      stroke-linecap: square;
+      stroke-dasharray: 400;
+      stroke-dashoffset: 400;
+      animation: trazar 1.6s cubic-bezier(.3, .8, .3, 1) forwards;
+    }
+
+    svg.traza .n2 { animation-delay: .22s; }
+    svg.traza .n3 { animation-delay: .44s; }
+
+    svg.traza circle {
+      fill: var(--blue);
+      opacity: 0;
+      animation: encender .4s ease forwards 1.5s;
+    }
+
+    @keyframes trazar { to { stroke-dashoffset: 0; } }
+    @keyframes encender { to { opacity: 1; } }
+
+    h1 {
+      font: 700 clamp(22px, 4vw, 30px)/1.2 var(--f-display);
+      letter-spacing: -.015em;
+      margin: 0 0 12px;
+    }
+
+    p {
+      color: var(--ink-2);
+      margin: 0 0 28px;
+    }
+
+    .acciones {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    a.btn {
+      display: inline-flex;
+      align-items: center;
+      padding: 12px 22px;
+      border-radius: 12px;
+      font: 500 15px var(--f-body);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      color: var(--ink);
+      background: var(--surface);
+      transition: transform .18s cubic-bezier(.2, .7, .3, 1), border-color .2s ease;
+    }
+
+    a.btn.primario {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    a.btn:hover {
+      transform: translateY(-2px);
+      border-color: var(--blue);
+    }
+
+    a.btn:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 3px;
+    }
+
+    .ruta {
+      margin-top: 30px;
+      font: 400 12px/1.5 var(--f-mono);
+      color: var(--ink-3);
+      word-break: break-all;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .circuito::after { display: none; }
+
+      svg.traza path,
+      svg.traza line,
+      svg.traza circle {
+        animation: none;
+        stroke-dashoffset: 0;
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="circuito" aria-hidden="true"></div>
+
+  <main>
+    <p class="codigo">Error 404 · Ruta sin conexión</p>
+
+    <!-- El "404" se dibuja como tres trazas de una placa. -->
+    <svg class="traza" viewBox="0 0 240 90" role="img" aria-label="404">
+      <path d="M18 10 L18 58 L58 58 M46 34 L46 80" />
+      <path class="n2" d="M96 24 a24 24 0 0 1 48 0 l0 42 a24 24 0 0 1 -48 0 Z" />
+      <path class="n3" d="M182 10 L182 58 L222 58 M210 34 L210 80" />
+      <circle cx="18" cy="10" r="4" />
+      <circle class="n3" cx="210" cy="80" r="4" />
+    </svg>
+
+    <h1>Esta dirección no existe.</h1>
+    <p>
+      El enlace que seguiste está roto o la página se movió.
+      Nada se perdió: todo nuestro trabajo está en la página principal.
+    </p>
+
+    <div class="acciones">
+      <a class="btn primario" href="/">Ir al inicio</a>
+      <a class="btn" href="/#cotizar">Cotizar un proyecto</a>
+    </div>
+
+    <p class="ruta" id="ruta"></p>
+  </main>
+
+  <script>
+    // Mostramos la ruta fallida como texto, nunca como HTML:
+    // textContent evita que un enlace malicioso inyecte marcado.
+    document.getElementById("ruta").textContent =
+      "Intentaste abrir: " + location.pathname;
+  </script>
+</body>
+
+</html>
