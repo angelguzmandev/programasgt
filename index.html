@@ -1519,6 +1519,438 @@
       transform: none
     }
   </style>
+
+  <!-- ==========================================================
+       CAPA DE MOVIMIENTO — ProgramasGT
+       Aditiva: no modifica ni una linea del CSS de arriba.
+       Para desactivar todo, borra este bloque y el script con id pgt-fx-js.
+
+       Criterio de diseno: la pagina ya tiene una identidad (azul de
+       ingenieria, malla de circuito, Saira/Karla/JetBrains Mono). Estas
+       animaciones AMPLIFICAN ese motivo en vez de imponer la estetica
+       generica de degradados morados y vidrio esmerilado.
+       ========================================================== -->
+  <style id="pgt-fx">
+    /* Tokens propios de la capa, derivados de los que ya existen. */
+    :root {
+      --fx-cur: var(--blue);
+      --fx-glow: rgba(11, 99, 196, .55);
+      --fx-rail: rgba(11, 99, 196, .18);
+      --fx-ms: 1;
+    }
+
+    :root[data-theme="dark"] {
+      --fx-cur: #4FA3FF;
+      --fx-glow: rgba(120, 180, 255, .50);
+      --fx-rail: rgba(120, 180, 255, .16);
+    }
+
+    /* ---------- 1. Corriente recorriendo la malla de circuito ----------
+       La malla ya existia pero estaba muerta. Ahora un pulso de corriente
+       la recorre en diagonal, como una placa energizada. */
+    .circuit-bg::before,
+    .circuit-bg::after {
+      content: "";
+      position: absolute;
+      inset: -20%;
+      pointer-events: none;
+    }
+
+    .circuit-bg::before {
+      background:
+        linear-gradient(115deg,
+          transparent 42%,
+          var(--fx-glow) 49%,
+          transparent 56%);
+      opacity: .16;
+      animation: fx-corriente 9s linear infinite;
+      will-change: transform;
+    }
+
+    /* Nodos que destellan en las intersecciones de la malla. */
+    .circuit-bg::after {
+      background-image: radial-gradient(circle, var(--fx-cur) 1.6px, transparent 1.7px);
+      background-size: 216px 216px;
+      background-position: 36px 36px;
+      opacity: .22;
+      animation: fx-nodos 4.5s ease-in-out infinite;
+    }
+
+    @keyframes fx-corriente {
+      0% { transform: translate3d(-30%, -30%, 0); }
+      100% { transform: translate3d(30%, 30%, 0); }
+    }
+
+    @keyframes fx-nodos {
+      0%, 100% { opacity: .10; }
+      50% { opacity: .30; }
+    }
+
+    /* ---------- 2. Titular del heroe: compilacion por caracteres ----------
+       Cada caracter entra por separado. No rebota: se "asienta", que es
+       como se mueve algo preciso. */
+    .fx-char {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(.42em);
+      filter: blur(5px);
+      animation: fx-asentar .52s cubic-bezier(.2, .7, .25, 1) forwards;
+      animation-delay: var(--d, 0ms);
+    }
+
+    .fx-char.fx-espacio {
+      width: .28em;
+    }
+
+    @keyframes fx-asentar {
+      to { opacity: 1; transform: none; filter: blur(0); }
+    }
+
+    /* El <em> del titular recibe un subrayado que se traza al final. */
+    .hero h1 em {
+      position: relative;
+    }
+
+    .hero h1 em::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -.06em;
+      height: 2px;
+      background: var(--fx-cur);
+      transform: scaleX(0);
+      transform-origin: left;
+      animation: fx-trazar .7s cubic-bezier(.2, .7, .25, 1) forwards;
+      animation-delay: 1.05s;
+    }
+
+    @keyframes fx-trazar {
+      to { transform: scaleX(1); }
+    }
+
+    /* ---------- 3. Eyebrows que se decodifican ----------
+       Usa TU texto, no inventa copy. El caracter se revela despues de
+       barajarse unos ciclos: lectura de instrumento, no de maquina de escribir. */
+    .eyebrow {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .fx-decode {
+      opacity: .55;
+    }
+
+    .fx-decode.fx-listo {
+      opacity: 1;
+      transition: opacity .3s ease;
+    }
+
+    /* ---------- 4. Riel de progreso con nodos por seccion ---------- */
+    .fx-riel {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      z-index: 90;
+      background: var(--fx-rail);
+      pointer-events: none;
+    }
+
+    .fx-riel-in {
+      height: 100%;
+      width: 100%;
+      transform: scaleX(var(--p, 0));
+      transform-origin: left;
+      background: linear-gradient(90deg, var(--blue-2), var(--fx-cur));
+      box-shadow: 0 0 12px var(--fx-glow);
+    }
+
+    /* Nodos: uno por seccion, se encienden al llegar. */
+    .fx-nodos {
+      position: fixed;
+      right: clamp(10px, 2vw, 22px);
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 70;
+      display: grid;
+      gap: 12px;
+      pointer-events: auto;
+    }
+
+    .fx-nodo {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      border: 1px solid var(--fx-rail);
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+      transition: transform .25s ease, background .25s ease, box-shadow .25s ease;
+      position: relative;
+    }
+
+    .fx-nodo::after {
+      content: attr(data-et);
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%) translateX(6px);
+      font: 500 10px/1 var(--f-mono);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--ink-3);
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .fx-nodo:hover::after {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0);
+    }
+
+    .fx-nodo.fx-activo {
+      background: var(--fx-cur);
+      border-color: var(--fx-cur);
+      transform: scale(1.35);
+      box-shadow: 0 0 10px var(--fx-glow);
+    }
+
+    @media (max-width:900px) {
+      .fx-nodos { display: none; }
+    }
+
+    /* ---------- 5. Tarjetas de servicio: el borde se traza ----------
+       Al entrar el cursor, una traza de circuito recorre el perimetro.
+       Es el gesto de una placa, no un "glow" generico. */
+    .svc {
+      position: relative;
+    }
+
+    .svc .fx-borde {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border-radius: inherit;
+      overflow: hidden;
+    }
+
+    .svc .fx-borde rect {
+      fill: none;
+      stroke: var(--fx-cur);
+      stroke-width: 1.5;
+      stroke-dasharray: var(--len, 1200);
+      stroke-dashoffset: var(--len, 1200);
+      opacity: 0;
+      transition: stroke-dashoffset .85s cubic-bezier(.3, .8, .3, 1), opacity .2s ease;
+    }
+
+    .svc:hover .fx-borde rect,
+    .svc:focus-within .fx-borde rect {
+      stroke-dashoffset: 0;
+      opacity: .85;
+    }
+
+    /* El icono se energiza con la tarjeta. */
+    .svc-ico {
+      transition: transform .4s cubic-bezier(.2, .7, .3, 1), box-shadow .4s ease;
+    }
+
+    .svc:hover .svc-ico {
+      transform: translateY(-3px) scale(1.06);
+      box-shadow: 0 0 0 6px var(--blue-soft);
+    }
+
+    /* ---------- 6. Numeros de proceso que arrancan ----------
+       .pnum ya existe; ahora cuenta al entrar en pantalla. */
+    .pnum {
+      font-variant-numeric: tabular-nums;
+      position: relative;
+    }
+
+    .pstep {
+      position: relative;
+    }
+
+    /* ---------- 7. Botones con reticula de precision ----------
+       Esquinas de mira, como un plano CAD. Sin sombras difusas. */
+    .btn {
+      position: relative;
+      transition: transform .18s cubic-bezier(.2, .7, .3, 1), box-shadow .25s ease;
+    }
+
+    .btn .fx-mira {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border: 1px solid currentColor;
+      opacity: 0;
+      transition: opacity .22s ease, transform .22s ease;
+      pointer-events: none;
+    }
+
+    .btn .fx-mira.tl { top: -3px; left: -3px; border-right: 0; border-bottom: 0; transform: translate(4px, 4px); }
+    .btn .fx-mira.tr { top: -3px; right: -3px; border-left: 0; border-bottom: 0; transform: translate(-4px, 4px); }
+    .btn .fx-mira.bl { bottom: -3px; left: -3px; border-right: 0; border-top: 0; transform: translate(4px, -4px); }
+    .btn .fx-mira.br { bottom: -3px; right: -3px; border-left: 0; border-top: 0; transform: translate(-4px, -4px); }
+
+    .btn:hover .fx-mira,
+    .btn:focus-visible .fx-mira {
+      opacity: .75;
+      transform: translate(0, 0);
+    }
+
+    /* ---------- 8. Panel del logo: inclinacion y barrido ---------- */
+    .logo-frame {
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform .35s cubic-bezier(.2, .7, .3, 1);
+      will-change: transform;
+    }
+
+    .logo-frame .fx-barrido {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      border-radius: inherit;
+    }
+
+    .logo-frame .fx-barrido::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 34%;
+      top: -40%;
+      background: linear-gradient(180deg,
+          transparent,
+          rgba(120, 180, 255, .10) 45%,
+          rgba(120, 180, 255, .18) 50%,
+          transparent);
+      animation: fx-barrer 6.5s ease-in-out infinite;
+    }
+
+    @keyframes fx-barrer {
+      0%, 100% { top: -40%; opacity: 0; }
+      12% { opacity: 1; }
+      70% { top: 108%; opacity: 0; }
+    }
+
+    /* ---------- 9. Encabezados con indice y regla trazada ---------- */
+    .fx-h2 {
+      position: relative;
+      padding-top: 14px;
+    }
+
+    .fx-h2::before {
+      content: attr(data-idx);
+      position: absolute;
+      top: -4px;
+      left: 0;
+      font: 600 11px/1 var(--f-mono);
+      letter-spacing: .14em;
+      color: var(--fx-cur);
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity .5s ease .1s, transform .5s ease .1s;
+    }
+
+    .fx-h2::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 30px;
+      height: 1px;
+      width: min(210px, 32vw);
+      background: linear-gradient(90deg, var(--fx-cur), transparent);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform .8s cubic-bezier(.2, .7, .25, 1) .18s;
+    }
+
+    .fx-h2.fx-visto::before {
+      opacity: 1;
+      transform: none;
+    }
+
+    .fx-h2.fx-visto::after {
+      transform: scaleX(1);
+    }
+
+    /* ---------- 10. Flujo de datos entre pasos y capas ----------
+       Un pulso viaja por el conector, mostrando que el proceso avanza. */
+    .fx-flujo {
+      position: absolute;
+      left: -1px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .fx-flujo::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 34%;
+      background: linear-gradient(180deg, transparent, var(--fx-cur), transparent);
+      animation: fx-fluir 2.6s linear infinite;
+      animation-delay: var(--fd, 0s);
+      opacity: .8;
+    }
+
+    @keyframes fx-fluir {
+      0% { top: -40%; }
+      100% { top: 110%; }
+    }
+
+    /* Las capas del stack se energizan en cascada al entrar. */
+    .slayer {
+      transition: transform .5s cubic-bezier(.2, .7, .3, 1), border-color .4s ease;
+    }
+
+    .slayer.fx-visto {
+      animation: fx-energizar .6s ease both;
+      animation-delay: var(--d, 0ms);
+    }
+
+    @keyframes fx-energizar {
+      0% { border-color: var(--line); }
+      45% { border-color: var(--fx-cur); transform: translateX(4px); }
+      100% { border-color: var(--line); transform: none; }
+    }
+
+    /* ---------- Respeto por quien pide menos movimiento ----------
+       El bloque global de arriba ya acorta duraciones; aqui apagamos
+       de raiz lo que es puramente decorativo y se repite en bucle. */
+    @media (prefers-reduced-motion:reduce) {
+
+      .circuit-bg::before,
+      .circuit-bg::after,
+      .logo-frame .fx-barrido,
+      .fx-flujo {
+        display: none !important;
+      }
+
+      .fx-char,
+      .hero h1 em::after,
+      .slayer.fx-visto {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+      }
+
+      .fx-h2::after { transform: scaleX(1) !important; }
+      .fx-h2::before { opacity: 1 !important; transform: none !important; }
+    }
+  </style>
+
 </head>
 
 <body>
@@ -2466,6 +2898,297 @@
       });
     })();
   </script>
+  <!-- Capa de movimiento — ProgramasGT. Sin dependencias externas. -->
+  <script id="pgt-fx-js">
+    (function () {
+      "use strict";
+
+      var menos = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var $ = function (s, c) { return (c || document).querySelector(s); };
+      var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+
+      /* Observador reutilizable: dispara una vez por elemento. */
+      function alEntrar(elementos, accion, margen) {
+        if (menos || !("IntersectionObserver" in window)) {
+          elementos.forEach(function (el) { accion(el, 0); });
+          return;
+        }
+        var i = 0;
+        var obs = new IntersectionObserver(function (entradas) {
+          entradas.forEach(function (e) {
+            if (!e.isIntersecting) return;
+            accion(e.target, i++);
+            obs.unobserve(e.target);
+          });
+        }, { threshold: .18, rootMargin: margen || "0px 0px -60px" });
+        elementos.forEach(function (el) { obs.observe(el); });
+      }
+
+      /* ---------- 2. Titular del heroe por caracteres ---------- */
+      (function tituloHeroe() {
+        var h1 = $(".hero h1");
+        if (!h1 || menos) return;
+
+        var retraso = 0;
+
+        // Recorremos los nodos de texto para no destruir el <em> ni los enlaces.
+        (function partir(nodo) {
+          Array.prototype.slice.call(nodo.childNodes).forEach(function (hijo) {
+            if (hijo.nodeType === 3) {
+              var frag = document.createDocumentFragment();
+              hijo.nodeValue.split("").forEach(function (ch) {
+                var s = document.createElement("span");
+                s.className = "fx-char" + (ch === " " ? " fx-espacio" : "");
+                s.textContent = ch === " " ? " " : ch;
+                s.style.setProperty("--d", retraso + "ms");
+                retraso += 16;
+                frag.appendChild(s);
+              });
+              nodo.replaceChild(frag, hijo);
+            } else if (hijo.nodeType === 1) {
+              partir(hijo);
+            }
+          });
+        })(h1);
+      })();
+
+      /* ---------- 3. Eyebrows que se decodifican ---------- */
+      (function decodificar() {
+        var GLIFOS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/\\<>[]{}=+*";
+        var objetivos = $$(".eyebrow");
+        if (!objetivos.length) return;
+
+        objetivos.forEach(function (el) { el.classList.add("fx-decode"); });
+
+        alEntrar(objetivos, function (el) {
+          var original = el.textContent;
+          if (menos || original.length > 90) {
+            el.classList.add("fx-listo");
+            return;
+          }
+
+          el.classList.add("fx-listo");
+          var revelados = 0;
+          var vueltas = 0;
+
+          var t = setInterval(function () {
+            vueltas++;
+            // Cada 2 vueltas se fija un caracter mas; el resto se baraja.
+            if (vueltas % 2 === 0) revelados++;
+
+            el.textContent = original.split("").map(function (ch, i) {
+              if (i < revelados || ch === " ") return ch;
+              return GLIFOS[Math.floor(Math.random() * GLIFOS.length)];
+            }).join("");
+
+            if (revelados >= original.length) {
+              clearInterval(t);
+              el.textContent = original;
+            }
+          }, 28);
+        }, "0px 0px -30px");
+      })();
+
+      /* ---------- 4. Riel de progreso y nodos por seccion ---------- */
+      (function riel() {
+        var secciones = $$("section[id]");
+        if (!secciones.length) return;
+
+        var barra = document.createElement("div");
+        barra.className = "fx-riel";
+        barra.setAttribute("aria-hidden", "true");
+        var relleno = document.createElement("div");
+        relleno.className = "fx-riel-in";
+        barra.appendChild(relleno);
+        document.body.appendChild(barra);
+
+        var nav = document.createElement("nav");
+        nav.className = "fx-nodos";
+        nav.setAttribute("aria-label", "Secciones");
+
+        var puntos = secciones.map(function (sec) {
+          var b = document.createElement("button");
+          b.className = "fx-nodo";
+          b.type = "button";
+          var enlace = $('.nav-links a[href="#' + sec.id + '"]');
+          var etiqueta = enlace ? enlace.textContent.trim() : sec.id;
+          b.setAttribute("data-et", etiqueta);
+          b.setAttribute("aria-label", "Ir a " + etiqueta);
+          b.addEventListener("click", function () {
+            sec.scrollIntoView({ behavior: menos ? "auto" : "smooth", block: "start" });
+          });
+          nav.appendChild(b);
+          return b;
+        });
+
+        document.body.appendChild(nav);
+
+        var pendiente = false;
+        function actualizar() {
+          var alto = document.documentElement.scrollHeight - window.innerHeight;
+          var p = alto > 0 ? Math.min(window.scrollY / alto, 1) : 0;
+          relleno.style.setProperty("--p", p.toFixed(4));
+
+          // La seccion activa es la ultima cuyo borde superior ya pasamos.
+          var medio = window.scrollY + window.innerHeight * 0.35;
+          var activa = 0;
+          secciones.forEach(function (sec, i) {
+            if (sec.offsetTop <= medio) activa = i;
+          });
+          puntos.forEach(function (b, i) {
+            b.classList.toggle("fx-activo", i === activa);
+          });
+        }
+
+        window.addEventListener("scroll", function () {
+          if (pendiente) return;
+          pendiente = true;
+          requestAnimationFrame(function () { pendiente = false; actualizar(); });
+        }, { passive: true });
+
+        window.addEventListener("resize", actualizar, { passive: true });
+        actualizar();
+      })();
+
+      /* ---------- 5. Borde trazado en tarjetas de servicio ---------- */
+      (function bordes() {
+        if (menos) return;
+
+        $$(".svc").forEach(function (card) {
+          var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("class", "fx-borde");
+          svg.setAttribute("aria-hidden", "true");
+          svg.setAttribute("preserveAspectRatio", "none");
+
+          var rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          rect.setAttribute("x", "1");
+          rect.setAttribute("y", "1");
+          rect.setAttribute("rx", "11");
+          svg.appendChild(rect);
+          card.appendChild(svg);
+
+          function medir() {
+            var w = card.offsetWidth, h = card.offsetHeight;
+            if (!w || !h) return;
+            svg.setAttribute("viewBox", "0 0 " + w + " " + h);
+            rect.setAttribute("width", w - 2);
+            rect.setAttribute("height", h - 2);
+            rect.style.setProperty("--len", (2 * (w + h)) + "");
+          }
+
+          medir();
+          if ("ResizeObserver" in window) new ResizeObserver(medir).observe(card);
+          else window.addEventListener("resize", medir, { passive: true });
+        });
+      })();
+
+      /* ---------- 6. Numeros de proceso que arrancan ---------- */
+      (function contadores() {
+        var nums = $$(".pnum");
+        if (!nums.length) return;
+
+        alEntrar(nums, function (el) {
+          var texto = el.textContent.trim();
+          var destino = parseInt(texto.replace(/\D/g, ""), 10);
+          if (!destino || menos) return;
+
+          var ancho = texto.replace(/\D/g, "").length;
+          var actual = 0;
+          var paso = Math.max(1, Math.round(destino / 12));
+
+          var t = setInterval(function () {
+            actual += paso;
+            if (actual >= destino) { actual = destino; clearInterval(t); }
+            el.textContent = String(actual).padStart(ancho, "0");
+          }, 45);
+        });
+      })();
+
+      /* ---------- 7. Botones con reticula de precision ---------- */
+      (function botones() {
+        if (menos) return;
+
+        $$(".btn").forEach(function (btn) {
+          ["tl", "tr", "bl", "br"].forEach(function (pos) {
+            var m = document.createElement("span");
+            m.className = "fx-mira " + pos;
+            m.setAttribute("aria-hidden", "true");
+            btn.appendChild(m);
+          });
+
+          // Atraccion magnetica leve: 5px es suficiente para notarse sin marear.
+          if (window.matchMedia("(hover:hover)").matches) {
+            btn.addEventListener("mousemove", function (e) {
+              var r = btn.getBoundingClientRect();
+              var dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+              var dy = (e.clientY - (r.top + r.height / 2)) / r.height;
+              btn.style.transform = "translate(" + (dx * 5).toFixed(2) + "px," + (dy * 5).toFixed(2) + "px)";
+            });
+            btn.addEventListener("mouseleave", function () { btn.style.transform = ""; });
+          }
+        });
+      })();
+
+      /* ---------- 8. Panel del logo: inclinacion y barrido ---------- */
+      (function panelLogo() {
+        var marco = $(".logo-frame");
+        if (!marco) return;
+
+        var barrido = document.createElement("div");
+        barrido.className = "fx-barrido";
+        barrido.setAttribute("aria-hidden", "true");
+        marco.appendChild(barrido);
+
+        if (menos || !window.matchMedia("(hover:hover)").matches) return;
+
+        marco.addEventListener("mousemove", function (e) {
+          var r = marco.getBoundingClientRect();
+          var dx = (e.clientX - (r.left + r.width / 2)) / r.width;
+          var dy = (e.clientY - (r.top + r.height / 2)) / r.height;
+          marco.style.transform =
+            "perspective(900px) rotateY(" + (dx * 6).toFixed(2) + "deg) rotateX(" + (-dy * 6).toFixed(2) + "deg)";
+        });
+
+        marco.addEventListener("mouseleave", function () { marco.style.transform = ""; });
+      })();
+
+      /* ---------- 9. Encabezados con indice y regla ---------- */
+      (function encabezados() {
+        var h2s = $$("section h2");
+        if (!h2s.length) return;
+
+        h2s.forEach(function (h, i) {
+          h.classList.add("fx-h2");
+          h.setAttribute("data-idx", String(i + 1).padStart(2, "0"));
+        });
+
+        alEntrar(h2s, function (el) { el.classList.add("fx-visto"); });
+      })();
+
+      /* ---------- 10. Flujo de datos en pasos y capas ---------- */
+      (function flujo() {
+        if (!menos) {
+          $$(".pstep").forEach(function (paso, i) {
+            // Al ultimo no le ponemos conector: no lleva a ningun lado.
+            if (i === $$(".pstep").length - 1) return;
+            var linea = document.createElement("span");
+            linea.className = "fx-flujo";
+            linea.setAttribute("aria-hidden", "true");
+            linea.style.setProperty("--fd", (i * .35).toFixed(2) + "s");
+            paso.appendChild(linea);
+          });
+        }
+
+        var capas = $$(".slayer");
+        alEntrar(capas, function (el, i) {
+          el.style.setProperty("--d", (i * 90) + "ms");
+          el.classList.add("fx-visto");
+        });
+      })();
+
+    })();
+  </script>
+
 </body>
 
 </html>
