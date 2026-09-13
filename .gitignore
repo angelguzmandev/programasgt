@@ -3,3 +3,8 @@ index.html.respaldo-*
 # PNG intermedios extraidos del base64; se sirven las versiones .webp
 logo.png
 logo-hero.png
+
+# Skills de agentes: son 3.7 MB de datos vendorizados que se reinstalan
+# con "npx skills i ...". No pertenecen al repositorio que publica el sitio.
+.agents/
+.claude/skills/
