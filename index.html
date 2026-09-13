@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="dark">
 
 <head>
   <meta charset="utf-8">
@@ -8,7 +8,7 @@
   <meta name="description"
     content="ProgramasGT (PGT) desarrolla software a la medida, páginas y aplicaciones web, apps móviles, automatización de procesos, almacenamiento en la nube y programas de despacho para empresas en Guatemala.">
   <meta name="author" content="ProgramasGT">
-  <meta name="color-scheme" content="light">
+  <meta name="color-scheme" content="dark light">
   <link rel="canonical" href="https://programasgt.art/">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="es_GT">
@@ -52,7 +52,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Saira:wght@500;600;700;800&family=Karla:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+
+  <!-- Vanilla-Tilt: inclinacion 3D declarativa con data-tilt -->
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
 
   <!-- EmailJS SDK v4 -->
   <script defer src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -476,6 +479,8 @@
     }
 
     .hero-grid {
+      position: relative;
+      z-index: 1;
       display: grid;
       gap: clamp(38px, 5vw, 60px);
       align-items: center
@@ -2067,8 +2072,10 @@
 
     @keyframes fx-energizar {
       0% { border-color: var(--line); }
-      45% { border-color: var(--fx-cur); transform: translateX(4px); }
-      100% { border-color: var(--line); transform: none; }
+      45% { border-color: var(--fx-cur); }
+      /* Sin transform: con fill-mode "both" quedaba pegado y pisaba el
+         transform en linea que escribe Vanilla-Tilt. */
+      100% { border-color: var(--line); }
     }
 
     /* ---------- NUEVO 6. Formulario: validacion en vivo sin JS ----------
@@ -2253,6 +2260,645 @@
     }
   </style>
 
+  <!-- ==========================================================
+       HEROE — banda de credibilidad
+       Patron trust-authority-conversion (UI/UX Pro Max):
+         Hero (mision/credibilidad) > Prueba > Solucion > CTA
+
+       Reemplaza a .hero-facts, que decia "Guatemala" como si fuera
+       una credencial. Aqui solo entra prueba verificable: un sistema
+       que se puede abrir ahora mismo, dos titulos reales y compromisos
+       concretos. Sin logos inventados ni testimonios de relleno.
+
+       Para revertir: borra este bloque y restaura el <div class="hero-facts">.
+       ========================================================== -->
+  <style id="pgt-hero">
+    .hero-prueba {
+      list-style: none;
+      margin: 30px 0 0;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(196px, 1fr));
+      gap: 10px;
+      max-width: 640px;
+    }
+
+    .prueba {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 11px 13px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: color-mix(in srgb, var(--surface) 72%, transparent);
+      /* Sin sombra: el peso visual lo lleva el CTA, no la prueba. */
+      transition: border-color .22s var(--fx-ease, ease), transform .22s var(--fx-ease, ease);
+    }
+
+    .prueba b {
+      display: block;
+      font: 600 12.5px/1.35 var(--f-body);
+      color: var(--ink);
+      letter-spacing: -.005em;
+    }
+
+    .prueba small {
+      display: block;
+      margin-top: 2px;
+      font: 400 11px/1.4 var(--f-mono);
+      color: var(--ink-3);
+      letter-spacing: .01em;
+    }
+
+    /* Icono: 1px de trazo, geometrico. Lenguaje de plano, no de app. */
+    .prueba-ico {
+      flex: none;
+      width: 16px;
+      height: 16px;
+      margin-top: 1px;
+      color: var(--blue);
+    }
+
+    .prueba-ico svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* ---- El dato mas fuerte: un sistema que se puede abrir ahora ---- */
+    a.prueba {
+      text-decoration: none;
+      border-color: color-mix(in srgb, var(--blue) 38%, var(--line));
+    }
+
+    a.prueba:hover,
+    a.prueba:focus-visible {
+      border-color: var(--blue);
+      transform: translateY(-2px);
+    }
+
+    a.prueba:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    a.prueba b::after {
+      content: "↗";
+      margin-left: 5px;
+      font-size: .92em;
+      color: var(--blue);
+    }
+
+    /* Punto de estado: verde porque el sistema responde de verdad. */
+    .prueba-vivo {
+      flex: none;
+      width: 16px;
+      height: 16px;
+      margin-top: 1px;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .prueba-vivo::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--ok);
+    }
+
+    .prueba-vivo::after {
+      content: "";
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      border: 1px solid var(--ok);
+      animation: pulso-vivo 2.4s ease-out infinite;
+    }
+
+    @keyframes pulso-vivo {
+      0% { transform: scale(1); opacity: .8; }
+      70% { transform: scale(2.6); opacity: 0; }
+      100% { transform: scale(2.6); opacity: 0; }
+    }
+
+    /* En movil el CTA principal manda: la prueba se compacta. */
+    @media (max-width: 560px) {
+      .hero-prueba {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+
+      .prueba {
+        padding: 9px 12px;
+      }
+
+      .prueba small {
+        font-size: 10.5px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .prueba-vivo::after { animation: none; opacity: 0; }
+      .prueba { transition: none; }
+    }
+  </style>
+
+  <!-- ==========================================================
+       VIDRIO DE INSTRUMENTO — profundidad 3D
+       Reglas de UI/UX Pro Max (style: glassmorphism):
+         blur 10-20px · translucido 15-30% · borde 1px · fuente de luz
+         accessibility: risk:conditional -> requires contrast-text-4.5,
+         keyboard, visible-focus, reduced-motion
+
+       Desviacion deliberada del patron: el catalogo pide "translucent
+       white rgba(255,255,255,.1-.3)" sobre "vibrant background". Aqui el
+       vidrio se tinta con el azul de la marca y se apoya en la malla de
+       circuito que ya existe. Blanco lechoso sobre degradado morado es
+       exactamente la estetica generica que este proyecto evita.
+
+       La opacidad se mantiene en 82% (no 15%) porque debajo hay texto:
+       a 15% el contraste cae por debajo de 4.5:1 y deja de cumplir AA.
+
+       Para revertir: borra este bloque y el script pgt-tilt-js.
+       ========================================================== -->
+  <style id="pgt-vidrio">
+    :root {
+      /* --line es decorativo (1.47:1). El borde de un CONTROL necesita
+         3:1 segun WCAG 1.4.11, asi que lleva su propio token. */
+      --line-ctrl: #6F849F;
+      --vid-blur: 14px;
+      /* Alta a proposito: debajo hay texto que debe seguir legible. */
+      --vid-solidez: 82%;
+      --vid-borde: rgba(11, 99, 196, .20);
+      --vid-luz: rgba(255, 255, 255, .85);
+      --vid-brillo: rgba(11, 99, 196, .22);
+      --vid-sombra: 0 1px 2px rgba(7, 17, 32, .05), 0 18px 40px -22px rgba(7, 17, 32, .28);
+      --vid-sombra-alta: 0 2px 4px rgba(7, 17, 32, .07), 0 34px 60px -26px rgba(11, 99, 196, .38);
+      --vid-grados: 5deg;
+    }
+
+    :root[data-theme="dark"] {
+      --line-ctrl: #50688C;
+      --vid-solidez: 76%;
+      --vid-borde: rgba(120, 180, 255, .18);
+      --vid-luz: rgba(160, 205, 255, .34);
+      --vid-brillo: rgba(79, 163, 255, .26);
+      --vid-sombra: 0 1px 2px rgba(0, 0, 0, .5), 0 18px 40px -22px rgba(0, 0, 0, .7);
+      --vid-sombra-alta: 0 2px 4px rgba(0, 0, 0, .55), 0 34px 60px -26px rgba(79, 163, 255, .30);
+    }
+
+    /* ---------- La superficie ---------- */
+    .svc,
+    .person,
+    .slayer,
+    .prueba {
+      background: color-mix(in srgb, var(--surface) var(--vid-solidez), transparent);
+      -webkit-backdrop-filter: blur(var(--vid-blur)) saturate(135%);
+      backdrop-filter: blur(var(--vid-blur)) saturate(135%);
+      border: 1px solid var(--vid-borde);
+      box-shadow: var(--vid-sombra);
+    }
+
+    /* ---------- Luz especular en el canto superior ----------
+       Una sola linea de 1px, mas clara en el centro. Es como la luz cae
+       sobre el bisel de una pantalla: dice "hay volumen" sin neblina. */
+    .svc,
+    .catcard,
+    .person,
+    .slayer {
+      position: relative;
+      isolation: isolate;
+    }
+
+    .svc::before,
+    .catcard::before,
+    .person::before,
+    .slayer::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto 0;
+      height: 1px;
+      border-radius: inherit;
+      background: linear-gradient(90deg, transparent, var(--vid-luz) 42%, var(--vid-luz) 58%, transparent);
+      opacity: .9;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* ---------- Inclinacion 3D y resplandor que sigue al cursor ----------
+       Las variables las escribe el JS; si no hay JS o el puntero es tactil,
+       los valores por defecto dejan la tarjeta plana y sin brillo. */
+    .fx-3d {
+      transform: perspective(900px)
+                 rotateX(var(--rx, 0deg))
+                 rotateY(var(--ry, 0deg))
+                 translateZ(0);
+      transform-style: preserve-3d;
+      transition: transform .28s cubic-bezier(.2, .8, .2, 1),
+                  box-shadow .28s cubic-bezier(.2, .8, .2, 1),
+                  border-color .28s ease;
+      will-change: transform;
+    }
+
+    .fx-3d.fx-activo-3d {
+      box-shadow: var(--vid-sombra-alta);
+      border-color: color-mix(in srgb, var(--blue) 45%, var(--vid-borde));
+    }
+
+    /* El resplandor nace donde esta el puntero, no en el centro. */
+    .fx-3d::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity .28s ease;
+      background: radial-gradient(220px circle at var(--mx, 50%) var(--my, 50%),
+                  var(--vid-brillo), transparent 62%);
+    }
+
+    .fx-3d.fx-activo-3d::after {
+      opacity: 1;
+    }
+
+    /* El contenido flota por encima del vidrio y del resplandor. */
+    .svc > *,
+    .catcard > *,
+    .person > *,
+    .slayer > * {
+      position: relative;
+      z-index: 3;
+    }
+
+    /* El icono se despega en Z: profundidad real, no una sombra pintada. */
+    .svc .svc-ico {
+      transform: translateZ(26px);
+      transition: transform .3s cubic-bezier(.2, .8, .2, 1), box-shadow .3s ease;
+    }
+
+    .svc.fx-activo-3d .svc-ico {
+      transform: translateZ(40px) scale(1.05);
+      box-shadow: 0 0 0 6px var(--blue-soft);
+    }
+
+    /* ---------- Foco visible: el patron lo exige explicitamente ---------- */
+    .fx-3d:focus-within {
+      border-color: var(--blue);
+      box-shadow: var(--vid-sombra-alta);
+    }
+
+    /* ---------- Sin soporte de backdrop-filter ----------
+       Firefox antiguo y navegadores con aceleracion desactivada: en vez de
+       un panel semitransparente ilegible, superficie solida de siempre. */
+    @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+
+      .svc,
+      .person,
+      .slayer,
+      .prueba {
+        background: var(--surface);
+      }
+    }
+
+    /* ---------- Menos movimiento ---------- */
+    @media (prefers-reduced-motion: reduce) {
+      .fx-3d {
+        transform: none !important;
+        transition: box-shadow .2s ease, border-color .2s ease;
+      }
+
+      .fx-3d::after { display: none; }
+
+      .svc .svc-ico,
+      .svc.fx-activo-3d .svc-ico {
+        transform: none !important;
+      }
+    }
+
+    /* En pantallas tactiles no hay cursor que seguir: sin inclinacion. */
+    @media (hover: none) {
+      .fx-3d { transform: none; }
+      .fx-3d::after { display: none; }
+      .svc .svc-ico { transform: none; }
+    }
+  </style>
+
+  <!-- ==========================================================
+       DARK MODE PRO — tema oscuro, tipografia y glow neon
+       Va despues de pgt-vidrio para poder ajustarlo.
+
+       El tema oscuro es ahora el de arranque, pero el boton de la barra
+       sigue funcionando: quien prefiera claro lo tiene a un clic.
+
+       Para revertir: borra este bloque, quita data-theme="dark" de la etiqueta html
+       y devuelve el enlace de Google Fonts a Saira + Karla.
+       ========================================================== -->
+  <style id="pgt-dark">
+    /* ---------- Tipografia ----------
+       Plus Jakarta Sans para titulares y cuerpo; JetBrains Mono se queda
+       en etiquetas y datos, que es donde la monoespaciada aporta. */
+    :root {
+      --f-display: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+      --f-body: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    h1, h2, h3, h4 {
+      letter-spacing: -.025em;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-weight: 800;
+      letter-spacing: -.035em;
+    }
+
+    /* ---------- Espaciado mas amplio ---------- */
+    .section {
+      padding-top: clamp(64px, 9vw, 128px);
+      padding-bottom: clamp(64px, 9vw, 128px);
+    }
+
+    .hero {
+      position: relative;
+      padding-top: clamp(60px, 9vw, 116px);
+      padding-bottom: clamp(72px, 10vw, 132px);
+    }
+
+    /* ---------- Degradados profundos ----------
+       Tres focos azules muy difusos sobre el negro. Se quedan fijos, asi
+       que el contenido pasa por encima de la luz en vez de arrastrarla. */
+    :root[data-theme="dark"] body {
+      background:
+        radial-gradient(1200px 680px at 12% -8%, rgba(11, 99, 196, .20), transparent 62%),
+        radial-gradient(1000px 620px at 92% 6%, rgba(79, 163, 255, .13), transparent 58%),
+        radial-gradient(1100px 700px at 50% 108%, rgba(11, 99, 196, .12), transparent 60%),
+        var(--bg);
+      background-attachment: fixed;
+    }
+
+    /* La malla de circuito se ve mejor sobre el negro profundo. */
+    :root[data-theme="dark"] .circuit-bg {
+      opacity: 1;
+    }
+
+    /* ---------- Vidrio mas marcado en oscuro ---------- */
+    :root[data-theme="dark"] {
+      --vid-blur: 18px;
+      --vid-solidez: 62%;
+      --vid-borde: rgba(140, 195, 255, .16);
+      --vid-luz: rgba(180, 220, 255, .42);
+      --vid-brillo: rgba(79, 163, 255, .30);
+      --vid-sombra: 0 1px 2px rgba(0, 0, 0, .6), 0 22px 48px -24px rgba(0, 0, 0, .85);
+      --vid-sombra-alta:
+        0 2px 6px rgba(0, 0, 0, .6),
+        0 40px 72px -28px rgba(11, 99, 196, .55),
+        0 0 0 1px rgba(79, 163, 255, .22);
+    }
+
+    /* Al bajar la solidez al 62% el texto sutil perdia contraste:
+       lo subimos para que siga cumpliendo AA sobre el vidrio. */
+    :root[data-theme="dark"] {
+      --ink-3: #8CA0BA;
+    }
+
+    /* ---------- Glow neon en hover ----------
+       Un halo azul apretado, no una nube difusa. Va en box-shadow para
+       que lo componga la GPU. */
+    .btn-primary {
+      transition: box-shadow .26s cubic-bezier(.2, .8, .2, 1),
+                  transform .18s cubic-bezier(.2, .8, .2, 1),
+                  filter .26s ease;
+    }
+
+    .btn-primary:hover,
+    .btn-primary:focus-visible {
+      box-shadow:
+        0 0 0 1px rgba(79, 163, 255, .55),
+        0 0 18px rgba(11, 99, 196, .55),
+        0 0 44px rgba(11, 99, 196, .30);
+      filter: brightness(1.06);
+    }
+
+    :root[data-theme="dark"] .btn-ghost:hover,
+    :root[data-theme="dark"] .btn-ghost:focus-visible {
+      border-color: rgba(79, 163, 255, .65);
+      box-shadow: 0 0 16px rgba(79, 163, 255, .22);
+    }
+
+    /* Las tarjetas encienden su canto al inclinarse. */
+    :root[data-theme="dark"] .fx-3d.fx-activo-3d,
+    :root[data-theme="dark"] .js-tilt.tilt-activo {
+      border-color: rgba(79, 163, 255, .45);
+    }
+
+    /* El icono de servicio gana su propio halo. */
+    :root[data-theme="dark"] .svc:hover .svc-ico {
+      box-shadow:
+        0 0 0 6px rgba(11, 99, 196, .16),
+        0 0 26px rgba(79, 163, 255, .40);
+    }
+
+    /* Enlaces de prueba del heroe: mismo lenguaje neon. */
+    :root[data-theme="dark"] a.prueba:hover,
+    :root[data-theme="dark"] a.prueba:focus-visible {
+      box-shadow: 0 0 18px rgba(79, 163, 255, .26);
+    }
+
+    /* ---------- Aceleracion por hardware ----------
+       Solo en lo que de verdad se mueve: promover todo a capa propia
+       consume memoria de video sin mejorar nada. */
+    /* Retirado: promovia 17 elementos a capa de GPU desde el primer
+       fotograma. Vanilla-Tilt ya pone will-change al entrar el cursor. */
+
+    /* ---------- Vanilla-Tilt ----------
+       La libreria escribe su transform en el elemento, asi que el brillo
+       que sigue al cursor vive en un hijo aparte para no pelearse. */
+    .js-tilt {
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .tilt-brillo {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0;
+      transition: opacity .28s ease;
+      background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%),
+                  var(--vid-brillo), transparent 64%);
+    }
+
+    .js-tilt:hover .tilt-brillo,
+    .js-tilt:focus-within .tilt-brillo {
+      opacity: 1;
+    }
+
+    /* El contenido se despega del plano de la tarjeta. */
+    .svc .svc-ico {
+      transform: translateZ(30px);
+    }
+
+    .svc h3,
+    .catcard h3 {
+      transform: translateZ(18px);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      .js-tilt,
+      .svc .svc-ico,
+      .svc h3,
+      .catcard h3 {
+        transform: none !important;
+      }
+
+      .tilt-brillo { display: none; }
+
+      .btn-primary:hover { box-shadow: 0 0 0 1px rgba(79, 163, 255, .55); }
+    }
+
+    @media (hover: none) {
+      .tilt-brillo { display: none; }
+    }
+  </style>
+
+  <!-- ==========================================================
+       LLUVIA DE DATOS + LOGOTIPO INTERACTIVO
+       Para revertir: borra este bloque y los scripts pgt-matrix-js
+       y pgt-logo-js.
+       ========================================================== -->
+  <style id="pgt-matrix">
+    /* ---------- El lienzo de la lluvia ----------
+       Va detras de la malla de circuito y del contenido. La mascara lo
+       desvanece hacia abajo: la lluvia vive arriba, donde esta el heroe,
+       y no compite con el texto de las secciones. */
+    /* Dentro del heroe, no fijo: solo quedan 4 superficies con
+       backdrop-filter encima en vez de 19, y el IntersectionObserver
+       puede apagarlo de verdad al bajar. */
+    /* Bordes de control a 3:1. Medido: campos 1.30:1, boton fantasma
+       1.39:1, pildoras 1.11:1 sobre el foco del degradado. */
+    .field input,
+    .field select,
+    .field textarea,
+    .btn-ghost,
+    .svc li,
+    .catcard li {
+      border-color: var(--line-ctrl);
+    }
+
+    /* Este borde identifica una tarjeta pulsable: 2.57:1 no bastaba. */
+    a.prueba {
+      border-color: color-mix(in srgb, var(--blue) 62%, var(--line));
+    }
+
+    /* JetBrains Mono solo se carga en 400 y 500: el 600 lo sintetizaba
+       el navegador y a 11px se veia sucio. */
+    .fx-idx {
+      font-weight: 500;
+    }
+
+    /* Color fijo que fallaba AA en los dos temas (3.33:1 en claro). */
+    .vision-note {
+      color: var(--ink-3);
+    }
+
+    .fx-lluvia {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      contain: paint;
+      pointer-events: none;
+      opacity: .40;
+      mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 82%);
+      -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 38%, transparent 82%);
+    }
+
+    :root[data-theme="dark"] .fx-lluvia {
+      opacity: .55;
+    }
+
+    /* ---------- Logotipo: las palabras caen y se ensamblan ----------
+       Cada letra entra por separado. La palabra se mantiene entera con
+       display:inline-block para que el navegador no la parta a mitad. */
+    .logo-frame figcaption span {
+      display: inline-block;
+      white-space: nowrap;
+    }
+
+    .letra {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(-.9em);
+      /* El filtro de brillo hace que la letra "aterrice" encendida y se
+         apague: es el gesto de un caracter que acaba de imprimirse. */
+      animation: caer-letra .46s cubic-bezier(.22, .9, .3, 1) forwards;
+      animation-delay: var(--d, 0ms);
+    }
+
+    @keyframes caer-letra {
+      0% { opacity: 0; transform: translateY(-.9em); color: var(--blue); }
+      55% { opacity: 1; color: var(--blue); }
+      100% { opacity: 1; transform: translateY(0); color: inherit; }
+    }
+
+    /* Al pasar el cursor por el panel, las palabras vuelven a caer una a una. */
+    .logo-frame:hover .letra,
+    .logo-frame:focus-within .letra {
+      animation: recaer-letra .5s cubic-bezier(.22, .9, .3, 1) both;
+      animation-delay: var(--dh, 0ms);
+    }
+
+    @keyframes recaer-letra {
+      0% { transform: translateY(0); opacity: 1; }
+      30% { transform: translateY(-.55em); opacity: .25; color: var(--blue); }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    /* Cursor de terminal al final del pie: dice "esto es una consola". */
+    .logo-frame figcaption::after {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 11px;
+      margin-left: 2px;
+      background: var(--blue);
+      vertical-align: -1px;
+      animation: latir-cursor 1.15s steps(1) infinite;
+    }
+
+    @keyframes latir-cursor {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .fx-lluvia { display: none !important; }
+
+      .letra {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+
+      .logo-frame:hover .letra,
+      .logo-frame:focus-within .letra {
+        animation: none !important;
+      }
+
+      .logo-frame figcaption::after {
+        animation: none !important;
+        opacity: 1;
+      }
+    }
+  </style>
+
 </head>
 
 <body>
@@ -2280,7 +2926,7 @@
           <li><a href="#vision">Visión</a></li>
         </ul>
         <div class="nav-cta">
-          <button class="icon-btn" id="theme" aria-label="Cambiar entre tema claro y oscuro">
+          <button class="icon-btn" id="theme" aria-pressed="true" aria-label="Cambiar entre tema claro y oscuro">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
               stroke-linecap="round" aria-hidden="true">
               <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" />
@@ -2308,13 +2954,43 @@
             programas de despacho y logística para pequeñas y medianas empresas en Guatemala.</p>
           <div class="hero-actions">
             <a class="btn btn-primary btn-lg" href="#cotizar">Cotizar mi proyecto</a>
-            <a class="btn btn-ghost btn-lg" href="#servicios">Ver servicios</a>
+            <a class="btn btn-ghost btn-lg" href="https://angelguzmanumg.github.io/rrhhsystem/"
+              target="_blank" rel="noopener">Ver un sistema funcionando</a>
           </div>
-          <div class="hero-facts">
-            <span><i></i> Fundada por dos ingenieros en sistemas</span>
-            <span><i></i> Guatemala</span>
-            <span><i></i> Respuesta en 24-48 horas hábiles</span>
-          </div>
+          <ul class="hero-prueba">
+            <!-- Lo mas fuerte primero: se puede abrir y comprobar ahora mismo. -->
+            <li>
+              <a class="prueba" href="https://angelguzmanumg.github.io/rrhhsystem/"
+                 target="_blank" rel="noopener">
+                <span class="prueba-vivo" aria-hidden="true"></span>
+                <span>
+                  <b>Sistema de RRHH en línea</b>
+                  <small>Software nuestro, funcionando hoy</small>
+                </span>
+              </a>
+            </li>
+            <li class="prueba">
+              <span class="prueba-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 1.5 1.5 5 8 8.5 14.5 5 8 1.5Z"/><path d="M4 6.6v3.2c0 1 1.8 1.9 4 1.9s4-.9 4-1.9V6.6"/></svg></span>
+              <span>
+                <b>Dos ingenieros en sistemas</b>
+                <small>Fundadores, no intermediarios</small>
+              </span>
+            </li>
+            <li class="prueba">
+              <span class="prueba-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5.6 5 2 8l3.6 3"/><path d="M10.4 5 14 8l-3.6 3"/><path d="M9.2 3.4 6.8 12.6"/></svg></span>
+              <span>
+                <b>El código es tuyo</b>
+                <small>Repositorio completo al liquidar</small>
+              </span>
+            </li>
+            <li class="prueba">
+              <span class="prueba-ico"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="6.2"/><path d="M8 4.4V8l2.5 1.6"/></svg></span>
+              <span>
+                <b>Respuesta en 24 h</b>
+                <small>Día hábil, por escrito</small>
+              </span>
+            </li>
+          </ul>
         </div>
 
         <figure class="logo-frame" style="margin:0">
@@ -2380,7 +3056,7 @@
       </div>
 
       <div class="svc-grid rv">
-        <article class="svc">
+        <article class="svc" data-tilt>
           <div class="svc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="m8 16-4-4 4-4M16 8l4 4-4 4M14 4l-4 16" />
@@ -2398,7 +3074,7 @@
             <span>→</span></button>
         </article>
 
-        <article class="svc">
+        <article class="svc" data-tilt>
           <div class="svc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="2" y="4" width="20" height="15" rx="2" />
@@ -2416,7 +3092,7 @@
           <button class="svc-cta" data-svc="Páginas y aplicaciones web">Solicitar cotización <span>→</span></button>
         </article>
 
-        <article class="svc">
+        <article class="svc" data-tilt>
           <div class="svc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <rect x="6" y="2" width="12" height="20" rx="2.5" />
@@ -2434,7 +3110,7 @@
           <button class="svc-cta" data-svc="Apps web y móviles">Solicitar cotización <span>→</span></button>
         </article>
 
-        <article class="svc">
+        <article class="svc" data-tilt>
           <div class="svc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <circle cx="12" cy="12" r="3.2" />
@@ -2452,7 +3128,7 @@
           <button class="svc-cta" data-svc="Automatización de procesos">Solicitar cotización <span>→</span></button>
         </article>
 
-        <article class="svc">
+        <article class="svc" data-tilt>
           <div class="svc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M17.5 19a4.5 4.5 0 0 0 .5-8.97A6 6 0 0 0 6.1 10.4 3.8 3.8 0 0 0 6.5 19Z" />
@@ -2470,7 +3146,7 @@
           <button class="svc-cta" data-svc="Almacenamiento en la nube">Solicitar cotización <span>→</span></button>
         </article>
 
-        <article class="svc">
+        <article class="svc" data-tilt>
           <div class="svc-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
               stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M1 6h11v10H1zM12 9h4.5l3.5 3.5V16h-8z" />
@@ -2542,7 +3218,7 @@
       </div>
 
       <div class="stack rv">
-        <div class="slayer">
+        <div class="slayer" data-tilt>
           <h3>Interfaz</h3>
           <ul>
             <li>React</li>
@@ -2552,7 +3228,7 @@
             <li>HTML5 · CSS3</li>
           </ul>
         </div>
-        <div class="slayer">
+        <div class="slayer" data-tilt>
           <h3>Servidor y APIs</h3>
           <ul>
             <li>Node.js</li>
@@ -2562,7 +3238,7 @@
             <li>PHP</li>
           </ul>
         </div>
-        <div class="slayer">
+        <div class="slayer" data-tilt>
           <h3>Móvil</h3>
           <ul>
             <li>React Native</li>
@@ -2571,7 +3247,7 @@
             <li>PWA</li>
           </ul>
         </div>
-        <div class="slayer">
+        <div class="slayer" data-tilt>
           <h3>Datos</h3>
           <ul>
             <li>PostgreSQL</li>
@@ -2581,7 +3257,7 @@
             <li>Firebase</li>
           </ul>
         </div>
-        <div class="slayer">
+        <div class="slayer" data-tilt>
           <h3>Nube e infraestructura</h3>
           <ul>
             <li>AWS</li>
@@ -2591,7 +3267,7 @@
             <li>Respaldos</li>
           </ul>
         </div>
-        <div class="slayer">
+        <div class="slayer" data-tilt>
           <h3>Automatización e IA</h3>
           <ul>
             <li>Integraciones API</li>
@@ -2615,7 +3291,7 @@
       </div>
 
       <div class="cat-grid rv">
-        <article class="catcard">
+        <article class="catcard" data-tilt>
           <div class="catcard-top">
             <div class="catcard-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2645,7 +3321,7 @@
           </div>
         </article>
 
-        <article class="catcard soon">
+        <article class="catcard soon" data-tilt>
           <div class="catcard-top">
             <div class="catcard-ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                 stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -2725,7 +3401,7 @@
       </div>
 
       <div class="people rv">
-        <article class="person">
+        <article class="person" data-tilt>
           <div class="person-top">
             <span class="initials">ESN</span>
             <div>
@@ -2754,7 +3430,7 @@
           </div>
         </article>
 
-        <article class="person">
+        <article class="person" data-tilt>
           <div class="person-top">
             <span class="initials">ARG</span>
             <div>
@@ -3021,7 +3697,10 @@
         return root.getAttribute("data-theme") || "light";
       }
       tbtn.addEventListener("click", function () {
-        root.setAttribute("data-theme", current() === "dark" ? "light" : "dark");
+        var nuevo = current() === "dark" ? "light" : "dark";
+        root.setAttribute("data-theme", nuevo);
+        /* Sin esto el lector no anuncia en que tema esta. */
+        tbtn.setAttribute("aria-pressed", String(nuevo === "dark"));
       });
 
       /* ---- Nav ---- */
@@ -3706,6 +4385,324 @@
         };
       })();
 
+    })();
+  </script>
+
+
+
+  <!-- Vanilla-Tilt + brillo que sigue al cursor. La libreria escribe el
+       transform del elemento; el brillo va en un hijo para no pelearse. -->
+  <script id="pgt-tilt-js">
+    (function () {
+      "use strict";
+
+      var mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+      var fino = window.matchMedia("(hover:hover) and (pointer:fine)").matches;
+
+      var tarjetas = Array.prototype.slice.call(
+        document.querySelectorAll(".svc, .catcard, .person, .slayer")
+      );
+
+      // El brillo se inserta siempre: es CSS puro y no depende de la libreria.
+      tarjetas.forEach(function (el) {
+        if (el.querySelector(".tilt-brillo")) return;
+        var b = document.createElement("span");
+        b.className = "tilt-brillo";
+        b.setAttribute("aria-hidden", "true");
+        el.insertBefore(b, el.firstChild);
+      });
+
+      if (mq.matches || !fino) return;
+
+      function seguirBrillo(el) {
+        var rect = null, pendiente = false, px = 0, py = 0;
+        el.addEventListener("mouseenter", function () {
+          rect = el.getBoundingClientRect();
+        }, { passive: true });
+        el.addEventListener("mousemove", function (e) {
+          if (!rect) return;
+          px = e.clientX; py = e.clientY;
+          if (pendiente) return;
+          pendiente = true;
+          requestAnimationFrame(function () {
+            pendiente = false;
+            if (!rect) return;
+            el.style.setProperty("--mx", (((px - rect.left) / rect.width) * 100).toFixed(1) + "%");
+            el.style.setProperty("--my", (((py - rect.top) / rect.height) * 100).toFixed(1) + "%");
+          });
+        }, { passive: true });
+        el.addEventListener("mouseleave", function () { rect = null; }, { passive: true });
+      }
+
+      function activar() {
+        if (!window.VanillaTilt) return false;
+        // max 6 grados: contenido, coherente con el resto del sitio.
+        window.VanillaTilt.init(tarjetas, {
+          max: 6,
+          speed: 420,
+          scale: 1.015,
+          glare: false,
+          perspective: 900,
+          "max-glare": 0,
+          gyroscope: false
+        });
+        // Vanilla-Tilt NO anade ninguna clase: solo escribe
+        // style.transform. Sin esto, .js-tilt:hover .tilt-brillo no
+        // aplicaba nunca (resplandor invisible) y faltaba preserve-3d,
+        // asi que los translateZ no daban ninguna profundidad.
+        tarjetas.forEach(function (el) { el.classList.add("js-tilt"); });
+        tarjetas.forEach(seguirBrillo);
+        return true;
+      }
+
+      // El script del CDN lleva defer, asi que puede no estar listo aun.
+      if (!activar()) {
+        // DOMContentLoaded y no load: los defer ya corrieron para
+        // entonces, mientras que load espera ademas a reCAPTCHA.
+        document.addEventListener("DOMContentLoaded", function () {
+          if (!activar()) {
+            // Sin la libreria (CDN caido o bloqueado) el sitio funciona igual:
+            // queda el vidrio, el glow y el resto de la capa de movimiento.
+            tarjetas.forEach(seguirBrillo);
+          }
+        });
+      }
+
+      mq.addEventListener && mq.addEventListener("change", function (e) {
+        if (!e.matches) return;
+        tarjetas.forEach(function (el) {
+          if (el.vanillaTilt) el.vanillaTilt.destroy();
+          el.style.transform = "";
+        });
+      });
+    })();
+  </script>
+
+  <!-- ==========================================================
+       LLUVIA DE DATOS — fondo tipo Matrix, en canvas 2D
+       Cero dependencias.
+
+       Azul, no verde: el verde es el Matrix de todo el mundo. En el azul
+       de la marca, sobre la malla de circuito, se lee como consola de
+       sistema, que es lo que vende este negocio.
+
+       Tres decisiones de rendimiento que importan mas que el efecto:
+       1. Se pausa cuando el heroe sale de pantalla. Debajo hay 16 tarjetas
+          con backdrop-filter, y un canvas animado detras obliga al
+          navegador a recalcular ese desenfoque en cada fotograma.
+       2. Se pausa con la pestana oculta: no quema bateria en segundo plano.
+       3. Techo de 30 fps. A 120 Hz el efecto no se ve mejor y cuesta 4x.
+       ========================================================== -->
+  <script id="pgt-matrix-js">
+    (function () {
+      "use strict";
+
+      var heroe = document.querySelector(".hero");
+      if (!heroe) return;
+
+      var mqRM = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      var lienzo = document.createElement("canvas");
+      lienzo.className = "fx-lluvia";
+      lienzo.setAttribute("aria-hidden", "true");
+      heroe.insertBefore(lienzo, heroe.firstChild);
+
+      var ctx = lienzo.getContext("2d");
+      if (!ctx) { lienzo.remove(); return; }
+
+      var GLIFOS = "0123456789ABCDEF<>/\\[]{}=+*".split("");
+      var CELDA = 18;
+      var ESTELA = 9;
+      var FPS = 22;
+      var PASO_MS = 1000 / FPS;
+
+      var gotas = [], ancho = 0, alto = 0, cols = 0;
+      var rafId = 0, ultimo = 0, acumulado = 0;
+      var visible = !document.hidden, enPantalla = true;
+
+      function oscuro() {
+        return document.documentElement.getAttribute("data-theme") === "dark";
+      }
+
+      function medir() {
+        var caja = heroe.getBoundingClientRect();
+        ancho = Math.max(1, Math.round(caja.width));
+        alto = Math.max(1, Math.round(caja.height));
+
+        // Topamos el ratio: en una pantalla Retina, respetarlo pintaria
+        // cuatro veces mas pixeles para un efecto que vive a media opacidad.
+        var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+        lienzo.width = Math.round(ancho * dpr);
+        lienzo.height = Math.round(alto * dpr);
+        lienzo.style.width = ancho + "px";
+        lienzo.style.height = alto + "px";
+
+        // setTransform y no scale: scale se acumula en cada redimensionado.
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // La fuente se asigna una vez: hacerlo por llamada es notablemente
+        // mas lento en Chrome.
+        ctx.font = "500 13px 'JetBrains Mono', ui-monospace, monospace";
+        ctx.textBaseline = "top";
+
+        cols = Math.ceil(ancho / CELDA);
+        // Densidad 0.45: una gota por columna se ve como una persiana
+        // bajando, no como lluvia.
+        var cuantas = Math.max(8, Math.round(cols * 0.45));
+        gotas = new Array(cuantas);
+        for (var i = 0; i < cuantas; i++) gotas[i] = nuevaGota(true);
+      }
+
+      function nuevaGota(inicial) {
+        return {
+          col: (Math.random() * cols) | 0,
+          y: inicial ? Math.random() * alto : -ESTELA * CELDA,
+          v: 0.55 + Math.random() * 1.5,
+          glifos: sembrarGlifos()
+        };
+      }
+
+      function sembrarGlifos() {
+        var a = new Array(ESTELA);
+        for (var i = 0; i < ESTELA; i++) a[i] = GLIFOS[(Math.random() * GLIFOS.length) | 0];
+        return a;
+      }
+
+      function dibujar() {
+        // Limpieza total: no acumula velo ni deja fantasmas por redondeo
+        // de alpha, y respeta la transparencia del lienzo.
+        ctx.clearRect(0, 0, ancho, alto);
+
+        var claro = oscuro() ? "#9CC9FF" : "#0B63C4";
+        var cuerpo = oscuro() ? "#4FA3FF" : "#0B63C4";
+
+        for (var i = 0; i < gotas.length; i++) {
+          var g = gotas[i];
+          var x = g.col * CELDA;
+
+          for (var j = 0; j < ESTELA; j++) {
+            var y = g.y - j * CELDA;
+            if (y < -CELDA || y > alto) continue;
+            // La estela se apaga hacia arriba; la cabeza va mas clara.
+            ctx.globalAlpha = Math.pow(1 - j / ESTELA, 1.7);
+            ctx.fillStyle = j === 0 ? claro : cuerpo;
+            ctx.fillText(g.glifos[j], x, y);
+          }
+
+          g.y += g.v * 7;
+
+          // Cambiar un glifo de vez en cuando: cambiarlos todos cada
+          // fotograma se ve como parpadeo, no como datos.
+          if (Math.random() < .35) {
+            g.glifos[(Math.random() * ESTELA) | 0] = GLIFOS[(Math.random() * GLIFOS.length) | 0];
+          }
+
+          if (g.y - ESTELA * CELDA > alto) gotas[i] = nuevaGota(false);
+        }
+
+        ctx.globalAlpha = 1;
+      }
+
+      function bucle(ahora) {
+        rafId = requestAnimationFrame(bucle);
+        if (!ultimo) { ultimo = ahora; return; }
+
+        var delta = ahora - ultimo;
+        ultimo = ahora;
+        // Tope: al volver de una pestana oculta el delta trae cientos de ms
+        // y provocaria un salto o una rafaga de recuperacion.
+        if (delta > 250) delta = PASO_MS;
+
+        acumulado += delta;
+        if (acumulado < PASO_MS) return;
+        acumulado %= PASO_MS;
+
+        dibujar();
+      }
+
+      function sincronizar() {
+        var debe = visible && enPantalla && !mqRM.matches;
+        if (debe && !rafId) {
+          ultimo = 0; acumulado = 0;
+          rafId = requestAnimationFrame(bucle);
+        } else if (!debe && rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+          ctx.clearRect(0, 0, ancho, alto);
+        }
+      }
+
+      document.addEventListener("visibilitychange", function () {
+        visible = !document.hidden;
+        sincronizar();
+      });
+
+      // Ahora si es util: el lienzo no es fijo, asi que sale de pantalla
+      // de verdad y deja de costar cuando bajas a las tarjetas.
+      if ("IntersectionObserver" in window) {
+        new IntersectionObserver(function (e) {
+          enPantalla = e[0].isIntersecting;
+          sincronizar();
+        }, { threshold: 0, rootMargin: "80px" }).observe(lienzo);
+      }
+
+      // En movil, mostrar u ocultar la barra de direcciones dispara resize
+      // continuamente cambiando solo la altura: filtramos por ancho.
+      var temporizador = 0, anchoPrevio = window.innerWidth;
+      window.addEventListener("resize", function () {
+        if (Math.abs(window.innerWidth - anchoPrevio) < 24) return;
+        anchoPrevio = window.innerWidth;
+        clearTimeout(temporizador);
+        temporizador = setTimeout(function () { medir(); }, 200);
+      }, { passive: true });
+
+      mqRM.addEventListener && mqRM.addEventListener("change", sincronizar);
+
+      medir();
+      sincronizar();
+    })();
+  </script>
+
+  <!-- Logotipo interactivo: las palabras del pie caen letra por letra.
+       El texto real se conserva en una copia oculta para que un lector de
+       pantalla lea "Desarrollo", no "D-e-s-a-r-r-o-l-l-o". -->
+  <script id="pgt-logo-js">
+    (function () {
+      "use strict";
+
+      var pie = document.querySelector(".logo-frame figcaption");
+      if (!pie) return;
+
+      var menos = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      var palabras = Array.prototype.slice.call(pie.querySelectorAll("span"));
+      if (!palabras.length) return;
+
+      // Copia accesible: el pie completo, leido de corrido.
+      var textoReal = palabras.map(function (p) { return p.textContent.trim(); }).join(", ");
+      var sr = document.createElement("span");
+      sr.className = "fx-sr";
+      sr.textContent = textoReal;
+      pie.insertBefore(sr, pie.firstChild);
+
+      if (menos) return;
+
+      var retraso = 0;
+      palabras.forEach(function (p, iw) {
+        var texto = p.textContent;
+        p.textContent = "";
+        p.setAttribute("aria-hidden", "true");
+
+        texto.split("").forEach(function (ch) {
+          var l = document.createElement("span");
+          l.className = "letra";
+          l.textContent = ch;
+          l.style.setProperty("--d", retraso + "ms");
+          // En hover cae primero la palabra completa, luego la siguiente:
+          // se lee como una linea imprimiendose, no como confeti.
+          l.style.setProperty("--dh", (iw * 90) + "ms");
+          retraso += 34;
+          p.appendChild(l);
+        });
+      });
     })();
   </script>
 
