@@ -8,3 +8,8 @@ logo-hero.png
 # con "npx skills i ...". No pertenecen al repositorio que publica el sitio.
 .agents/
 .claude/skills/
+
+# El asistente trae node_modules y un .env con llaves reales. Este repo
+# es PUBLICO y publica el sitio: un "git add ." sin esta linea subiria
+# las credenciales.
+asistente-ia/
