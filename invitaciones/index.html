@@ -1,0 +1,2212 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Generador de invitaciones digitales | ProgramasGT</title>
+  <meta name="description"
+    content="Crea la invitación de tu boda, XV años, graduación, cumpleaños, bautizo o baby shower y descárgala lista para WhatsApp. Gratis, en tu navegador, sin registro.">
+  <meta name="author" content="ProgramasGT">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#04080F">
+  <link rel="canonical" href="https://programasgt.art/invitaciones/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_GT">
+  <meta property="og:site_name" content="ProgramasGT">
+  <meta property="og:url" content="https://programasgt.art/invitaciones/">
+  <meta property="og:title" content="Generador de invitaciones digitales | ProgramasGT">
+  <meta property="og:description"
+    content="Boda, XV años, graduación, cumpleaños, bautizo y baby shower. Tres diseños, tres paletas, tres formatos. Se descarga lista para WhatsApp.">
+  <meta property="og:image" content="https://programasgt.art/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="https://programasgt.art/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="https://programasgt.art/apple-touch-icon.png">
+
+  <!-- Solo la tipografía de la INTERFAZ. Las seis familias de las
+       plantillas se piden cuando alguien elige una: ver cargarFuentesDe().
+       Traerlas todas de golpe costaba ~180 KB de red para usar dos. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+
+  <style>
+    /* BASE — estructura, formulario y vista previa.
+       Los tokens de marca viven en el bloque pgt-piel de abajo. */
+    *,*::before,*::after {box-sizing:border-box}
+    html,body {margin:0; padding:0}
+    body {background:var(--fondo); color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased; overflow-x:hidden}
+    h1,h2,h3 {margin:0; font-weight:700; line-height:1.16; letter-spacing:-.018em; text-wrap:balance}
+    h1 {font-size:clamp(26px,4.4vw,38px); font-weight:800}
+    h2 {font-size:17px}
+    p {margin:0}
+    a {color:var(--azul-2)}
+    button,input,select,textarea {font-family:inherit; font-size:inherit; color:inherit}
+    button {cursor:pointer}
+    :focus-visible {outline:2px solid var(--azul); outline-offset:2px; border-radius:6px}
+    [hidden] {display:none !important}
+    .oculto-visual {position:absolute !important; width:1px; height:1px; margin:-1px; padding:0; overflow:hidden; clip:rect(0 0 0 0); clip-path:inset(50%); white-space:nowrap; border:0}
+
+    /* rejilla general */
+    .app {position:relative; z-index:1; max-width:1240px; margin-inline:auto; padding:20px clamp(14px,3vw,28px) 90px; display:grid; grid-template-columns:minmax(0,1fr) 372px; gap:20px; align-items:start}
+    .columna {display:grid; gap:16px; min-width:0}
+    .panel {border-radius:var(--r); padding:18px}
+    .cejilla {font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--azul-2); margin-bottom:8px}
+    .lede {color:var(--ink2); font-size:15.5px; margin-top:10px; max-width:62ch}
+    .paso {display:flex; align-items:baseline; gap:9px; margin-bottom:13px}
+    .paso i {font-style:normal; font-family:var(--mono); font-size:11px; width:22px; height:22px; flex:none; display:grid; place-items:center; border-radius:7px; background:var(--azul-soft); color:var(--azul-2); border:1px solid var(--linea)}
+    .sub {color:var(--ink3); font-size:12.5px; margin-top:4px}
+    .nota {font-size:11.5px; color:var(--ink3); line-height:1.45}
+
+    /* fichas seleccionables (tipo y formato)
+       Radios nativos con la caja escondida: el teclado y el lector de
+       pantalla siguen viendo un grupo de radios de verdad, no divs con
+       aria pegado encima. */
+    .grupo {border:0; margin:0; padding:0; min-width:0}
+    .grupo > legend {padding:0; font-size:12px; font-weight:600; color:var(--ink2); margin-bottom:8px}
+    .fichas {display:flex; flex-wrap:wrap; gap:8px}
+    .fichas input,.tarjetas input,.paletas input {position:absolute; opacity:0; width:1px; height:1px}
+    .fichas label {display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 14px; border-radius:10px; border:1px solid var(--linea-ctrl); background:var(--sup2); color:var(--ink2); font-size:13.5px; font-weight:600; cursor:pointer; transition:border-color .2s var(--curva),background .2s var(--curva)}
+    .fichas label small {display:block; font-weight:400; font-size:11px; color:var(--ink3)}
+    .fichas label:hover,.tarjetas label:hover {border-color:var(--azul)}
+    .fichas input:checked + label {border-color:var(--azul); background:var(--azul-soft); color:var(--ink); box-shadow:inset 0 0 0 1px var(--azul)}
+    .fichas input:focus-visible + label,.tarjetas input:focus-visible + label,.paletas input:focus-visible + label {outline:2px solid var(--azul); outline-offset:2px}
+    .fichas svg {width:17px; height:17px; flex:none}
+
+    /* tarjetas de plantilla */
+    .tarjetas {display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+    .tarjetas label {display:block; padding:10px; border-radius:11px; border:1px solid var(--linea-ctrl); background:var(--sup2); cursor:pointer; transition:border-color .2s var(--curva)}
+    .tarjetas input:checked + label {border-color:var(--azul); box-shadow:inset 0 0 0 1px var(--azul),0 0 22px -10px var(--azul)}
+    .tarjetas b {display:block; font-size:13px; margin-top:8px}
+    .tarjetas small {display:block; color:var(--ink3); font-size:11.5px; line-height:1.35; margin-top:2px}
+    /* Miniatura dibujada con CSS: barras que imitan la jerarquía real de
+       cada plantilla, con sus colores. No es una imagen y no pesa nada. */
+    .mini {height:62px; border-radius:7px; display:grid; align-content:center; justify-items:center; gap:5px; border:1px solid rgba(128,128,128,.25)}
+    .mini i {display:block; border-radius:2px}
+
+    .paletas {display:flex; flex-wrap:wrap; gap:8px}
+    .paletas label {display:inline-flex; align-items:center; gap:8px; min-height:44px; padding:0 12px 0 8px; border-radius:10px; border:1px solid var(--linea-ctrl); background:var(--sup2); font-size:12.5px; color:var(--ink2); cursor:pointer}
+    .paletas input:checked + label {border-color:var(--azul); color:var(--ink); box-shadow:inset 0 0 0 1px var(--azul)}
+    .muestra {width:34px; height:26px; border-radius:6px; flex:none; display:grid; grid-template-columns:1fr 1fr; overflow:hidden; border:1px solid rgba(128,128,128,.35)}
+    .muestra i {display:block}
+    .muestra i:first-child {grid-row:span 2}
+
+    /* formulario */
+    fieldset.bloque {border:0; border-top:1px solid var(--linea); margin:0; padding:14px 0 0; min-width:0}
+    fieldset.bloque:first-child {border-top:0; padding-top:0}
+    fieldset.bloque > legend {padding:0; font-size:12px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--azul-2)}
+    .rejilla {display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px; margin-top:12px}
+    .campo {display:grid; gap:5px; min-width:0}
+    .campo.ancho {grid-column:1/-1}
+    .campo label {font-size:12.5px; font-weight:600; color:var(--ink2); display:flex; justify-content:space-between; gap:8px; align-items:baseline}
+    /* El contador avisa; NUNCA corta. Cortar el apellido de alguien sin
+       avisar es peor que dejar que el autoajuste encoja la línea. */
+    .campo .cuenta {font-family:var(--mono); font-size:10.5px; color:var(--ink3); font-weight:400}
+    .campo .cuenta.pasado {color:var(--aviso)}
+    .campo input,.campo select,.campo textarea {width:100%; min-height:44px; padding:9px 11px; border-radius:9px; border:1px solid var(--linea-ctrl); background:var(--sup); color:var(--ink); transition:border-color .18s var(--curva),box-shadow .18s var(--curva)}
+    .campo textarea {min-height:76px; resize:vertical; line-height:1.5}
+    .campo input:focus,.campo select:focus,.campo textarea:focus {outline:0; border-color:var(--azul); box-shadow:0 0 0 3px var(--azul-soft)}
+    .campo .pista {font-size:11.5px; color:var(--ink3); line-height:1.4}
+    .casilla {display:flex; gap:10px; align-items:flex-start; min-height:44px; padding:10px 11px; border-radius:9px; border:1px solid var(--linea); background:var(--sup2); cursor:pointer; font-weight:400}
+    .casilla input {width:20px; height:20px; min-height:0; margin:1px 0 0; flex:none; accent-color:var(--azul)}
+    .casilla span {font-size:13px; color:var(--ink2)}
+    .casilla b {display:block; color:var(--ink); font-size:13px}
+
+    /* listas repetibles (padrinos) */
+    .lista {display:grid; gap:8px; margin-top:4px}
+    .lista .fila {display:grid; grid-template-columns:152px minmax(0,1fr) 44px; gap:8px; align-items:start}
+    .lista .fila input,.lista .fila select {min-height:44px; width:100%; padding:9px 10px; border-radius:9px; border:1px solid var(--linea-ctrl); background:var(--sup); color:var(--ink)}
+    .quitar {width:44px; height:44px; border-radius:9px; border:1px solid var(--linea-ctrl); background:var(--sup2); color:var(--ink2); display:grid; place-items:center}
+    .quitar:hover {border-color:var(--crit); color:var(--crit)}
+
+    .btn {display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:44px; padding:0 15px; border-radius:10px; border:1px solid var(--azul); background:var(--azul); color:var(--azul-ink); font-weight:600; font-size:13.5px; transition:filter .2s var(--curva),transform .16s var(--curva)}
+    .btn:hover:not(:disabled) {filter:brightness(1.08); transform:translateY(-1px)}
+    .btn:disabled {opacity:.55; cursor:not-allowed; transform:none}
+    .btn.hueco {background:transparent; color:var(--ink); border-color:var(--linea-ctrl)}
+    .btn.hueco:hover:not(:disabled) {border-color:var(--azul); color:var(--azul-2)}
+    .btn svg {width:16px; height:16px; flex:none}
+    .botonera {display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+
+    /* vista previa */
+    .vista {position:sticky; top:calc(var(--pgt-h) + 12px); border-radius:var(--r); padding:14px; display:grid; gap:11px}
+    .lienzo-caja {position:relative; margin-inline:auto; width:100%; max-width:300px}
+    #lienzo {display:block; width:100%; height:auto; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,.25),0 26px 50px -24px rgba(0,0,0,.55); background:var(--sup2)}
+    /* Esqueleto mientras llegan las tipografías. Un lienzo no tiene
+       font-display: pintar antes de tiempo y caer a Arial en silencio
+       sería peor que esperar un segundo con las barras a la vista. */
+    .esqueleto {position:absolute; inset:0; border-radius:8px; background:var(--sup2); display:grid; align-content:center; justify-items:center; gap:14px; padding:12%}
+    .esqueleto i {display:block; height:12px; border-radius:6px; background:linear-gradient(90deg,var(--linea),var(--sup),var(--linea)); background-size:220% 100%; animation:brillo 1.5s linear infinite}
+    @keyframes brillo {to {background-position:-220% 0}}
+    .esqueleto i:nth-child(1) {width:55%}
+    .esqueleto i:nth-child(2) {width:82%; height:26px}
+    .esqueleto i:nth-child(3) {width:70%; height:26px}
+    .esqueleto i:nth-child(4) {width:40%}
+    .esqueleto i:nth-child(5) {width:62%}
+    .estado {font-size:12.5px; line-height:1.45; padding:9px 11px; border-radius:9px; border:1px solid var(--linea); background:var(--sup2); color:var(--ink2)}
+    .estado.falta {border-color:var(--aviso); color:var(--aviso-ink); background:var(--aviso-soft)}
+    .estado.listo {border-color:var(--ok); color:var(--ok-ink); background:var(--ok-soft)}
+    .acciones {display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .acciones .btn {width:100%}
+    .formato-archivo {display:flex; gap:8px; align-items:center; font-size:12px; color:var(--ink3)}
+    .formato-archivo select {min-height:36px; padding:4px 8px; border-radius:8px; border:1px solid var(--linea-ctrl); background:var(--sup); color:var(--ink)}
+
+    .aviso-flota {position:fixed; left:50%; bottom:20px; transform:translate(-50%,18px); z-index:60; max-width:min(92vw,460px); padding:11px 16px; border-radius:11px; background:var(--ink); color:var(--fondo); font-size:13px; font-weight:600; box-shadow:0 18px 40px -18px rgba(0,0,0,.7); opacity:0; pointer-events:none; transition:opacity .22s var(--curva),transform .22s var(--curva)}
+    .aviso-flota.ver {opacity:1; transform:translate(-50%,0)}
+
+    /* arnés de estrés */
+    #estres {position:relative; z-index:1; max-width:1240px; margin:0 auto 70px; padding:0 clamp(14px,3vw,28px)}
+    #estres table {border-collapse:collapse; width:100%; font-size:12px; font-family:var(--mono)}
+    #estres th,#estres td {border:1px solid var(--linea); padding:5px 8px; text-align:left}
+    .pasa {color:var(--ok)}
+    .falla {color:var(--crit); font-weight:700}
+    .rejilla-estres {display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin-top:14px}
+    .rejilla-estres figure {margin:0}
+    .rejilla-estres canvas {width:100%; height:auto; border-radius:6px; border:1px solid var(--linea)}
+    .rejilla-estres figcaption {font-family:var(--mono); font-size:10.5px; color:var(--ink3); margin-top:5px; line-height:1.4}
+
+    /* adaptativo */
+    @media (max-width:1040px) {
+      .app {grid-template-columns:minmax(0,1fr)}
+      /* En móvil se escribe mirando el resultado, así que la vista previa
+         sube y se queda pegada bajo la barra. Se limita por ALTO y no por
+         ancho para no comerse la pantalla mientras se teclea. */
+      .vista {order:-1; top:var(--pgt-h)}
+      .lienzo-caja {max-width:min(100%,40vh)}
+      .tarjetas {grid-template-columns:1fr}
+      .tarjetas label {display:grid; grid-template-columns:74px 1fr; gap:12px; align-items:center}
+      .tarjetas b {margin-top:0}
+   }
+    @media (max-width:520px) {
+      .lista .fila {grid-template-columns:minmax(0,1fr) 44px}
+      .lista .fila select {grid-column:1/-1}
+   }
+    @media (prefers-reduced-motion:reduce) {
+      *,*::before,*::after {animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; scroll-behavior:auto !important}
+   }
+  </style>
+
+  <!-- PIEL PROGRAMASGT — tokens de marca, malla de circuito, vidrio
+       y barra superior. Es la identidad de la INTERFAZ. Las
+       invitaciones que se dibujan en el lienzo tienen la suya y no se
+       parecen a esto a propósito: la herramienta no debe firmar con su
+       marca la invitación de una boda ajena. -->
+  <style id="pgt-piel">
+    :root {
+      color-scheme:light dark;
+      --fondo:#EEF2F7; --sup:#FFFFFF; --sup2:#F2F6FB;
+      --ink:#071120; --ink2:#42536B; --ink3:#5E6E82;
+      --linea:#CBD6E4;
+      /* Un borde decorativo puede ser tenue; el de un CONTROL necesita
+         3:1 (WCAG 1.4.11). Por eso lleva su propio token, más oscuro. */
+      --linea-ctrl:#6F849F;
+      --azul:#0B63C4; --azul-2:#0A55A8; --azul-ink:#FFFFFF; --azul-soft:rgba(11,99,196,.10);
+      --ok:#0E7A55; --ok-ink:#0B5C40; --ok-soft:#DDF0E7;
+      --aviso:#8A5A08; --aviso-ink:#7A4F06; --aviso-soft:#F8EFDC;
+      --crit:#A93A3A;
+      --circuito:rgba(11,99,196,.10);
+      --vid-solidez:84%; --vid-blur:14px; --vid-borde:rgba(11,99,196,.20); --vid-luz:rgba(255,255,255,.85);
+      --vid-sombra:0 1px 2px rgba(7,17,32,.05),0 18px 40px -22px rgba(7,17,32,.28);
+      --sans:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+      --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+      --curva:cubic-bezier(.2,.8,.2,1);
+      --r:14px; --pgt-h:62px;
+   }
+
+    /* Un SOLO bloque de tokens oscuros. "Automático" no se resuelve
+       con un @media sino en aplicarTema(): repetir la lista entera en
+       CSS costaba 800 bytes y este generador no hace nada sin JS de
+       todos modos. Una lista, una verdad. */
+    :root[data-theme="dark"] {
+      color-scheme:dark;
+      --fondo:#04080F; --sup:#0A121F; --sup2:#121C2C;
+      --ink:#E7EEF8; --ink2:#9FB0C6; --ink3:#8CA0BA;
+      --linea:#1D2A3D; --linea-ctrl:#50688C;
+      --azul:#2A9BF5; --azul-2:#5CB6FF; --azul-ink:#03070E; --azul-soft:rgba(42,155,245,.16);
+      --ok:#37C08C; --ok-ink:#7BDCB5; --ok-soft:#0F2E24;
+      --aviso:#D9A04E; --aviso-ink:#EFC07A; --aviso-soft:#36291A;
+      --crit:#E08079;
+      --circuito:rgba(90,175,255,.13);
+      --vid-solidez:64%; --vid-blur:18px; --vid-borde:rgba(140,195,255,.16); --vid-luz:rgba(180,220,255,.40);
+      --vid-sombra:0 1px 2px rgba(0,0,0,.5),0 18px 40px -22px rgba(0,0,0,.72);
+   }
+
+    /* Malla de circuito: la firma del sitio. Dos gradientes de 1 px con
+       máscara radial. Cero peticiones de red, cero imágenes. */
+    .circuito {position:fixed; inset:0; z-index:0; pointer-events:none; background-image:linear-gradient(to right,var(--circuito) 1px,transparent 1px),linear-gradient(to bottom,var(--circuito) 1px,transparent 1px); background-size:68px 68px; mask-image:radial-gradient(ellipse 130% 68% at 50% 0%,#000 18%,transparent 74%); -webkit-mask-image:radial-gradient(ellipse 130% 68% at 50% 0%,#000 18%,transparent 74%)}
+
+    /* Vidrio de instrumento. */
+    .panel,.vista {position:relative; background:color-mix(in srgb,var(--sup) var(--vid-solidez),transparent); -webkit-backdrop-filter:blur(var(--vid-blur)) saturate(135%); backdrop-filter:blur(var(--vid-blur)) saturate(135%); border:1px solid var(--vid-borde); box-shadow:var(--vid-sombra); isolation:isolate}
+    /* Una sola línea de 1 px en el canto superior, más clara en el
+       centro: así cae la luz sobre el bisel de una pantalla. Dice "hay
+       volumen" sin recurrir a la neblina morada de rigor. */
+    .panel::before,.vista::before {content:""; position:absolute; inset:0 0 auto 0; height:1px; border-radius:var(--r) var(--r) 0 0; background:linear-gradient(90deg,transparent,var(--vid-luz),transparent); pointer-events:none}
+
+    .pgt-top {position:sticky; top:0; z-index:30; min-height:var(--pgt-h); display:flex; align-items:center; isolation:isolate; background:color-mix(in srgb,var(--sup) 84%,transparent); -webkit-backdrop-filter:blur(16px) saturate(140%); backdrop-filter:blur(16px) saturate(140%); border-bottom:1px solid var(--vid-borde)}
+    .pgt-top::after {content:""; position:absolute; inset:auto 0 0 0; height:1px; background:linear-gradient(90deg,transparent,var(--azul),transparent); opacity:.5; pointer-events:none}
+    .pgt-top-in {width:100%; max-width:1240px; margin-inline:auto; display:flex; align-items:center; gap:12px; padding:8px clamp(12px,3vw,28px)}
+    .pgt-marca {display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--ink); padding:5px 7px; border-radius:10px}
+    .pgt-marca:hover {background:var(--azul-soft)}
+    .pgt-logo {width:34px; height:34px; flex:none; display:grid; place-items:center; border-radius:9px; color:var(--azul-ink); background:linear-gradient(145deg,var(--azul),var(--azul-2)); box-shadow:0 0 0 1px var(--vid-borde),0 8px 18px -8px rgba(11,99,196,.7)}
+    .pgt-logo svg {width:19px; height:19px}
+    .pgt-marca b {display:block; font-weight:800; font-size:14.5px; line-height:1.15; letter-spacing:-.02em}
+    .pgt-marca small {display:block; font-family:var(--mono); font-size:10px; color:var(--ink3); letter-spacing:.04em; text-transform:uppercase}
+    .pgt-acc {margin-left:auto; display:flex; align-items:center; gap:8px}
+    .pgt-btn {display:inline-flex; align-items:center; min-height:40px; padding:0 14px; border-radius:9px; border:1px solid var(--azul); background:var(--azul); color:var(--azul-ink); font-weight:600; font-size:12.5px; text-decoration:none; white-space:nowrap; transition:box-shadow .24s var(--curva),transform .16s var(--curva),filter .24s ease}
+    .pgt-btn:hover,.pgt-btn:focus-visible {transform:translateY(-1px); filter:brightness(1.07); box-shadow:0 0 18px -2px var(--azul-soft),0 0 0 1px var(--azul)}
+    .pgt-btn.hueco {background:transparent; border-color:var(--linea-ctrl); color:var(--ink)}
+    .pgt-btn.hueco:hover {border-color:var(--azul); color:var(--azul-2)}
+    .pgt-tema {width:40px; height:40px; display:grid; place-items:center; border-radius:9px; border:1px solid var(--linea-ctrl); background:transparent; color:var(--ink2)}
+    .pgt-tema:hover {border-color:var(--azul); color:var(--azul-2)}
+    .pgt-tema svg {width:17px; height:17px}
+
+    /* Entrada escalonada de los paneles. La regla global de
+       prefers-reduced-motion de arriba la apaga sola. */
+    .pgt-entra {animation:pgt-sube .5s var(--curva) both; animation-delay:var(--e,0ms)}
+    @keyframes pgt-sube {from {opacity:0; transform:translateY(10px)} to {opacity:1; transform:none}}
+
+    @media (max-width:760px) {
+      .pgt-marca small {display:none}
+      .pgt-btn.hueco {display:none}
+   }
+  </style>
+</head>
+<body>
+  <div class="circuito" aria-hidden="true"></div>
+
+  <header class="pgt-top">
+    <div class="pgt-top-in">
+      <a class="pgt-marca" href="https://programasgt.art/" target="_blank" rel="noopener">
+        <span class="pgt-logo" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+            <path d="M4 7h5M4 12h3M4 17h5" />
+            <rect x="9" y="4" width="11" height="16" rx="2.5" />
+            <path d="M12.5 9.5h4M12.5 13h4M12.5 16.5h2" />
+          </svg>
+        </span>
+        <span><b>ProgramasGT</b><small>Generador de invitaciones</small></span>
+      </a>
+      <div class="pgt-acc">
+        <button class="pgt-tema" id="btnTema" type="button" aria-label="Cambiar tema: oscuro">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+        <a class="pgt-btn hueco" href="https://programasgt.art/#catalogo" target="_blank" rel="noopener">Ver el
+          catálogo</a>
+        <a class="pgt-btn" href="https://programasgt.art/#cotizar" target="_blank" rel="noopener">Cotizar mi versión</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="app">
+    <div class="columna">
+      <section class="panel">
+        <p class="cejilla">Herramienta gratuita · se usa en tu navegador</p>
+        <h1>Tu invitación, lista para mandar por WhatsApp</h1>
+        <p class="lede">Escribe los datos, elige un diseño y descarga la imagen. No se sube nada a ningún servidor:
+          todo se dibuja aquí mismo y se guarda solo en este dispositivo.</p>
+      </section>
+
+      <section class="panel">
+        <div class="paso">
+          <i aria-hidden="true">1</i>
+          <div>
+            <h2>¿Qué celebras?</h2>
+            <p class="sub">Cada celebración pregunta lo que de verdad hace falta.</p>
+          </div>
+        </div>
+        <fieldset class="grupo">
+          <legend class="oculto-visual">Tipo de celebración</legend>
+          <div class="fichas" id="tipos"></div>
+        </fieldset>
+      </section>
+
+      <section class="panel">
+        <div class="paso">
+          <i aria-hidden="true">2</i>
+          <div>
+            <h2>El diseño</h2>
+            <p class="sub">Tres plantillas compuestas desde cero. Ninguna copia un diseño publicado.</p>
+          </div>
+        </div>
+        <fieldset class="grupo">
+          <legend class="oculto-visual">Plantilla</legend>
+          <div class="tarjetas" id="plantillas"></div>
+        </fieldset>
+        <fieldset class="grupo" style="margin-top:14px">
+          <legend>Paleta</legend>
+          <div class="paletas" id="paletas"></div>
+        </fieldset>
+        <fieldset class="grupo" style="margin-top:14px">
+          <legend>Formato</legend>
+          <div class="fichas" id="formatos"></div>
+        </fieldset>
+        <p class="nota" id="notaPlantilla" style="margin-top:12px"></p>
+      </section>
+
+      <section class="panel">
+        <div class="paso">
+          <i aria-hidden="true">3</i>
+          <div>
+            <h2>Los datos</h2>
+            <p class="sub">Lo que dejes vacío no se dibuja. Solo los campos marcados con * son obligatorios.</p>
+          </div>
+        </div>
+        <form id="formulario" novalidate>
+          <div id="campos"></div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>Tus datos</h2>
+        <p class="sub" style="margin-top:6px">Se guardan en este navegador, no en un servidor. Si cambias de
+          computadora o borras el historial, se pierden: exporta un respaldo.</p>
+        <div class="botonera">
+          <button class="btn hueco" type="button" id="btnExportar">Exportar respaldo</button>
+          <button class="btn hueco" type="button" id="btnImportar">Importar respaldo</button>
+          <input type="file" id="archivoImportar" accept="application/json,.json" hidden>
+          <button class="btn hueco" type="button" id="btnLimpiar">Vaciar este formulario</button>
+        </div>
+      </section>
+    </div>
+
+    <aside class="vista" aria-labelledby="t-vista">
+      <h2 id="t-vista" class="oculto-visual">Vista previa de la invitación</h2>
+      <div class="lienzo-caja">
+        <!-- Un lienzo es opaco para un lector de pantalla. El aria-label se
+             regenera con el texto plano de la invitación en cada repintado,
+             y el formulario de la izquierda es la interfaz accesible real. -->
+        <canvas id="lienzo" width="1080" height="1920" role="img" aria-label="Vista previa de la invitación"></canvas>
+        <div class="esqueleto" id="esqueleto" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+      </div>
+      <p class="estado" id="estado" role="status" aria-live="polite">Preparando…</p>
+      <div class="acciones">
+        <button class="btn" type="button" id="btnDescargar" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+          </svg>Descargar
+        </button>
+        <button class="btn hueco" type="button" id="btnCompartir" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
+          </svg>Compartir
+        </button>
+      </div>
+      <div class="formato-archivo">
+        <label for="selArchivo">Archivo</label>
+        <select id="selArchivo">
+          <option value="jpeg" selected>JPEG · recomendado</option>
+          <option value="png">PNG · más pesado</option>
+        </select>
+      </div>
+      <p class="nota" id="notaArchivo"></p>
+    </aside>
+  </main>
+
+  <section id="estres" hidden>
+    <h2>Arnés de estrés</h2>
+    <p class="sub">3 plantillas × 6 tipos × 3 formatos con datos extremos, y el contraste de las 9 paletas.</p>
+    <div id="estresContraste"></div>
+    <div class="rejilla-estres" id="estresRejilla"></div>
+  </section>
+
+  <div class="aviso-flota" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+  "use strict";
+
+  /* 1. UTILIDADES */
+  const DIAS = ["domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+  const MESES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  function $(sel,raiz) {return (raiz || document).querySelector(sel);}
+  function el(tag,attrs,kids) {
+    const n = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      if (k === "class") n.className = attrs[k];
+      else if (k === "html") n.innerHTML = attrs[k];
+      else if (k === "text") n.textContent = attrs[k];
+      else if (k.startsWith("on")) n.addEventListener(k.slice(2),attrs[k]);
+      else if (attrs[k] != null && attrs[k] !== false) n.setAttribute(k,attrs[k] === true ? "" :attrs[k]);
+   }
+    (kids || []).forEach(c => {if (c == null) return; n.appendChild(typeof c === "string" ? document.createTextNode(c) :c);});
+    return n;
+ }
+  function t(v) {return v == null ? "" :String(v).trim();}
+
+  // Fecha LOCAL. Con toISOString, en Guatemala (UTC-6) a partir de las
+  // 18:00 la fecha guardada saltaba al día siguiente.
+  function isoLocal(d) {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+ }
+  function hoyISO() {return isoLocal(new Date());}
+  function fechaDe(iso) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(t(iso));
+    if (!m) return null;
+    const d = new Date(+m[1],+m[2] - 1,+m[3]);
+    return isNaN(d.getTime()) ? null :d;
+ }
+  // "sábado 14 de marzo de 2026". Escrito a mano y no con Intl: el
+  // resultado tiene que ser idéntico en todos los navegadores porque
+  // acaba dibujado en un lienzo que la gente descarga y reparte.
+  function fechaLarga(iso) {
+    const d = fechaDe(iso); if (!d) return "";
+    return DIAS[d.getDay()] + " " + d.getDate() + " de " + MESES[d.getMonth()] + " de " + d.getFullYear();
+ }
+  function fechaCorta(iso) {
+    const d = fechaDe(iso); if (!d) return "";
+    return d.getDate() + " de " + MESES[d.getMonth()];
+ }
+  // "4:00 p. m.", nunca 16:00. El espacio entre "p." y "m." es duro
+  // para que el ajuste de línea no las separe en dos renglones.
+  function horaGT(hhmm) {
+    const m = /^(\d{1,2}):(\d{2})/.exec(t(hhmm));
+    if (!m) return "";
+    let h = +m[1]; const min = m[2];
+    const suf = h < 12 ? "a. m." :"p. m.";
+    h = h % 12; if (h === 0) h = 12;
+    return h + ":" + min + " " + suf;
+ }
+  function telGT(v) {
+    const d = t(v).replace(/\D/g,"").replace(/^502/,"");
+    return d.length === 8 ? "+502 " + d.slice(0,4) + "-" + d.slice(4) :t(v);
+ }
+  // "boda-maría-josé.jpg" llega roto a algunos Android y a servidores
+  // viejos: aquí se quitan las tildes y se corta en un guion.
+  function sinTildes(s) {return t(s).normalize("NFD").replace(/[̀-ͯ]/g,"");}
+  function nombreSeguro(s) {
+    return sinTildes(s).toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").replace(/^(.{0,44}[a-z0-9])(-.*)?$/,"$1") || "invitacion";
+ }
+  function toast(msg) {
+    const n = $("#toast"); n.textContent = msg; n.classList.add("ver");
+    clearTimeout(toast._t); toast._t = setTimeout(() => n.classList.remove("ver"),3400);
+ }
+
+  /* 2. DATOS — tres capas que no se conocen entre sí
+
+     CONTENIDO      lo que escribe el usuario. No sabe de tipografías.
+     EVENTOS[tipo]  QUÉ se pregunta. Traduce los campos a ranuras.
+     PLANTILLAS[k]  CÓMO se ve. Solo conoce ranuras, nunca c.novia.
+
+     VOCABULARIO FIJO DE RANURAS (todo opcional salvo protagonistas,
+     fecha y lugares[0]):
+       preludio · protagonistas[] · nexo · motivo · fecha · hora ·
+       lugares[] · padrinos[] · avisos[] · rsvp · firma
+
+     CONSECUENCIA QUE HAY QUE PRESERVAR:
+       plantilla nueva = UN objeto en PLANTILLAS. Nada más.
+       evento nuevo    = UN objeto en EVENTOS. Nada más.
+     Si para añadir uno hay que tocar el motor, el pintor o el
+     formulario, el cambio está mal planteado: este vocabulario es el
+     contrato entre las dos mitades y no se amplía a la ligera. */
+
+  // Una ranura de texto es siempre {txt, ph}. ph = marcador de
+  // posición: se pinta en gris y NO sale en la descarga.
+  function V(txt,ph) {return {txt:t(txt),ph:!!ph};}
+  function VR(txt,sugerencia) {return t(txt) ? V(txt) :V(sugerencia,true);}
+  function lleno(v) {return !!(v && v.txt);}
+
+  const ZONA = "La ZONA es lo que ubica a la gente en Guatemala. No la dejes fuera.";
+  const VESTIMENTA = ["Formal","Etiqueta","Etiqueta rigurosa","Semiformal","Casual elegante","Vestido largo y traje oscuro"];
+
+  // Frases que en Guatemala se dicen tal cual. Se precargan como
+  // sugerencia, no como texto impuesto: quien quiera otra, la escribe.
+  const FRASE = {
+    sobres:"Su presencia es nuestro mejor regalo; si desea obsequiarnos algo, agradecemos la lluvia de sobres",
+    adultos:"Celebración solo para adultos",
+    cortesia:"Hora de cortesía: 15 minutos",
+    pases:"Esta invitación es válida para 2 personas",
+    pasesGrad:"Cupo limitado: 4 pases por graduando",
+    mesa:"Mesa de regalos: Cemaco",
+    soloMujeres:"Celebración solo para mujeres"
+ };
+
+  function campoLugar(pre,et,grupo,obligatorio) {
+    return [
+      {k:pre + "Lugar",et:et + " · lugar",tipo:"texto",req:!!obligatorio,max:40,ph:"Iglesia, salón o casa",grupo:grupo},
+      {
+        k:pre + "Dir",et:et + " · dirección",tipo:"texto",max:70,ph:"5a avenida 10-20, zona 10",grupo:grupo,
+        pista:ZONA
+     },
+      {k:pre + "Hora",et:et + " · hora",tipo:"hora",req:!!obligatorio,grupo:grupo}
+    ];
+ }
+  function campoConfirmar(grupo) {
+    return [
+      {k:"confirmarTel",et:"Teléfono para confirmar",tipo:"tel",max:20,ph:"5512-3456",grupo:grupo,pista:"Se dibuja como +502 5512-3456."},
+      {k:"confirmarAntes",et:"Confirmar antes del",tipo:"fecha",grupo:grupo},
+      {k:"cortesia",et:"Hora de cortesía",tipo:"check",etiqueta:FRASE.cortesia,grupo:grupo}
+    ];
+ }
+  // Se dice "Confirmar asistencia", nunca las siglas RSVP: fuera de
+  // los catálogos importados, aquí nadie las usa.
+  function rsvpDe(c) {
+    const tel = telGT(c.confirmarTel),antes = fechaCorta(c.confirmarAntes);
+    if (!tel && !antes) return V("");
+    let s = tel ? "Confirmar asistencia al " + tel :"Confirmar asistencia";
+    if (antes) s += " antes del " + antes;
+    return V(s);
+ }
+  function lugarDe(c,pre,etiqueta,obligatorio) {
+    const n = t(c[pre + "Lugar"]),d = t(c[pre + "Dir"]),h = horaGT(c[pre + "Hora"]);
+    if (!n && !d && !h) return obligatorio ? {et:etiqueta,nombre:V("Falta el lugar",true),direccion:V(""),hora:V("")} :null;
+    return {et:etiqueta,nombre:n ? V(n) :(obligatorio ? V("Falta el lugar",true) :V("")),direccion:V(d),hora:V(h)};
+ }
+  function avisosDe(lista) {return lista.filter(x => t(x)).map(x => V(x));}
+
+  const EVENTOS = {
+    boda:{
+      et:"Boda",
+      icono:'<circle cx="9" cy="15" r="5.6"/><circle cx="15" cy="9" r="5.6"/>',
+      plantillas:["editorial","jardin","glow"],
+      campos:[
+        {k:"novia",et:"Nombre de la novia",tipo:"texto",req:true,max:26,ph:"María Fernanda Gutiérrez",grupo:"Los novios"},
+        {k:"novio",et:"Nombre del novio",tipo:"texto",req:true,max:26,ph:"José Andrés Guzmán",grupo:"Los novios"},
+        {k:"fecha",et:"Fecha de la boda",tipo:"fecha",req:true,grupo:"Los novios"},
+        {
+          k:"padresNovia",et:"Padres de la novia",tipo:"texto",max:54,ph:"Carlos Gutiérrez y Ana de Gutiérrez",grupo:"Quienes invitan",
+          pista:"Por convención los padres son quienes formalmente invitan. Si prefieren invitar ustedes, déjalo vacío."
+       },
+        {k:"padresNovio",et:"Padres del novio",tipo:"texto",max:54,ph:"Mario Guzmán y Lucía de Guzmán",grupo:"Quienes invitan"},
+        {k:"versiculo",et:"Versículo o frase",tipo:"area",max:130,ph:"Y sobre todas estas cosas vestíos de amor. Colosenses 3:14",grupo:"Quienes invitan"}
+      ].concat(
+        campoLugar("ceremonia","Ceremonia","Ceremonia religiosa",true),
+        // La recepción va en su propio bloque porque aquí se invita a
+        // más gente a la misa que a la fiesta: quien reparte dos tandas
+        // de invitaciones necesita poder quitar esta parte entera.
+        campoLugar("recepcion","Recepción","Recepción",false),
+        [
+          {
+            k:"padrinos",et:"Padrinos",tipo:"listarol",grupo:"Padrinos",
+            roles:["Velación","Anillos","Arras","Lazo","Biblia y rosario","Honor"],
+            pista:"Agrega los que necesites. El rol se dibuja junto al nombre."
+         },
+          {k:"codigoVestimenta",et:"Código de vestimenta",tipo:"texto",max:34,sug:VESTIMENTA,grupo:"Detalles"},
+          {k:"mesaRegalos",et:"Mesa de regalos",tipo:"texto",max:44,ph:FRASE.mesa,grupo:"Detalles"},
+          {k:"pases",et:"Pases",tipo:"texto",max:44,ph:FRASE.pases,grupo:"Detalles"},
+          {k:"lluviaDeSobres",et:"Lluvia de sobres",tipo:"check",etiqueta:FRASE.sobres,grupo:"Detalles"},
+          {k:"noNinos",et:"Solo adultos",tipo:"check",etiqueta:FRASE.adultos,grupo:"Detalles"}
+        ],
+        campoConfirmar("Confirmación")
+      ),
+      ranuras(c) {
+        const padres = [t(c.padresNovia),t(c.padresNovio)].filter(Boolean).join("\n");
+        return {
+          preludio:V(padres),
+          protagonistas:[VR(c.novia,"Nombre de la novia"),VR(c.novio,"Nombre del novio")],
+          nexo:V("se casan"),
+          motivo:V(c.versiculo),
+          fecha:VR(fechaLarga(c.fecha),"Falta la fecha"),
+          hora:V(horaGT(c.ceremoniaHora)),
+          lugares:[lugarDe(c,"ceremonia","Ceremonia religiosa",true),lugarDe(c,"recepcion","Recepción")].filter(Boolean),
+          padrinos:(c.padrinos || []).filter(p => t(p.nombre)).map(p => ({rol:V(p.rol),nombre:V(p.nombre)})),
+          avisos:avisosDe([
+            c.codigoVestimenta && "Código de vestimenta: " + c.codigoVestimenta,c.mesaRegalos,c.pases,
+            c.lluviaDeSobres && FRASE.sobres,c.noNinos && FRASE.adultos,c.cortesia && FRASE.cortesia
+          ]),
+          rsvp:rsvpDe(c),
+          firma:V("")
+       };
+     }
+   },
+
+    xv:{
+      et:"XV años",
+      icono:'<path d="M12 3.2l2.6 5.3 5.8.85-4.2 4.1 1 5.8-5.2-2.75L6.8 19l1-5.8-4.2-4.1 5.8-.85z"/>',
+      plantillas:["glow","jardin","editorial"],
+      campos:[
+        {k:"quinceanera",et:"Nombre de la quinceañera",tipo:"texto",req:true,max:28,ph:"Andrea Sofía Xocop",grupo:"La quinceañera"},
+        {k:"fecha",et:"Fecha",tipo:"fecha",req:true,grupo:"La quinceañera"},
+        {k:"padres",et:"Padres",tipo:"texto",max:58,ph:"Luis Xocop y Marta de Xocop",grupo:"La quinceañera"},
+        {k:"chambelan",et:"Chambelán de honor",tipo:"texto",max:32,grupo:"La quinceañera"}
+      ].concat(
+        campoLugar("misa","Misa","Misa de acción de gracias",false),
+        campoLugar("fiesta","Fiesta","Fiesta",true),
+        [
+          {
+            k:"padrinos",et:"Padrinos",tipo:"listarol",grupo:"Padrinos",
+            roles:["Padrinos","Vals","Brindis","Zapatilla","Última muñeca","Ramo"]
+         },
+          {k:"codigoVestimenta",et:"Código de vestimenta",tipo:"texto",max:34,sug:VESTIMENTA,grupo:"Detalles"},
+          {
+            k:"colorReservado",et:"Color reservado",tipo:"texto",max:26,ph:"rojo",grupo:"Detalles",
+            pista:"Se dibuja como «Se agradece no vestir de rojo»."
+         },
+          {k:"lluviaDeSobres",et:"Lluvia de sobres",tipo:"check",etiqueta:FRASE.sobres,grupo:"Detalles"}
+        ],
+        campoConfirmar("Confirmación")
+      ),
+      ranuras(c) {
+        const pad = (c.padrinos || []).filter(p => t(p.nombre)).map(p => ({rol:V(p.rol),nombre:V(p.nombre)}));
+        if (t(c.chambelan)) pad.unshift({rol:V("Chambelán de honor"),nombre:V(c.chambelan)});
+        return {
+          preludio:V(c.padres),
+          protagonistas:[VR(c.quinceanera,"Nombre de la quinceañera")],
+          nexo:V("mis quince años"),
+          motivo:V(""),
+          fecha:VR(fechaLarga(c.fecha),"Falta la fecha"),
+          hora:V(horaGT(c.fiestaHora)),
+          lugares:[lugarDe(c,"misa","Misa de acción de gracias"),lugarDe(c,"fiesta","Fiesta",true)].filter(Boolean),
+          padrinos:pad,
+          avisos:avisosDe([
+            c.codigoVestimenta && "Código de vestimenta: " + c.codigoVestimenta,
+            c.colorReservado && "Se agradece no vestir de " + c.colorReservado,
+            c.lluviaDeSobres && FRASE.sobres,c.cortesia && FRASE.cortesia
+          ]),
+          rsvp:rsvpDe(c),
+          firma:V("")
+       };
+     }
+   },
+
+    graduacion:{
+      et:"Graduación",
+      icono:'<path d="M2.5 9L12 4.3 21.5 9 12 13.7z"/><path d="M6.5 11.3V17c0 1.6 2.5 2.9 5.5 2.9s5.5-1.3 5.5-2.9v-5.7"/>',
+      plantillas:["editorial","glow","jardin"],
+      campos:[
+        {k:"graduado",et:"Nombre del graduando",tipo:"texto",req:true,max:28,ph:"José Andrés Guzmán Alvarado",grupo:"El graduando"},
+        {k:"carrera",et:"Carrera o título",tipo:"texto",req:true,max:46,ph:"Licenciatura en Administración de Empresas",grupo:"El graduando"},
+        {k:"institucion",et:"Institución",tipo:"texto",req:true,max:46,ph:"Universidad Mariano Gálvez de Guatemala",grupo:"El graduando"},
+        {k:"fecha",et:"Fecha",tipo:"fecha",req:true,grupo:"El graduando"}
+      ].concat(
+        campoLugar("acto","Acto","Acto de graduación",true),
+        campoLugar("convivio","Convivio","Convivio",false),
+        [
+          // Las universidades asignan cupo fijo por graduando. En la
+          // práctica este dato no es opcional: si falta, la gente llama.
+          {
+            k:"pases",et:"Pases",tipo:"texto",max:46,ph:FRASE.pasesGrad,grupo:"Detalles",
+            pista:"Cuántas personas entran con esta invitación."
+         },
+          {k:"padrinoPromocion",et:"Padrino de promoción",tipo:"texto",max:38,grupo:"Detalles"},
+          {k:"codigoVestimenta",et:"Código de vestimenta",tipo:"texto",max:34,sug:VESTIMENTA,grupo:"Detalles"}
+        ],
+        campoConfirmar("Confirmación")
+      ),
+      ranuras(c) {
+        const pad = [];
+        if (t(c.padrinoPromocion)) pad.push({rol:V("Padrino de promoción"),nombre:V(c.padrinoPromocion)});
+        return {
+          preludio:V(c.institucion),
+          protagonistas:[VR(c.graduado,"Nombre del graduando")],
+          nexo:V("se gradúa de"),
+          motivo:VR(c.carrera,"Carrera o título"),
+          fecha:VR(fechaLarga(c.fecha),"Falta la fecha"),
+          hora:V(horaGT(c.actoHora)),
+          lugares:[lugarDe(c,"acto","Acto de graduación",true),lugarDe(c,"convivio","Convivio")].filter(Boolean),
+          padrinos:pad,
+          avisos:avisosDe([c.pases,c.codigoVestimenta && "Código de vestimenta: " + c.codigoVestimenta,c.cortesia && FRASE.cortesia]),
+          rsvp:rsvpDe(c),
+          firma:V("")
+       };
+     }
+   },
+
+    cumple:{
+      et:"Cumpleaños",
+      icono:'<path d="M4 20.2h16v-6H4z"/><path d="M6.4 14.2v-2.4a2 2 0 0 1 2-2h7.2a2 2 0 0 1 2 2v2.4M12 9.8V7M12 4.2v1.2"/>',
+      plantillas:["glow","jardin","editorial"],
+      campos:[
+        {k:"festejado",et:"Nombre del festejado",tipo:"texto",req:true,max:28,ph:"Mateo",grupo:"La fiesta"},
+        {k:"edad",et:"Edad que cumple",tipo:"numero",grupo:"La fiesta"},
+        {k:"mostrarEdad",et:"Edad",tipo:"check",etiqueta:"Mostrar la edad en la invitación",grupo:"La fiesta"},
+        {k:"fecha",et:"Fecha",tipo:"fecha",req:true,grupo:"La fiesta"},
+        {k:"hora",et:"Hora de inicio",tipo:"hora",req:true,grupo:"La fiesta"},
+        // La hora de salida evita que a las nueve de la noche queden
+        // cuatro niños esperando a que los recojan.
+        {k:"horaFin",et:"Hora de finalización",tipo:"hora",grupo:"La fiesta",pista:"Muy recomendada en fiestas de niños."},
+        {k:"tematica",et:"Temática",tipo:"texto",max:30,ph:"dinosaurios",grupo:"La fiesta"},
+        {k:"lugarNombre",et:"Lugar",tipo:"texto",req:true,max:40,ph:"Casa de la familia Súchite",grupo:"Dónde"},
+        {
+          k:"lugarDir",et:"Dirección",tipo:"texto",max:70,ph:"12 calle 3-45, zona 7, colonia Landívar",grupo:"Dónde",
+          pista:ZONA
+       },
+        // Aquí la referencia vale más que la dirección: mucha gente
+        // navega por puntos conocidos y no por nomenclatura municipal.
+        {
+          k:"referencia",et:"Punto de referencia",tipo:"texto",max:60,ph:"frente a la tienda La Bendición, portón azul",grupo:"Dónde",
+          pista:"La referencia ubica mejor que la dirección."
+       },
+        {k:"traer",et:"Qué traer",tipo:"texto",max:44,ph:"Traer traje de baño y toalla",grupo:"Detalles"},
+        {k:"regalos",et:"Regalos",tipo:"texto",max:60,ph:"Tu presencia es el mejor regalo",grupo:"Detalles"}
+      ].concat(campoConfirmar("Confirmación")),
+      ranuras(c) {
+        let hora = horaGT(c.hora);
+        if (hora && horaGT(c.horaFin)) hora += " a " + horaGT(c.horaFin);
+        const edad = t(c.edad);
+        return {
+          preludio:V(t(c.tematica) ? "Fiesta de " + c.tematica :""),
+          protagonistas:[VR(c.festejado,"Nombre del festejado")],
+          nexo:V(c.mostrarEdad && edad ? "cumple " + edad + " años" :"cumpleaños"),
+          motivo:V(""),
+          fecha:VR(fechaLarga(c.fecha),"Falta la fecha"),
+          hora:VR(hora,"Falta la hora"),
+          lugares:[lugarDe({xLugar:c.lugarNombre,xDir:c.lugarDir},"x","",true)].filter(Boolean),
+          padrinos:[],
+          avisos:avisosDe([c.referencia,c.traer,c.regalos,c.cortesia && FRASE.cortesia]),
+          rsvp:rsvpDe(c),
+          firma:V("")
+       };
+     }
+   },
+
+    bautizo:{
+      et:"Bautizo",
+      icono:'<path d="M12 3.4c2.9 4.4 4.9 6.9 4.9 9.3a4.9 4.9 0 1 1-9.8 0c0-2.4 2-4.9 4.9-9.3z"/>',
+      plantillas:["jardin","editorial","glow"],
+      campos:[
+        {k:"nino",et:"Nombre del niño o niña",tipo:"texto",req:true,max:28,ph:"Emiliano",grupo:"El bautizo"},
+        {k:"padres",et:"Padres",tipo:"texto",req:true,max:58,ph:"Diana Súchite y Luis Barrios",grupo:"El bautizo"},
+        {k:"fecha",et:"Fecha",tipo:"fecha",req:true,grupo:"El bautizo"},
+        {k:"hora",et:"Hora",tipo:"hora",req:true,grupo:"El bautizo"},
+        {k:"parroquia",et:"Parroquia",tipo:"texto",req:true,max:42,ph:"Parroquia San Juan Bautista",grupo:"El bautizo"},
+        {
+          k:"parroquiaDir",et:"Dirección de la parroquia",tipo:"texto",max:70,ph:"6a avenida 4-21, zona 1",grupo:"El bautizo",
+          pista:ZONA
+       },
+        {k:"versiculo",et:"Versículo o frase",tipo:"area",max:130,ph:"Dejad a los niños venir a mí. Marcos 10:14",grupo:"El bautizo"},
+        // Los padrinos son parte del sacramento, no un adorno: la gente
+        // espera verlos nombrados en la invitación.
+        {
+          k:"padrinos",et:"Padrinos",tipo:"listarol",grupo:"Padrinos",roles:["Padrinos","Madrina","Padrino"],
+          pista:"En el bautizo los padrinos son parte del rito."
+       }
+      ].concat(campoLugar("celebracion","Celebración","Celebración",false),campoConfirmar("Confirmación")),
+      ranuras(c) {
+        return {
+          preludio:V(c.padres),
+          protagonistas:[VR(c.nino,"Nombre del niño o niña")],
+          nexo:V("recibe el bautismo"),
+          motivo:V(c.versiculo),
+          fecha:VR(fechaLarga(c.fecha),"Falta la fecha"),
+          hora:VR(horaGT(c.hora),"Falta la hora"),
+          lugares:[
+            lugarDe({pLugar:c.parroquia,pDir:c.parroquiaDir,pHora:c.hora},"p","Parroquia",true),
+            lugarDe(c,"celebracion","Celebración")
+          ].filter(Boolean),
+          padrinos:(c.padrinos || []).filter(p => t(p.nombre)).map(p => ({rol:V(p.rol),nombre:V(p.nombre)})),
+          avisos:avisosDe([c.cortesia && FRASE.cortesia]),
+          rsvp:rsvpDe(c),
+          firma:V("")
+       };
+     }
+   },
+
+    babyshower:{
+      et:"Baby shower",
+      icono:'<path d="M12 3.2v4.6M9.2 7.8h5.6"/><circle cx="12" cy="15.4" r="5.2"/>',
+      plantillas:["jardin","editorial","glow"],
+      // El sexo cambia la paleta por omisión, pero solo mientras el
+      // usuario no haya elegido una: en cuanto toca las paletas, manda él.
+      paletaPorSexo:{nina:0,nino:1,sorpresa:2},
+      campos:[
+        {k:"mama",et:"Nombre de la mamá",tipo:"texto",req:true,max:28,ph:"Ana Lucía Herrera",grupo:"La familia"},
+        {k:"papa",et:"Nombre del papá",tipo:"texto",max:28,grupo:"La familia"},
+        {k:"bebe",et:"Nombre del bebé",tipo:"texto",max:26,grupo:"La familia"},
+        {
+          k:"sexo",et:"Es…",tipo:"select",grupo:"La familia",
+          opciones:[["","Prefiero no decirlo"],["nina","Niña"],["nino","Niño"],["sorpresa","Sorpresa"]]
+       },
+        {k:"fecha",et:"Fecha",tipo:"fecha",req:true,grupo:"Cuándo y dónde"},
+        {k:"hora",et:"Hora",tipo:"hora",req:true,grupo:"Cuándo y dónde"},
+        {k:"lugarNombre",et:"Lugar",tipo:"texto",req:true,max:40,ph:"Salón de la familia Herrera",grupo:"Cuándo y dónde"},
+        {
+          k:"lugarDir",et:"Dirección",tipo:"texto",max:70,ph:"20 calle 12-33, zona 14",grupo:"Cuándo y dónde",
+          pista:ZONA
+       },
+        {k:"mesaRegalos",et:"Mesa de regalos",tipo:"texto",max:44,ph:FRASE.mesa,grupo:"Detalles"},
+        {k:"panales",et:"Pañales",tipo:"texto",max:40,ph:"Pañales etapa 2",grupo:"Detalles"},
+        {k:"soloMujeres",et:"Solo mujeres",tipo:"check",etiqueta:FRASE.soloMujeres,grupo:"Detalles"}
+      ].concat(campoConfirmar("Confirmación")),
+      ranuras(c) {
+        const prot = [VR(c.mama,"Nombre de la mamá")];
+        if (t(c.papa)) prot.push(V(c.papa));
+        const anuncio = {nina:"Es niña",nino:"Es niño",sorpresa:"Es sorpresa"}[t(c.sexo)] || "";
+        return {
+          preludio:V(anuncio),
+          protagonistas:prot,
+          nexo:V("baby shower"),
+          motivo:V(t(c.bebe) ? "Le damos la bienvenida a " + c.bebe :""),
+          fecha:VR(fechaLarga(c.fecha),"Falta la fecha"),
+          hora:VR(horaGT(c.hora),"Falta la hora"),
+          lugares:[lugarDe({xLugar:c.lugarNombre,xDir:c.lugarDir},"x","",true)].filter(Boolean),
+          padrinos:[],
+          avisos:avisosDe([c.mesaRegalos,c.panales,c.soloMujeres && FRASE.soloMujeres,c.cortesia && FRASE.cortesia]),
+          rsvp:rsvpDe(c),
+          firma:V("")
+       };
+     }
+   }
+ };
+
+  const FORMATOS = {
+    // 1080x1920 es el punto óptimo para WhatsApp: queda BAJO su techo de
+    // ~1600 px en el lado largo, así que la app recomprime pero NO
+    // reescala, y el reescalado es lo que destroza el texto fino.
+    historia:{et:"Historia",sub:"9:16 · estados",w:1080,h:1920},
+    tarjeta:{et:"Tarjeta",sub:"4:5 · publicación",w:1080,h:1350},
+    cuadro:{et:"Cuadro",sub:"1:1 · chat y perfil",w:1080,h:1080}
+ };
+
+  /* 3. MOTOR — mide, parte, ajusta y devuelve una LISTA DE DIBUJO
+
+     El motor NO pinta: devuelve bloques ya medidos y colocados y un
+     pintor aparte los consume. Por eso mañana cabe un segundo pintor
+     que emita SVG —los comandos de trazo ya hablan el M/L/Q/C/Z de un
+     atributo d— sin tocar una línea de aquí. */
+
+  const FUENTES = {
+    // La interfaz ya trae Plus Jakarta y JetBrains Mono. Estas seis se
+    // piden solo cuando alguien elige la plantilla que las usa.
+    cormorant:{
+      nom:"Cormorant Garamond",pila:'"Cormorant Garamond", "Times New Roman", Georgia, serif',
+      // Peso 500 y no 300: a 36 px los trazos finos de la 300 se
+      // evaporan cuando WhatsApp recomprime la imagen.
+      google:"Cormorant+Garamond:ital,wght@0,500;0,600;1,500",pesos:[500,600]
+   },
+    jost:{nom:"Jost",pila:'"Jost", system-ui, -apple-system, sans-serif',google:"Jost:wght@400;500",pesos:[400,500]},
+    vibes:{nom:"Great Vibes",pila:'"Great Vibes", "Segoe Script", cursive',google:"Great+Vibes",pesos:[400]},
+    lato:{nom:"Lato",pila:'"Lato", system-ui, -apple-system, sans-serif',google:"Lato:wght@400;700",pesos:[400,700]},
+    bebas:{nom:"Bebas Neue",pila:'"Bebas Neue", "Arial Narrow", Impact, sans-serif',google:"Bebas+Neue",pesos:[400]},
+    archivo:{nom:"Archivo",pila:'"Archivo", system-ui, -apple-system, sans-serif',google:"Archivo:wght@400;500;600",pesos:[400,500,600]}
+ };
+
+  // Regla dura del producto: sobre un lienzo de 1080 px de ancho nada
+  // baja de aquí. Por debajo, el reencode de WhatsApp convierte el
+  // texto en manchas. Manda sobre cualquier intención tipográfica.
+  const MIN_TXT = 36;
+
+  function E(clave,peso,extra) {
+    const f = FUENTES[clave];
+    return Object.assign({clave:clave,pila:f.pila,nom:f.nom,peso:peso || f.pesos[0],ital:false,track:0},extra || {});
+ }
+
+  function crearMedidor(ctx) {
+    function fijar(es,tam) {
+      ctx.font = (es.ital ? "italic " :"") + (es.peso || 400) + " " + tam + "px " + es.pila;
+   }
+    function ancho(txt,es,tam) {
+      fijar(es,tam);
+      const tr = (es.track || 0) * tam;
+      if (!tr) return ctx.measureText(txt).width;
+      const cs = Array.from(txt);
+      let w = 0;
+      for (let i = 0; i < cs.length; i++) w += ctx.measureText(cs[i]).width;
+      return w + tr * Math.max(0,cs.length - 1);
+   }
+    // La caja alta acentuada (Á, Ñ, Ü) sube por encima de 0.8 em. Si se
+    // asume ese valor, en versalitas la tilde se recorta contra el
+    // bloque de arriba. Se reserva el ALTO REAL que reporta el motor.
+    function caja(txt,es,tam) {
+      fijar(es,tam);
+      const m = ctx.measureText(txt || "M");
+      const s = (m.actualBoundingBoxAscent != null && isFinite(m.actualBoundingBoxAscent)) ? m.actualBoundingBoxAscent :tam * 0.82;
+      const b = (m.actualBoundingBoxDescent != null && isFinite(m.actualBoundingBoxDescent)) ? m.actualBoundingBoxDescent :tam * 0.2;
+      return {sube:Math.max(s,tam * 0.34),baja:Math.max(b,tam * 0.06)};
+   }
+    return {ancho:ancho,caja:caja,ctx:ctx};
+ }
+
+  // Partición equilibrada. Nunca con guion: uno inventado cambia un
+  // apellido. Nunca una línea de una sola letra. Y al buscar el ancho
+  // mínimo que conserva el número de líneas, un nombre completo se
+  // parte antes del apellido en vez de dejarlo colgando solo.
+  function partirEn(med,txt,es,tam,maxAncho) {
+    const salida = [];
+    String(txt).split("\n").forEach(parrafo => {
+      const palabras = parrafo.split(/\s+/).filter(Boolean);
+      if (!palabras.length) return;
+      const greedy = envolver(palabras,maxAncho);
+      if (greedy.length === 1) {salida.push(greedy[0]); return;}
+      let lo = 0,hi = maxAncho,mejor = greedy;
+      for (let i = 0; i < 14; i++) {
+        const mid = (lo + hi) / 2;
+        const r = envolver(palabras,mid);
+        if (r.length <= greedy.length) {mejor = r; hi = mid;} else lo = mid;
+     }
+      sinViudas(mejor).forEach(l => {salida.push(l);});
+   });
+    function envolver(pal,w) {
+      const lin = []; let cur = "";
+      for (let i = 0; i < pal.length; i++) {
+        const cand = cur ? cur + " " + pal[i] :pal[i];
+        if (!cur || med.ancho(cand,es,tam) <= w) cur = cand;
+        else {lin.push(cur); cur = pal[i];}
+     }
+      if (cur) lin.push(cur);
+      return lin;
+   }
+    function sinViudas(lin) {
+      for (let i = lin.length - 1; i > 0; i--) {
+        if (Array.from(lin[i]).length <= 1) {lin[i - 1] += " " + lin[i]; lin.splice(i,1);}
+     }
+      if (lin.length > 1 && Array.from(lin[0]).length <= 1) {lin[1] = lin[0] + " " + lin[1]; lin.shift();}
+      return lin;
+   }
+    return salida.length ? salida :[""];
+ }
+
+  // Último recurso: una sola palabra más ancha que la columna incluso
+  // al tamaño mínimo. Se corta por caracteres y SIN guion.
+  function cortarDuro(med,lineas,es,tam,maxAncho) {
+    const out = [];
+    lineas.forEach(l => {
+      if (med.ancho(l,es,tam) <= maxAncho) {out.push(l); return;}
+      let cur = "";
+      Array.from(l).forEach(ch => {
+        if (cur && med.ancho(cur + ch,es,tam) > maxAncho) {out.push(cur); cur = ch;}
+        else cur += ch;
+     });
+      if (cur) out.push(cur);
+   });
+    return out;
+ }
+
+  // Baja de 2 en 2 px hasta tamMin: un paso de 1 px no se distingue y
+  // duplica el trabajo de medición. maxLin no es un capricho: "María
+  // Fernanda Gutiérrez Caballeros" cabe a tamaño completo si se le dan
+  // cuatro renglones de una palabra cada uno, y eso ya no es un nombre,
+  // es una lista.
+  function ajustar(med,txt,es,tam,tamMin,maxAncho,interlinea,maxLin) {
+    const tope = maxLin || 99;
+    let tamAct = tam,lineas;
+    for (; ;) {
+      lineas = partirEn(med,txt,es,tamAct,maxAncho);
+      let ancho = 0;
+      lineas.forEach(l => {ancho = Math.max(ancho,med.ancho(l,es,tamAct));});
+      if ((ancho <= maxAncho && lineas.length <= tope) || tamAct - 2 < tamMin) break;
+      tamAct -= 2;
+   }
+    let ancho = 0;
+    lineas.forEach(l => {ancho = Math.max(ancho,med.ancho(l,es,tamAct));});
+    if (ancho > maxAncho) lineas = cortarDuro(med,lineas,es,tamAct,maxAncho);
+    const c0 = med.caja(lineas[0],es,tamAct);
+    const cN = med.caja(lineas[lineas.length - 1],es,tamAct);
+    const paso = tamAct * interlinea;
+    return {lineas:lineas,tam:tamAct,sube:c0.sube,paso:paso,alto:c0.sube + (lineas.length - 1) * paso + cN.baja};
+ }
+
+  /* Compositor: recibe piezas declarativas y devuelve ops colocadas.
+     - flex : la pieza que absorbe el sobrante (encoge primero).
+     - prio : 1 esencial, 2 importante, 3 prescindible. Si ni al mínimo
+       cabe todo, se sacrifica el grupo de prio más alta y se dice
+       arriba qué quedó fuera. Nunca se recorta en silencio. */
+  function componerPila(med,cfg) {
+    const disp = cfg.y1 - cfg.y0;
+    let piezas = cfg.piezas.filter(p => p && (p.clase === "texto" ? t(p.txt) !== "" :true));
+    const omitidos = [];
+    let res = acomodar(piezas);
+    for (let ronda = 0; ronda < 4 && res.desborde; ronda++) {
+      let maxPrio = 1;
+      piezas.forEach(p => {maxPrio = Math.max(maxPrio,p.prio || 1);});
+      if (maxPrio <= 1) break;
+      piezas.forEach(p => {
+        if ((p.prio || 1) === maxPrio && p.etiqueta && omitidos.indexOf(p.etiqueta) < 0) omitidos.push(p.etiqueta);
+     });
+      piezas = piezas.filter(p => (p.prio || 1) !== maxPrio);
+      res = acomodar(piezas);
+   }
+
+    function medir(est,fg) {
+      let total = 0;
+      est.forEach((p,i) => {
+        if (p.clase === "texto") {
+          p._txt = p.mayus ? String(p.txt).toUpperCase() :String(p.txt);
+          p._r = ajustar(med,p._txt,p.es,p.tamAct,p.tamMin || MIN_TXT,cfg.ancho * (p.anchoRel || 1),p.interlinea || 1.3,p.maxLin);
+          p._alto = p._r.alto;
+       } else p._alto = p.alto || 0;
+        total += p._alto + (i ? (p.gap || 0) * fg :0);
+     });
+      return total;
+   }
+    function acomodar(ps) {
+      const est = ps.map(p => {const q = Object.assign({},p); q.tamAct = p.tam; return q;});
+      let fg = 1,guardia = 0,total = medir(est,fg);
+      while (total > disp && guardia++ < 400) {
+        let cand = est.filter(p => p.clase === "texto" && p.flex && p.tamAct - 2 >= (p.tamMin || MIN_TXT));
+        if (!cand.length) cand = est.filter(p => p.clase === "texto" && p.tamAct - 2 >= (p.tamMin || MIN_TXT));
+        if (!cand.length) {
+          if (fg > 0.45) {fg = Math.max(0.45,fg - 0.08); total = medir(est,fg); continue;}
+          break;
+       }
+        cand.sort((a,b) => b._alto - a._alto);
+        cand[0].tamAct -= 2;
+        total = medir(est,fg);
+     }
+      // Las piezas con el mismo "par" acaban al mismo tamaño. Los dos
+      // nombres de una pareja a 82 y 110 px se leen como un error de
+      // imprenta, no como jerarquía: manda el más pequeño de los dos.
+      for (let v = 0; v < 3; v++) {
+        const g = {},cambia = [];
+        est.forEach(q => {if (q.par) g[q.par] = Math.min(g[q.par] == null ? 9e9 :g[q.par],q._r.tam);});
+        est.forEach(q => {if (q.par && q.tamAct !== g[q.par]) {q.tamAct = g[q.par]; cambia.push(q);}});
+        if (!cambia.length) break;
+        total = medir(est,fg);
+     }
+      return {est:est,fg:fg,total:total,desborde:total > disp + 0.5};
+   }
+
+    const ops = [];
+    let y = cfg.y0 + (cfg.alinear === "arriba" ? 0 :Math.max(0,(disp - res.total) / 2));
+    res.est.forEach((p,i) => {
+      if (i) y += (p.gap || 0) * res.fg;
+      const cx = cfg.x + cfg.ancho / 2;
+      if (p.clase === "texto") {
+        const r = p._r;
+        const anclaX = p.align === "izq" ? cfg.x :p.align === "der" ? cfg.x + cfg.ancho :cx;
+        ops.push({
+          // r.tam y no p.tamAct: p.tamAct es el tamaño con el que se ENTRÓ
+          // al ajuste; ajustar() pudo bajarlo para que la línea cupiera a
+          // lo ancho. Pintar con el de entrada desbordaba la columna.
+          op:"texto",tam:r.tam,pila:p.es.pila,peso:p.es.peso,ital:!!p.es.ital,
+          track:(p.es.track || 0) * r.tam,color:p.color,align:p.align || "centro",marcador:!!p.marcador,
+          lineas:r.lineas.map((txt,j) => {return {txt:txt,x:anclaX,y:y + r.sube + j * r.paso};})
+       });
+     } else if (p.clase === "regla") {
+        const w = p.ancho <= 1 ? cfg.ancho * p.ancho :p.ancho;
+        const yy = y + p._alto / 2;
+        ops.push({
+          op:"trazo",cmds:[["M",cx - w / 2,yy],["L",cx + w / 2,yy]],
+          color:p.color,grosor:p.grosor || 1.4,cap:"butt",gradiente:p.gradiente
+       });
+     }
+      y += p._alto;
+   });
+    return {ops:ops,alto:res.total,omitidos:omitidos,desborde:res.desborde};
+ }
+
+  /* 4. PINTOR — el único que toca el contexto 2D */
+  function ruta(ctx,cmds) {
+    ctx.beginPath();
+    for (let i = 0; i < cmds.length; i++) {
+      const c = cmds[i];
+      if (c[0] === "M") ctx.moveTo(c[1],c[2]);
+      else if (c[0] === "L") ctx.lineTo(c[1],c[2]);
+      else if (c[0] === "Q") ctx.quadraticCurveTo(c[1],c[2],c[3],c[4]);
+      else if (c[0] === "C") ctx.bezierCurveTo(c[1],c[2],c[3],c[4],c[5],c[6]);
+      else if (c[0] === "Z") ctx.closePath();
+   }
+ }
+  function pintarTrazo(ctx,o) {
+    ruta(ctx,o.cmds);
+    let estilo = o.color;
+    if (o.gradiente) {
+      const g = ctx.createLinearGradient(o.gradiente.de[0],o.gradiente.de[1],o.gradiente.a[0],o.gradiente.a[1]);
+      o.gradiente.paradas.forEach(p => {g.addColorStop(p[0],p[1]);});
+      estilo = g;
+   }
+    ctx.globalAlpha = o.alfa == null ? 1 :o.alfa;
+    if (o.relleno) {ctx.fillStyle = estilo; ctx.fill();}
+    else {
+      ctx.strokeStyle = estilo; ctx.lineWidth = o.grosor || 1.4;
+      ctx.lineCap = o.cap || "round"; ctx.lineJoin = "round"; ctx.stroke();
+   }
+    ctx.globalAlpha = 1;
+ }
+  function pintarTexto(ctx,o) {
+    ctx.font = (o.ital ? "italic " :"") + o.peso + " " + o.tam + "px " + o.pila;
+    ctx.fillStyle = o.color;
+    if (!o.track) {
+      ctx.textAlign = o.align === "izq" ? "left" :o.align === "der" ? "right" :"center";
+      o.lineas.forEach(l => {ctx.fillText(l.txt,l.x,l.y);});
+      return;
+   }
+    // Con tracking se dibuja letra a letra. ctx.letterSpacing no existe
+    // en Safari anterior a 16.4 y fallar ahí significa entregar un
+    // nombre con las letras pegadas en un archivo ya descargado.
+    ctx.textAlign = "left";
+    o.lineas.forEach(l => {
+      const cs = Array.from(l.txt);
+      let w = 0;
+      cs.forEach(ch => {w += ctx.measureText(ch).width;});
+      w += o.track * Math.max(0,cs.length - 1);
+      let x = o.align === "izq" ? l.x :o.align === "der" ? l.x - w :l.x - w / 2;
+      cs.forEach(ch => {ctx.fillText(ch,x,l.y); x += ctx.measureText(ch).width + o.track;});
+   });
+ }
+  function pintar(ctx,lista,W,H,opciones) {
+    const exportando = !!(opciones && opciones.exportando);
+    ctx.save();
+    ctx.clearRect(0,0,W,H);
+    ctx.textBaseline = "alphabetic";
+    for (let i = 0; i < lista.length; i++) {
+      const o = lista[i];
+      if (o.marcador && exportando) continue;
+      if (o.op === "fondo") {ctx.fillStyle = o.color; ctx.fillRect(0,0,W,H);}
+      else if (o.op === "trazo") pintarTrazo(ctx,o);
+      else if (o.op === "texto") pintarTexto(ctx,o);
+   }
+    ctx.restore();
+ }
+
+
+  /* 5. PLANTILLAS — solo conocen ranuras. Nunca c.novia.
+     Cada una compone desde cero: ninguna reproduce un diseño
+     publicado y todo su ornamento se dibuja con curvas. */
+  function marco(W,H,px,py) {
+    const mx = Math.round(W * px),my = Math.round(H * py);
+    return {x:mx,y:my,w:W - 2 * mx,h:H - 2 * my,x1:W - mx,y1:H - my};
+ }
+  function textoPadrinos(r) {
+    return r.padrinos.map(p => (p.rol.txt ? p.rol.txt + ": " :"") + p.nombre.txt).join("\n");
+ }
+  function textoAvisos(r) {return r.avisos.map(a => a.txt).join("\n");}
+
+  /* La mitad baja de una invitación dice lo mismo en las tres
+     plantillas y en el mismo orden: cuándo, dónde, quiénes, avisos y
+     confirmación. Lo que cambia es la tipografía. Así que la
+     ESTRUCTURA se comparte y cada plantilla pasa SU diccionario de
+     estilos por rol. Una plantilla que quiera otro orden no llama a
+     esta función y compone su lista a mano: sigue siendo un objeto. */
+  function piezasDetalle(r,P,S) {
+    const p = [];
+    function st(rol,extra) {return Object.assign({clase:"texto"},S[rol],extra);}
+    p.push(st("fecha",{txt:r.fecha.txt,color:r.fecha.ph ? P.suave :P.tinta,marcador:r.fecha.ph,anchoRel:0.94,gap:46,prio:1}));
+    // La hora suelta solo aparece si ningún lugar trae la suya: en una
+    // boda la hora vive pegada a la ceremonia, no flotando arriba.
+    if (lleno(r.hora) && !r.lugares.some(l => lleno(l.hora))) {
+      p.push(st("hora",{txt:r.hora.txt,color:P.suave,marcador:r.hora.ph,anchoRel:0.9,gap:12,prio:1}));
+   }
+    r.lugares.forEach((l,i) => {
+      const pr = i ? 2 :1;
+      if (l.et) p.push(st("et",{txt:l.et,color:P.acentoTxt,anchoRel:0.9,gap:45,prio:pr,etiqueta:l.et.toLowerCase()}));
+      if (lleno(l.nombre)) p.push(st("titulo",{maxLin:3,txt:l.nombre.txt,color:l.nombre.ph ? P.suave :P.tinta,marcador:l.nombre.ph,anchoRel:0.94,gap:l.et ? 13 :45,prio:pr}));
+      if (lleno(l.hora)) p.push(st("hora",{txt:l.hora.txt,color:P.tinta,anchoRel:0.9,gap:11,prio:pr}));
+      if (lleno(l.direccion)) p.push(st("menor",{txt:l.direccion.txt,color:P.suave,anchoRel:0.9,gap:9,prio:2,etiqueta:"la dirección"}));
+   });
+    if (r.padrinos.length) {
+      p.push(st("et",{txt:"Padrinos",color:P.acentoTxt,anchoRel:0.9,gap:48,prio:3,etiqueta:"los padrinos"}));
+      p.push(st("menor",{txt:textoPadrinos(r),color:P.suave,anchoRel:0.94,gap:13,prio:3,etiqueta:"los padrinos"}));
+   }
+    if (r.avisos.length) p.push(st("menor",{txt:textoAvisos(r),color:P.suave,anchoRel:0.87,gap:45,prio:3,etiqueta:"los avisos"}));
+    if (lleno(r.rsvp)) p.push(st("fuerte",{txt:r.rsvp.txt,color:P.tinta,anchoRel:0.87,gap:45,prio:2,etiqueta:"la confirmación"}));
+    if (lleno(r.firma)) p.push(st("firma",{txt:r.firma.txt,color:P.suave,anchoRel:0.87,gap:34,prio:3,etiqueta:"la firma"}));
+    return p;
+ }
+
+  // Generador determinista: la vista previa y la descarga tienen que
+  // dibujar exactamente la misma rama. Math.random las separaría.
+  function azar(semilla) {
+    let s = semilla | 0;
+    return () => {
+      s = s + 0x6D2B79F5 | 0;
+      let x = Math.imul(s ^ s >>> 15,1 | s);
+      x = x + Math.imul(x ^ x >>> 7,61 | x) ^ x;
+      return ((x ^ x >>> 14) >>> 0) / 4294967296;
+   };
+ }
+  function bez(a,b,c,d,u) {const v = 1 - u; return v * v * v * a + 3 * v * v * u * b + 3 * v * u * u * c + u * u * u * d;}
+  function dbez(a,b,c,d,u) {const v = 1 - u; return 3 * v * v * (b - a) + 6 * v * u * (c - b) + 3 * u * u * (d - c);}
+
+  // Una rama: tallo de Bézier cúbica, hojas de dos cuadráticas y dos
+  // ramas hijas por generación. Ni una imagen ni un base64.
+  function dibujarRama(ops,cfg) {
+    const R = azar(cfg.semilla);
+    tallo(cfg.x,cfg.y,cfg.ang,cfg.largo,cfg.grosor,cfg.gen);
+    function tallo(x,y,ang,largo,grosor,gen) {
+      const curva = (R() - 0.5) * 0.9;
+      const x1 = x + Math.cos(ang) * largo * 0.34,y1 = y + Math.sin(ang) * largo * 0.34;
+      const a2 = ang + curva * 0.5;
+      const x2 = x + Math.cos(a2) * largo * 0.7,y2 = y + Math.sin(a2) * largo * 0.7;
+      const a3 = ang + curva;
+      const xf = x + Math.cos(a3) * largo,yf = y + Math.sin(a3) * largo;
+      ops.push({op:"trazo",cmds:[["M",x,y],["C",x1,y1,x2,y2,xf,yf]],color:cfg.tallo,grosor:grosor});
+      const n = 4 + Math.floor(R() * 3);
+      for (let i = 1; i <= n; i++) {
+        const u = i / (n + 1);
+        const px = bez(x,x1,x2,xf,u),py = bez(y,y1,y2,yf,u);
+        const tg = Math.atan2(dbez(y,y1,y2,yf,u),dbez(x,x1,x2,xf,u));
+        hoja(px,py,tg + ((i % 2) ? 1 :-1) * (0.68 + R() * 0.38),largo * (0.12 + R() * 0.08));
+     }
+      if (gen > 0) for (let k = 0; k < 2; k++) {
+        const u = 0.3 + k * 0.32 + R() * 0.12;
+        const px = bez(x,x1,x2,xf,u),py = bez(y,y1,y2,yf,u);
+        const tg = Math.atan2(dbez(y,y1,y2,yf,u),dbez(x,x1,x2,xf,u));
+        tallo(px,py,tg + (k ? 1 :-1) * (0.5 + R() * 0.3),largo * (0.42 + R() * 0.14),grosor * 0.62,gen - 1);
+     }
+   }
+    function hoja(x,y,ang,L) {
+      const ax = x + Math.cos(ang) * L,ay = y + Math.sin(ang) * L;
+      const nx = Math.cos(ang + Math.PI / 2) * L * 0.36,ny = Math.sin(ang + Math.PI / 2) * L * 0.36;
+      ops.push({
+        op:"trazo",relleno:true,alfa:cfg.alfa,color:cfg.hoja,
+        cmds:[["M",x,y],
+        ["Q",x + (ax - x) * 0.5 + nx,y + (ay - y) * 0.5 + ny,ax,ay],
+        ["Q",x + (ax - x) * 0.5 - nx,y + (ay - y) * 0.5 - ny,x,y],["Z"]]
+     });
+   }
+ }
+
+  const PLANTILLAS = {
+
+    editorial:{
+      et:"Editorial",
+      resumen:"Columna angosta, jerarquía por escala",
+      decision:"La jerarquía la pone la escala, no el adorno: serif de alto contraste en los nombres, grotesca en versalitas espaciadas en el resto y, de ornamento, cuatro esquinas de 1 px.",
+      fuentes:["cormorant","jost"],
+      flexible:["protagonistas"],
+      paletas:[
+        // El acento decorativo también pasa 3:1 contra el fondo. La
+        // salvia del encargo (#8A9A7B) daba 2.74:1, así que se oscurece
+        // lo justo: sigue siendo salvia y ya se ve en una pantalla mala.
+        {et:"Crema y tinta",fondo:"#F7F4EF",tinta:"#1C1A17",suave:"#4A4640",acento:"#7A8A69",acentoTxt:"#5F6F51"},
+        {et:"Marfil y terracota",fondo:"#FBF7F1",tinta:"#241C18",suave:"#56463F",acento:"#B4654A",acentoTxt:"#8E4A31"},
+        {et:"Blanco y caramelo",fondo:"#FFFFFF",tinta:"#1F1B16",suave:"#4E463C",acento:"#A9743B",acentoTxt:"#7E5322"}
+      ],
+      componer(r,L) {
+        const P = L.pal,W = L.w,H = L.h;
+        const m = marco(W,H,0.13,H >= 1600 ? 0.075 :0.065);
+        const ops = [{op:"fondo",color:P.fondo}];
+        const g = 44;
+        [[m.x,m.y,1,1],[m.x1,m.y,-1,1],[m.x,m.y1,1,-1],[m.x1,m.y1,-1,-1]].forEach(e => {
+          ops.push({
+            op:"trazo",cap:"butt",grosor:1.6,color:P.acento,
+            cmds:[["M",e[0] + g * e[2],e[1]],["L",e[0],e[1]],["L",e[0],e[1] + g * e[3]]]
+         });
+       });
+
+        const p = [];
+        if (lleno(r.preludio)) p.push({clase:"texto",txt:r.preludio.txt,es:E("jost",400),tam:40,interlinea:1.5,color:P.suave,anchoRel:0.84,prio:2,etiqueta:"quienes invitan"});
+        r.protagonistas.forEach((n,i) => {
+          if (i) p.push({clase:"texto",txt:"&",es:E("cormorant",500,{ital:true}),tam:66,tamMin:44,interlinea:1,color:P.acentoTxt,gap:18,prio:1});
+          p.push({
+            clase:"texto",txt:n.txt,es:E("cormorant",500),tam:132,tamMin:62,interlinea:1.06,
+            color:n.ph ? P.suave :P.tinta,marcador:n.ph,anchoRel:1,gap:i ? 18 :62,flex:true,par:"nombres",maxLin:2,prio:1
+         });
+       });
+        // 38 px y no los 28-34 de la nota de diseño: por debajo de 36 el
+        // reencode de WhatsApp se come las versalitas. Manda la regla dura.
+        if (lleno(r.nexo)) p.push({clase:"texto",txt:r.nexo.txt,es:E("jost",500,{track:0.25}),tam:38,mayus:true,interlinea:1.5,color:P.acentoTxt,anchoRel:0.84,gap:42,prio:1});
+        p.push({clase:"regla",alto:1.6,ancho:0.2,color:P.acento,grosor:1.6,gap:44,prio:2});
+        if (lleno(r.motivo)) p.push({clase:"texto",txt:r.motivo.txt,es:E("cormorant",500,{ital:true}),tam:48,tamMin:38,interlinea:1.4,color:P.suave,marcador:r.motivo.ph,anchoRel:0.84,gap:42,prio:2,etiqueta:"la frase"});
+
+        const S = {
+          fecha:{es:E("jost",500,{track:0.1}),tam:44,tamMin:38,mayus:true,interlinea:1.42},
+          et:{es:E("jost",500,{track:0.2}),tam:36,mayus:true},
+          titulo:{es:E("cormorant",600),tam:58,tamMin:42,interlinea:1.16},
+          hora:{es:E("jost",400),tam:42},
+          menor:{es:E("jost",400),tam:38,interlinea:1.52},
+          fuerte:{es:E("jost",500),tam:40,interlinea:1.45},
+          firma:{es:E("cormorant",500,{ital:true}),tam:46,interlinea:1.35}
+       };
+        const res = componerPila(L.med,{
+          x:m.x,ancho:m.w,y0:m.y + 46,y1:m.y1 - 46,alinear:"centro",
+          piezas:p.concat(piezasDetalle(r,P,S))
+       });
+        return {ops:ops.concat(res.ops),omitidos:res.omitidos,desborde:res.desborde};
+     }
+   },
+
+    jardin:{
+      et:"Jardín",
+      resumen:"Botánica dibujada, texto en el claro",
+      decision:"Dos ramas de Bézier en esquinas opuestas abren un claro en diagonal y el texto vive ahí; la caligráfica solo toca los nombres, con interlínea 1.5 para que sus ascendentes no se coman la tilde de arriba.",
+      fuentes:["vibes","lato"],
+      flexible:["protagonistas"],
+      paletas:[
+        {et:"Rubor y eucalipto",fondo:"#F7EDE8",tinta:"#322722",suave:"#5A4A44",acento:"#4E6B55",acentoTxt:"#3C5744"},
+        {et:"Lavanda y salvia",fondo:"#F1EEF7",tinta:"#2B2637",suave:"#4F4864",acento:"#5C7361",acentoTxt:"#475B4C"},
+        {et:"Melocotón y crema",fondo:"#FDF6EE",tinta:"#3A2B21",suave:"#5E4938",acento:"#C2724F",acentoTxt:"#9A4F30"}
+      ],
+      componer(r,L) {
+        const P = L.pal,W = L.w,H = L.h;
+        const m = marco(W,H,0.115,H >= 1600 ? 0.07 :0.06);
+        const ops = [{op:"fondo",color:P.fondo}];
+        const esc = Math.min(W,H) * 0.42;
+        dibujarRama(ops,{x:-40,y:m.y - 30,ang:0.62,largo:esc,grosor:5,gen:2,tallo:P.acento,hoja:P.acento,alfa:0.82,semilla:20260314});
+        dibujarRama(ops,{x:W + 40,y:m.y1 + 30,ang:Math.PI + 0.62,largo:esc,grosor:5,gen:2,tallo:P.acento,hoja:P.acento,alfa:0.82,semilla:771503});
+
+        const p = [];
+        if (lleno(r.preludio)) p.push({clase:"texto",txt:r.preludio.txt,es:E("lato",400,{track:0.16}),tam:36,mayus:true,interlinea:1.7,color:P.suave,anchoRel:0.9,prio:2,etiqueta:"quienes invitan"});
+        r.protagonistas.forEach((n,i) => {
+          if (i) p.push({clase:"texto",txt:"&",es:E("vibes",400),tam:78,tamMin:48,interlinea:1.2,color:P.acentoTxt,gap:6,prio:1});
+          p.push({
+            // Interlínea 1.5: Great Vibes tiene ascendentes altísimos y
+            // con 1.2 la tilde de "María" choca con la línea de arriba.
+            clase:"texto",txt:n.txt,es:E("vibes",400),tam:152,tamMin:70,interlinea:1.5,
+            color:n.ph ? P.suave :P.tinta,marcador:n.ph,anchoRel:1,gap:i ? 6 :46,flex:true,par:"nombres",maxLin:2,prio:1
+         });
+       });
+        if (lleno(r.nexo)) p.push({clase:"texto",txt:r.nexo.txt,es:E("lato",400,{track:0.22}),tam:36,mayus:true,color:P.acentoTxt,anchoRel:0.9,gap:30,prio:1});
+        if (lleno(r.motivo)) p.push({clase:"texto",txt:r.motivo.txt,es:E("lato",400),tam:40,tamMin:36,interlinea:1.5,color:P.suave,marcador:r.motivo.ph,anchoRel:0.88,gap:38,prio:2,etiqueta:"la frase"});
+        p.push({clase:"regla",alto:1.4,ancho:0.24,color:P.acento,grosor:1.4,gap:38,prio:2});
+
+        const S = {
+          fecha:{es:E("lato",700),tam:44,tamMin:38,interlinea:1.4},
+          et:{es:E("lato",400,{track:0.2}),tam:36,mayus:true},
+          titulo:{es:E("lato",700),tam:46,tamMin:38,interlinea:1.3},
+          hora:{es:E("lato",400),tam:42},
+          menor:{es:E("lato",400),tam:38,interlinea:1.52},
+          fuerte:{es:E("lato",700),tam:40,interlinea:1.45},
+          firma:{es:E("vibes",400),tam:66,tamMin:48,interlinea:1.45}
+       };
+        const res = componerPila(L.med,{
+          x:m.x,ancho:m.w,y0:m.y + 54,y1:m.y1 - 54,alinear:"centro",
+          piezas:p.concat(piezasDetalle(r,P,S))
+       });
+        return {ops:ops.concat(res.ops),omitidos:res.omitidos,desborde:res.desborde};
+     }
+   },
+
+    glow:{
+      et:"Glow",
+      resumen:"Fondo oscuro y una línea metálica",
+      decision:"Fondo oscuro porque es lo que destaca sobre el gris del chat de WhatsApp; Bebas Neue solo donde todo va en caja alta —no tiene minúsculas reales— y Archivo en el texto corrido.",
+      fuentes:["bebas","archivo"],
+      flexible:["protagonistas"],
+      paletas:[
+        {et:"Carbón",fondo:"#171717",tinta:"#F3EFE7",suave:"#C4BDB1",acento:"#C9A227",acentoTxt:"#D8B84A",metal:["#8A6E1C","#EBD27A","#8A6E1C"]},
+        {et:"Verde bosque",fondo:"#16302B",tinta:"#EFEEE4",suave:"#B9C4B8",acento:"#C9B37A",acentoTxt:"#D5C28E",metal:["#8B7A4E","#E6D5A5","#8B7A4E"]},
+        {et:"Azul medianoche",fondo:"#101F38",tinta:"#ECF1F8",suave:"#B2C1D6",acento:"#9FB8D8",acentoTxt:"#AFC6E2",metal:["#5E7B9E","#D5E3F5","#5E7B9E"]}
+      ],
+      componer(r,L) {
+        const P = L.pal,W = L.w,H = L.h;
+        const m = marco(W,H,0.105,H >= 1600 ? 0.065 :0.055);
+        const ops = [{op:"fondo",color:P.fondo}];
+        // Marco de filo a 1 px y UNA sola línea metálica: el metal es
+        // color, no textura. Un segundo gradiente ya sería decoración.
+        ops.push({
+          op:"trazo",color:P.acento,alfa:0.35,grosor:1.2,cap:"butt",
+          cmds:[["M",m.x,m.y],["L",m.x1,m.y],["L",m.x1,m.y1],["L",m.x,m.y1],["Z"]]
+       });
+
+        const p = [];
+        if (lleno(r.preludio)) p.push({clase:"texto",txt:r.preludio.txt,es:E("archivo",500,{track:0.18}),tam:36,mayus:true,interlinea:1.7,color:P.suave,anchoRel:0.9,prio:2,etiqueta:"quienes invitan"});
+        r.protagonistas.forEach((n,i) => {
+          if (i) p.push({clase:"texto",txt:"&",es:E("archivo",400),tam:54,tamMin:40,interlinea:1,color:P.acentoTxt,gap:16,prio:1});
+          p.push({
+            // mayus a propósito: en Bebas Neue la minúscula está mapeada
+            // a la mayúscula, así que "Año" saldría "AÑO" igual. Mejor
+            // declararlo que fingir que hay caja baja donde no la hay.
+            clase:"texto",txt:n.txt,es:E("bebas",400,{track:0.02}),tam:168,tamMin:72,mayus:true,interlinea:1.04,
+            color:n.ph ? P.suave :P.tinta,marcador:n.ph,anchoRel:1,gap:i ? 16 :52,flex:true,par:"nombres",maxLin:2,prio:1
+         });
+       });
+        p.push({
+          clase:"regla",alto:3,ancho:0.52,grosor:3,color:P.acento,gap:40,prio:1,
+          gradiente:{de:[W * 0.24,0],a:[W * 0.76,0],paradas:[[0,P.metal[0]],[0.5,P.metal[1]],[1,P.metal[2]]]}
+       });
+        if (lleno(r.nexo)) p.push({clase:"texto",txt:r.nexo.txt,es:E("bebas",400,{track:0.18}),tam:60,tamMin:40,mayus:true,interlinea:1.3,color:P.acentoTxt,anchoRel:0.9,gap:38,prio:1});
+        if (lleno(r.motivo)) p.push({clase:"texto",txt:r.motivo.txt,es:E("archivo",400),tam:40,tamMin:36,interlinea:1.5,color:P.suave,marcador:r.motivo.ph,anchoRel:0.86,gap:34,prio:2,etiqueta:"la frase"});
+
+        const S = {
+          fecha:{es:E("bebas",400,{track:0.08}),tam:64,tamMin:44,mayus:true,interlinea:1.2},
+          et:{es:E("archivo",600,{track:0.2}),tam:36,mayus:true},
+          titulo:{es:E("archivo",600),tam:46,tamMin:38,interlinea:1.3},
+          hora:{es:E("archivo",400),tam:42},
+          menor:{es:E("archivo",400),tam:38,interlinea:1.52},
+          fuerte:{es:E("archivo",500),tam:40,interlinea:1.45},
+          firma:{es:E("archivo",400),tam:40,interlinea:1.4}
+       };
+        const res = componerPila(L.med,{
+          x:m.x,ancho:m.w,y0:m.y + 52,y1:m.y1 - 52,alinear:"centro",
+          piezas:p.concat(piezasDetalle(r,P,S))
+       });
+        return {ops:ops.concat(res.ops),omitidos:res.omitidos,desborde:res.desborde};
+     }
+   }
+ };
+
+  /* 6. ESTADO Y PERSISTENCIA
+     CONTENIDO puro: {v, tipo, plantilla, formato, paleta, campos}.
+     No sabe de tipografías ni de lienzos. */
+  const LS_KEY = "pgt_invitaciones_v1";
+  const estado = {v:1,tipo:"boda",plantilla:"editorial",formato:"historia",paleta:0,campos:{},paletaManual:false};
+  // Lo escrito en los otros tipos no se tira: cambiar de "Boda" a
+  // "XV años" y volver tiene que devolver los datos intactos.
+  const bodega = {};
+
+  function guardarLocal() {
+    try {
+      localStorage.setItem(LS_KEY,JSON.stringify({
+        v:1,tipo:estado.tipo,plantilla:estado.plantilla,formato:estado.formato,
+        paleta:estado.paleta,paletaManual:estado.paletaManual,campos:estado.campos,bodega:bodega
+     }));
+   } catch (e) {/* modo privado o cuota llena: la app sigue funcionando */}
+ }
+  function cargarLocal() {
+    try {
+      const crudo = localStorage.getItem(LS_KEY);
+      if (!crudo) return false;
+      aplicarDatos(JSON.parse(crudo));
+      return true;
+   } catch (e) {return false;}
+ }
+  function aplicarDatos(d) {
+    if (!d || typeof d !== "object") return;
+    if (EVENTOS[d.tipo]) estado.tipo = d.tipo;
+    if (PLANTILLAS[d.plantilla]) estado.plantilla = d.plantilla;
+    if (FORMATOS[d.formato]) estado.formato = d.formato;
+    estado.paleta = Math.max(0,Math.min(2,parseInt(d.paleta,10) || 0));
+    estado.paletaManual = !!d.paletaManual;
+    estado.campos = (d.campos && typeof d.campos === "object") ? d.campos :{};
+    if (d.bodega && typeof d.bodega === "object") {
+      Object.keys(d.bodega).forEach(k => {if (EVENTOS[k]) bodega[k] = d.bodega[k];});
+   }
+ }
+  // Mismo formato de archivo que el resto de sistemas de ProgramasGT:
+  // {app, version, exportado, ...datos}. Así un respaldo se reconoce
+  // de un vistazo y se puede abrir con cualquier editor de texto.
+  function exportarJSON() {
+    const carga = JSON.stringify({
+      app:"invitaciones",version:1,exportado:new Date().toISOString(),
+      v:1,tipo:estado.tipo,plantilla:estado.plantilla,formato:estado.formato,
+      paleta:estado.paleta,campos:estado.campos,bodega:bodega
+   },null,2);
+    const b = new Blob([carga],{type:"application/json"});
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(b);
+    a.download = "invitacion-" + nombreSeguro(EVENTOS[estado.tipo].et) + "-" + hoyISO() + ".json";
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => {URL.revokeObjectURL(a.href);},4000);
+    toast("Respaldo descargado.");
+ }
+  function importarJSON(archivo) {
+    const lector = new FileReader();
+    lector.onload = () => {
+      try {
+        const d = JSON.parse(lector.result);
+        if (!d || !EVENTOS[d.tipo]) throw new Error("formato");
+        aplicarDatos(d);
+        sincronizarControles();
+        construirFormulario();
+        preparar();
+        toast("Respaldo importado.");
+     } catch (e) {toast("Ese archivo no tiene el formato esperado.");}
+   };
+    lector.readAsText(archivo);
+ }
+
+  /* 7. TIPOGRAFÍAS BAJO DEMANDA
+     Un lienzo no tiene font-display: si se pinta antes de que la
+     familia esté lista, cae a Arial en silencio y nadie se entera
+     hasta que ve el archivo descargado. */
+  // Con acentos a propósito: fuerza el subconjunto latino que de otro
+  // modo el navegador podría no descargar hasta verlo en pantalla.
+  const CADENA_PRUEBA = "ÁÉÍÓÚÜÑ áéíóúüñ ¿? ¡! 15 XV Nº";
+  const TAMS_CLAVE = [36,44,60,96,152];
+  const cssPedido = {};
+  let avisoFuentes = "";
+
+  function asegurarCSS(clave) {
+    if (cssPedido[clave]) return;
+    cssPedido[clave] = true;
+    document.head.appendChild(el("link",{
+      rel:"stylesheet",
+      href:"https://fonts.googleapis.com/css2?family=" + FUENTES[clave].google + "&display=swap"
+   }));
+ }
+  function esperar(ms) {return new Promise(r => {setTimeout(r,ms);});}
+
+  function cargarFuentesDe(clavePlantilla) {
+    const pl = PLANTILLAS[clavePlantilla];
+    pl.fuentes.forEach(asegurarCSS);
+    avisoFuentes = "";
+    if (!document.fonts || !document.fonts.load) return esperar(500);
+    const tareas = [];
+    pl.fuentes.forEach(k => {
+      const f = FUENTES[k];
+      f.pesos.forEach(peso => {
+        // Peso y tamaño EXACTOS, y la cadena acentuada como carga útil.
+        TAMS_CLAVE.forEach(tam => {
+          tareas.push(document.fonts.load(peso + ' ' + tam + 'px "' + f.nom + '"',CADENA_PRUEBA));
+          tareas.push(document.fonts.load('italic ' + peso + ' ' + tam + 'px "' + f.nom + '"',CADENA_PRUEBA));
+       });
+     });
+   });
+    // A los 3 s se pinta igual con la de respaldo y se avisa. Es peor
+    // una pantalla en blanco que una invitación con otra tipografía.
+    return Promise.race([
+      Promise.all(tareas.map(p => {return p.catch(() => {});})),
+      esperar(3000)
+    ]).then(() => {
+      const faltan = pl.fuentes.filter(k => {
+        try {return !document.fonts.check(FUENTES[k].pesos[0] + ' 48px "' + FUENTES[k].nom + '"',CADENA_PRUEBA);}
+        catch (e) {return false;}
+     });
+      if (faltan.length) {
+        avisoFuentes = "Se está dibujando con una tipografía de respaldo (" +
+          faltan.map(k => FUENTES[k].nom).join(", ") + "). Revisa tu conexión y recarga.";
+     }
+   });
+ }
+
+  /* 8. VISTA PREVIA
+     El lienzo de la vista previa ES el búfer que se descarga: no hay un
+     segundo lienzo "de exportación" que pueda divergir. Y no se dibuja
+     nunca una imagen de otro origen: contaminaría el lienzo y toBlob
+     lanzaría SecurityError sobre el archivo final. */
+  let lienzo,ctx2d,medidor,ultimoResultado = null,rafPend = 0;
+
+  function ranurasActuales() {return EVENTOS[estado.tipo].ranuras(estado.campos);}
+
+  function repintar() {
+    const pl = PLANTILLAS[estado.plantilla];
+    const fmt = FORMATOS[estado.formato];
+    const pal = pl.paletas[Math.min(estado.paleta,pl.paletas.length - 1)];
+    if (lienzo.width !== fmt.w) lienzo.width = fmt.w;
+    if (lienzo.height !== fmt.h) lienzo.height = fmt.h;
+    ctx2d = lienzo.getContext("2d");
+    medidor = crearMedidor(ctx2d);
+    const r = ranurasActuales();
+    const res = pl.componer(r,{w:fmt.w,h:fmt.h,pal:pal,med:medidor});
+    ultimoResultado = res;
+    pintar(ctx2d,res.ops,fmt.w,fmt.h,{exportando:false});
+    lienzo.setAttribute("aria-label",textoPlano(r));
+    refrescarEstado(res);
+    programarBlob();
+ }
+  function programarRepintado() {
+    if (rafPend) return;
+    rafPend = requestAnimationFrame(() => {rafPend = 0; repintar();});
+ }
+
+  // El lector de pantalla no ve el lienzo. Este texto es la invitación
+  // dicha en voz alta; el formulario es la interfaz accesible real.
+  function textoPlano(r) {
+    const p = ["Invitación de " + EVENTOS[estado.tipo].et.toLowerCase()];
+    if (lleno(r.preludio)) p.push(r.preludio.txt.replace(/\n/g,", "));
+    if (r.protagonistas.length) {
+      p.push(r.protagonistas.map(x => x.txt).join(" y ") + (lleno(r.nexo) ? ", " + r.nexo.txt :""));
+   }
+    if (lleno(r.motivo)) p.push(r.motivo.txt);
+    if (lleno(r.fecha)) p.push(r.fecha.txt);
+    if (lleno(r.hora)) p.push(r.hora.txt);
+    r.lugares.forEach(l => {
+      p.push([l.et,l.nombre.txt,l.hora.txt,l.direccion.txt].filter(Boolean).join(", "));
+   });
+    if (r.padrinos.length) {
+      p.push("Padrinos: " + r.padrinos.map(x => (x.rol.txt ? x.rol.txt + ", " :"") + x.nombre.txt).join("; "));
+   }
+    r.avisos.forEach(a => {p.push(a.txt);});
+    if (lleno(r.rsvp)) p.push(r.rsvp.txt);
+    return p.filter(Boolean).join(". ") + ".";
+ }
+
+  function faltantes() {
+    return EVENTOS[estado.tipo].campos.filter(c => {
+      return c.req && !t(estado.campos[c.k]);
+   }).map(c => c.et);
+ }
+
+  function refrescarEstado(res) {
+    const n = $("#estado");
+    const falta = faltantes();
+    const puede = falta.length === 0;
+    $("#btnDescargar").disabled = !puede;
+    $("#btnCompartir").disabled = !puede;
+    const partes = [];
+    if (!puede) {
+      // Deshabilitar sin decir qué falta es una trampa. Se nombran.
+      partes.push(falta.length === 1 ? "Falta un dato: " + falta[0] + "." :"Faltan " + falta.length + " datos: " + falta.join(", ") + ".");
+   } else {
+      partes.push("Listo para descargar.");
+   }
+    if (res && res.omitidos && res.omitidos.length) {
+      partes.push("En formato " + FORMATOS[estado.formato].et + " no cabe todo: quedó fuera " + res.omitidos.join(", ") +
+        ". Cambia a Historia o acorta el texto.");
+   } else if (res && res.desborde) {
+      partes.push("El texto quedó muy apretado. Acorta algún campo o usa el formato Historia.");
+   }
+    if (avisoFuentes) partes.push(avisoFuentes);
+    n.textContent = partes.join(" ");
+    n.className = "estado " + (puede ? (res && res.omitidos && res.omitidos.length ? "falta" :"listo") :"falta");
+    $("#notaArchivo").textContent = extension() === "png"
+      ? "PNG conserva cada píxel y pesa más; sirve para diseños planos. WhatsApp lo recomprime igual."
+      :"JPEG al 90 %: es lo que WhatsApp deja pasar mejor. " + FORMATOS[estado.formato].w + " × " + FORMATOS[estado.formato].h + " px.";
+ }
+
+  /* 9. EXPORTACIÓN */
+  function extension() {return $("#selArchivo").value === "png" ? "png" :"jpeg";}
+  function mime() {return extension() === "png" ? "image/png" :"image/jpeg";}
+
+  function aBlob(cv,tipoMime,calidad) {
+    return new Promise((res,rej) => {
+      if (cv.toBlob) {
+        cv.toBlob(b => {b ? res(b) :rej(new Error("sin blob"));},tipoMime,calidad);
+        return;
+     }
+      // Polyfill para navegadores sin toBlob (Safari viejo de iOS).
+      try {
+        const url = cv.toDataURL(tipoMime,calidad);
+        const coma = url.indexOf(",");
+        const bin = atob(url.slice(coma + 1));
+        const buf = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+        res(new Blob([buf],{type:tipoMime}));
+     } catch (e) {rej(e);}
+   });
+ }
+
+  let blobListo = null,claveBlob = "";
+  function claveActual() {
+    return [estado.tipo,estado.plantilla,estado.formato,estado.paleta,extension(),JSON.stringify(estado.campos)].join("|");
+ }
+  // El Blob se pre-genera en tiempo muerto DESPUÉS de cada cambio para
+  // que el botón de compartir lo entregue de forma síncrona: si iOS ve
+  // un await entre el toque y navigator.share, considera caducado el
+  // gesto del usuario y rechaza la llamada sin explicación.
+  function programarBlob() {
+    const clave = claveActual();
+    if (clave === claveBlob && blobListo) return;
+    blobListo = null;
+    if (faltantes().length) return;
+    clearTimeout(programarBlob._t);
+    const tarea = () => {
+      if (claveActual() !== clave) return;
+      aBlob(lienzo,mime(),0.9).then(b => {
+        if (claveActual() === clave) {blobListo = b; claveBlob = clave;}
+     }).catch(() => {});
+   };
+    if (window.requestIdleCallback) requestIdleCallback(tarea,{timeout:1500});
+    else programarBlob._t = setTimeout(tarea,300);
+ }
+
+  function nombreArchivo() {
+    const r = ranurasActuales();
+    const quien = r.protagonistas.filter(x => !x.ph).map(x => x.txt).join("-");
+    return nombreSeguro(EVENTOS[estado.tipo].et + "-" + quien) + "-" + estado.formato + "." + (extension() === "png" ? "png" :"jpg");
+ }
+
+  function entregar(b) {
+    const url = URL.createObjectURL(b);
+    const a = document.createElement("a");
+    if ("download" in a) {
+      a.href = url; a.download = nombreArchivo(); a.rel = "noopener";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => {URL.revokeObjectURL(url);},10000);
+      toast("Imagen descargada. Búscala en tus descargas.");
+      return;
+   }
+    // Último escalón de la cascada: pestaña nueva y aviso de qué hacer.
+    const w = window.open(url,"_blank");
+    if (!w) toast("Permite las ventanas emergentes para guardar la imagen.");
+    else toast("Mantén pulsada la imagen y elige «Guardar imagen».");
+    setTimeout(() => {URL.revokeObjectURL(url);},60000);
+ }
+  function descargar() {
+    if (faltantes().length) return;
+    if (blobListo) {entregar(blobListo); return;}
+    aBlob(lienzo,mime(),0.9)
+      .then(b => {blobListo = b; claveBlob = claveActual(); entregar(b);})
+      .catch(() => {toast("Este navegador no pudo generar la imagen. Prueba con Chrome o Safari actualizado.");});
+ }
+  function compartir() {
+    if (faltantes().length) return;
+    if (!blobListo) {
+      toast("La imagen se está preparando. Toca Compartir otra vez.");
+      programarBlob();
+      return;
+   }
+    let archivo = null;
+    try {archivo = new File([blobListo],nombreArchivo(),{type:blobListo.type});} catch (e) {archivo = null;}
+    if (archivo && navigator.canShare && navigator.share && navigator.canShare({files:[archivo]})) {
+      navigator.share({files:[archivo],title:EVENTOS[estado.tipo].et}).catch(err => {
+        if (err && err.name === "AbortError") return;
+        descargar();
+     });
+      return;
+   }
+    descargar();
+ }
+
+  /* 10. FORMULARIO GENERADO DESDE EL ESQUEMA
+     Ningún campo está escrito a mano en el HTML: todos salen de
+     EVENTOS[tipo].campos. Un evento nuevo trae su formulario. */
+  function fijar(k,v) {estado.campos[k] = v; guardarLocal(); programarRepintado();}
+
+  function contador(c,valor) {
+    if (!c.max) return null;
+    const n = Array.from(t(valor)).length;
+    const nodo = el("span",{class:"cuenta" + (n > c.max ? " pasado" :""),text:n + "/" + c.max});
+    return nodo;
+ }
+  function actualizarContador(campoNodo,c,valor) {
+    const n = $(".cuenta",campoNodo);
+    if (!n) return;
+    const largo = Array.from(t(valor)).length;
+    n.textContent = largo + "/" + c.max;
+    n.className = "cuenta" + (largo > c.max ? " pasado" :"");
+ }
+
+  function nodoCampo(c) {
+    const id = "c-" + c.k;
+    const idPista = "p-" + c.k;
+    const val = estado.campos[c.k];
+
+    if (c.tipo === "check") {
+      const inp = el("input",{
+        type:"checkbox",id:id,checked:val ? true :null,
+        onchange:e => {fijar(c.k,e.target.checked);}
+     });
+      return el("div",{class:"campo ancho"},[
+        el("label",{class:"casilla",for:id},[inp,el("span",null,[el("b",{text:c.et}),c.etiqueta || ""])])
+      ]);
+   }
+
+    if (c.tipo === "listarol") return nodoLista(c);
+
+    let control;
+    if (c.tipo === "area") {
+      control = el("textarea",{
+        id:id,"aria-describedby":c.pista ? idPista :null,text:val || "",placeholder:c.ph || "",
+        oninput:e => {fijar(c.k,e.target.value); actualizarContador(caja,c,e.target.value);}
+     });
+   } else if (c.tipo === "select") {
+      control = el("select",{
+        id:id,"aria-describedby":c.pista ? idPista :null,
+        onchange:e => {fijar(c.k,e.target.value); alPosibleCambioDePaleta(c);}
+     });
+      c.opciones.forEach(o => {control.appendChild(el("option",{value:o[0],text:o[1]}));});
+      control.value = val || "";
+   } else {
+      const tipoHTML = c.tipo === "fecha" ? "date" :c.tipo === "hora" ? "time" :c.tipo === "tel" ? "tel" :c.tipo === "numero" ? "number" :"text";
+      control = el("input",{
+        type:tipoHTML,id:id,value:val == null ? "" :val,placeholder:c.ph || "",
+        "aria-describedby":c.pista ? idPista :null,"aria-required":c.req ? "true" :null,
+        min:c.tipo === "numero" ? "0" :null,max:c.tipo === "numero" ? "130" :null,
+        list:c.sug ? id + "-sug" :null,inputmode:c.tipo === "tel" ? "tel" :null,
+        oninput:e => {fijar(c.k,e.target.value); actualizarContador(caja,c,e.target.value);}
+     });
+   }
+
+    const caja = el("div",{class:"campo" + (c.tipo === "area" || (c.max && c.max > 44) ? " ancho" :"")},[
+      el("label",{for:id},[el("span",{text:c.et + (c.req ? " *" :"")}),contador(c,val)]),
+      control,
+      c.sug ? listaSugerencias(id + "-sug",c.sug) :null,
+      c.pista ? el("div",{class:"pista",id:idPista,text:c.pista}) :null
+    ]);
+    return caja;
+ }
+  function listaSugerencias(id,opciones) {
+    const dl = el("datalist",{id:id});
+    opciones.forEach(o => {dl.appendChild(el("option",{value:o}));});
+    return dl;
+ }
+
+  // Lista repetible de padrinos con rol. Esto es lo que ninguna
+  // plantilla importada trae: aquí el rol (velación, anillos, arras,
+  // lazo, biblia y rosario) es parte del nombre de la persona.
+  function nodoLista(c) {
+    const cont = el("div",{class:"lista"});
+    const caja = el("div",{class:"campo ancho",role:"group","aria-label":c.et},[
+      el("label",null,[el("span",{text:c.et})]),
+      c.pista ? el("div",{class:"pista",text:c.pista}) :null,
+      cont
+    ]);
+    dibujar();
+    function dibujar() {
+      cont.innerHTML = "";
+      const arr = estado.campos[c.k] || [];
+      arr.forEach((it,i) => {
+        const sel = el("select",{
+          "aria-label":"Rol de " + c.et.toLowerCase() + " " + (i + 1),
+          onchange:e => {it.rol = e.target.value; guardarLocal(); programarRepintado();}
+       });
+        sel.appendChild(el("option",{value:"",text:"Sin rol"}));
+        (c.roles || []).forEach(rr => {sel.appendChild(el("option",{value:rr,text:rr}));});
+        if (it.rol && (c.roles || []).indexOf(it.rol) < 0) sel.appendChild(el("option",{value:it.rol,text:it.rol}));
+        sel.value = it.rol || "";
+        const inp = el("input",{
+          type:"text",value:it.nombre || "",placeholder:"Nombres",
+          "aria-label":"Nombre de " + c.et.toLowerCase() + " " + (i + 1),
+          oninput:e => {it.nombre = e.target.value; guardarLocal(); programarRepintado();}
+       });
+        const quitar = el("button",{
+          type:"button",class:"quitar","aria-label":"Quitar " + (it.nombre || "fila " + (i + 1)),
+          html:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+          onclick:() => {arr.splice(i,1); guardarLocal(); dibujar(); programarRepintado();}
+       });
+        cont.appendChild(el("div",{class:"fila"},[sel,inp,quitar]));
+     });
+      cont.appendChild(el("button",{
+        type:"button",class:"btn hueco",text:"Agregar " + c.et.toLowerCase().replace(/s$/,""),
+        onclick:() => {
+          if (!estado.campos[c.k]) estado.campos[c.k] = [];
+          estado.campos[c.k].push({rol:"",nombre:""});
+          guardarLocal(); dibujar(); programarRepintado();
+          const inputs = cont.querySelectorAll("input");
+          if (inputs.length) inputs[inputs.length - 1].focus();
+       }
+     }));
+   }
+    return caja;
+ }
+
+  function construirFormulario() {
+    const host = $("#campos");
+    host.innerHTML = "";
+    let grupo = null,bloque = null,rejilla = null;
+    EVENTOS[estado.tipo].campos.forEach(c => {
+      if (c.grupo !== grupo) {
+        grupo = c.grupo;
+        rejilla = el("div",{class:"rejilla"});
+        bloque = el("fieldset",{class:"bloque"},[el("legend",{text:grupo}),rejilla]);
+        host.appendChild(bloque);
+     }
+      rejilla.appendChild(nodoCampo(c));
+   });
+ }
+
+  // El sexo del bebé cambia la paleta por omisión. Solo mientras el
+  // usuario no haya elegido una: en cuanto toca las paletas, manda él.
+  function alPosibleCambioDePaleta(c) {
+    const ev = EVENTOS[estado.tipo];
+    if (c.k !== "sexo" || !ev.paletaPorSexo || estado.paletaManual) return;
+    const p = ev.paletaPorSexo[t(estado.campos.sexo)];
+    if (p == null) return;
+    estado.paleta = p;
+    pintarPaletas();
+    guardarLocal();
+    programarRepintado();
+ }
+
+  /* 11. CONTROLES (tipo, plantilla, paleta, formato) */
+  const MINIS = {
+    editorial:[[16,3],[62,12],[20,3],[46,3]],
+    jardin:[[34,3],[70,14],[24,3],[50,3]],
+    glow:[[24,3],[76,15],[52,4],[40,3]]
+ };
+  function miniDe(clave) {
+    const pl = PLANTILLAS[clave],p = pl.paletas[0];
+    const barras = MINIS[clave].map((b,i) => {
+      const color = i === 1 ? p.tinta :(i === 2 ? p.acento :p.suave);
+      return '<i style="width:' + b[0] + '%;height:' + b[1] + 'px;background:' + color + '"></i>';
+   }).join("");
+    return '<span class="mini" style="background:' + p.fondo + '">' + barras + '</span>';
+ }
+
+  function pintarTipos() {
+    const host = $("#tipos"); host.innerHTML = "";
+    Object.keys(EVENTOS).forEach(k => {
+      const id = "tipo-" + k;
+      host.appendChild(el("input",{
+        type:"radio",name:"tipo",id:id,value:k,checked:estado.tipo === k ? true :null,
+        onchange:() => {cambiarTipo(k);}
+     }));
+      host.appendChild(el("label",{
+        for:id,
+        html:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true">'
+          + EVENTOS[k].icono + '</svg><span>' + EVENTOS[k].et + '</span>'
+     }));
+   });
+ }
+  function pintarPlantillas() {
+    const host = $("#plantillas"); host.innerHTML = "";
+    const recomendada = EVENTOS[estado.tipo].plantillas[0];
+    Object.keys(PLANTILLAS).forEach(k => {
+      const id = "pl-" + k,pl = PLANTILLAS[k];
+      host.appendChild(el("input",{
+        type:"radio",name:"plantilla",id:id,value:k,checked:estado.plantilla === k ? true :null,
+        onchange:() => {cambiarPlantilla(k);}
+     }));
+      host.appendChild(el("label",{
+        for:id,
+        html:miniDe(k) + '<span><b>' + pl.et + (k === recomendada ? ' · recomendada' :'') + '</b><small>' + pl.resumen + '</small></span>'
+     }));
+   });
+    $("#notaPlantilla").textContent = PLANTILLAS[estado.plantilla].decision;
+ }
+  function pintarPaletas() {
+    const host = $("#paletas"); host.innerHTML = "";
+    PLANTILLAS[estado.plantilla].paletas.forEach((p,i) => {
+      const id = "pal-" + i;
+      host.appendChild(el("input",{
+        type:"radio",name:"paleta",id:id,value:i,checked:estado.paleta === i ? true :null,
+        onchange:() => {estado.paleta = i; estado.paletaManual = true; guardarLocal(); programarRepintado();}
+     }));
+      host.appendChild(el("label",{
+        for:id,
+        html:'<span class="muestra"><i style="background:' + p.fondo + '"></i><i style="background:' + p.tinta
+          + '"></i><i style="background:' + p.acento + '"></i></span>' + p.et
+     }));
+   });
+ }
+  function pintarFormatos() {
+    const host = $("#formatos"); host.innerHTML = "";
+    Object.keys(FORMATOS).forEach(k => {
+      const id = "fmt-" + k,f = FORMATOS[k];
+      host.appendChild(el("input",{
+        type:"radio",name:"formato",id:id,value:k,checked:estado.formato === k ? true :null,
+        onchange:() => {estado.formato = k; guardarLocal(); programarRepintado();}
+     }));
+      host.appendChild(el("label",{for:id,html:'<span>' + f.et + '<small>' + f.sub + '</small></span>'}));
+   });
+ }
+  function sincronizarControles() {
+    pintarTipos(); pintarPlantillas(); pintarPaletas(); pintarFormatos();
+ }
+
+  function cambiarTipo(k) {
+    bodega[estado.tipo] = estado.campos;
+    estado.tipo = k;
+    estado.campos = bodega[k] || {};
+    // La plantilla salta a la recomendada para el nuevo tipo: una boda
+    // en Glow y unos XV en Editorial se pueden elegir, pero no deberían
+    // ser el punto de partida.
+    estado.plantilla = EVENTOS[k].plantillas[0];
+    const ev = EVENTOS[k];
+    if (ev.paletaPorSexo && !estado.paletaManual) {
+      const p = ev.paletaPorSexo[t(estado.campos.sexo)];
+      estado.paleta = p == null ? 0 :p;
+   }
+    sincronizarControles();
+    construirFormulario();
+    guardarLocal();
+    preparar();
+ }
+  function cambiarPlantilla(k) {
+    estado.plantilla = k;
+    if (estado.paleta >= PLANTILLAS[k].paletas.length) estado.paleta = 0;
+    pintarPlantillas(); pintarPaletas();
+    guardarLocal();
+    preparar();
+ }
+
+  /* 12. ARRANQUE */
+  function mostrarEsqueleto(ver) {$("#esqueleto").hidden = !ver;}
+
+  function preparar() {
+    mostrarEsqueleto(true);
+    return cargarFuentesDe(estado.plantilla).then(() => {
+      mostrarEsqueleto(false);
+      repintar();
+   });
+ }
+
+  function aplicarTema(tm) {
+    const osc = tm === "dark" || (tm === "system" && window.matchMedia && window.matchMedia("(prefers-color-scheme:dark)").matches);
+    document.documentElement.setAttribute("data-theme",osc ? "dark" :"light");
+    try {localStorage.setItem("pgt_inv_tema",tm);} catch (e) {}
+    const etq = {light:"claro",dark:"oscuro",system:"automático"};
+    $("#btnTema").setAttribute("aria-label","Cambiar tema: " + etq[tm]);
+    $("#btnTema").title = "Tema " + etq[tm];
+ }
+  function iniciarTema() {
+    let tm = "dark";
+    try {tm = localStorage.getItem("pgt_inv_tema") || "dark";} catch (e) {}
+    aplicarTema(tm);
+    // Si el sistema cambia de claro a oscuro con el tema en
+    // "automático", la página lo sigue sin recargar.
+    const mq = window.matchMedia && window.matchMedia("(prefers-color-scheme:dark)");
+    if (mq && mq.addEventListener) mq.addEventListener("change",() => {
+      let a = "dark"; try {a = localStorage.getItem("pgt_inv_tema") || "dark";} catch (e) {}
+      if (a === "system") aplicarTema("system");
+   });
+    $("#btnTema").addEventListener("click",() => {
+      let actual = "dark";
+      try {actual = localStorage.getItem("pgt_inv_tema") || "dark";} catch (e) {}
+      aplicarTema({dark:"light",light:"system",system:"dark"}[actual] || "dark");
+   });
+ }
+
+  function ejemploInicial() {
+    // Una pantalla en blanco no enseña qué hace esto; un ejemplo, sí,
+    // y se borra de un clic.
+    const d = new Date(); d.setMonth(d.getMonth() + 4); d.setDate(14);
+    estado.campos = {
+      novia:"María Fernanda Gutiérrez",novio:"José Andrés Guzmán",
+      padresNovia:"Carlos Gutiérrez y Ana de Gutiérrez",padresNovio:"Mario Guzmán y Lucía de Guzmán",
+      fecha:isoLocal(d),ceremoniaLugar:"Iglesia de San Francisco",ceremoniaDir:"6a avenida 6-42, zona 1",
+      ceremoniaHora:"16:00",recepcionLugar:"Salón Los Almendros",recepcionDir:"20 calle 12-33, zona 14",
+      recepcionHora:"18:30",
+      padrinos:[{rol:"Velación",nombre:"Luis Barrios y Diana Súchite"},{rol:"Anillos",nombre:"Emiliano Guzmán"}],
+      codigoVestimenta:"Formal",pases:FRASE.pases,confirmarTel:"5512-3456",cortesia:true
+   };
+ }
+
+  function vaciarFormulario() {
+    if (!confirm("Se borrarán los datos de " + EVENTOS[estado.tipo].et + " en este navegador. ¿Continuar?")) return;
+    estado.campos = {};
+    bodega[estado.tipo] = {};
+    construirFormulario();
+    guardarLocal();
+    programarRepintado();
+    toast("Formulario vacío.");
+ }
+
+  function arrancar() {
+    lienzo = $("#lienzo");
+    iniciarTema();
+    const habia = cargarLocal();
+    if (!habia) ejemploInicial();
+    sincronizarControles();
+    construirFormulario();
+
+    $("#btnDescargar").addEventListener("click",descargar);
+    $("#btnCompartir").addEventListener("click",compartir);
+    $("#selArchivo").addEventListener("change",() => {programarRepintado();});
+    $("#btnExportar").addEventListener("click",exportarJSON);
+    $("#btnImportar").addEventListener("click",() => {$("#archivoImportar").click();});
+    $("#archivoImportar").addEventListener("change",ev => {
+      const f = ev.target.files && ev.target.files[0];
+      if (f && confirm("Importar reemplazará lo que hay ahora en este navegador. ¿Continuar?")) importarJSON(f);
+      ev.target.value = "";
+   });
+    $("#btnLimpiar").addEventListener("click",vaciarFormulario);
+
+    // Red de seguridad: si una familia llega tarde, o alguien entra sin
+    // conexión y vuelve, el lienzo se repinta solo.
+    if (document.fonts && document.fonts.addEventListener) {
+      document.fonts.addEventListener("loadingdone",() => {programarRepintado();});
+   }
+    window.addEventListener("resize",() => {
+      clearTimeout(arrancar._t);
+      arrancar._t = setTimeout(programarRepintado,200);
+   });
+
+    preparar().then(() => {
+      if (/[?&]estres=1/.test(location.search) || location.hash === "#estres") arrancarEstres();
+   });
+ }
+
+  /* 13. ARNÉS DE ESTRÉS  ( ?estres=1  o  #estres )
+     Pinta 3 plantillas × 6 tipos con los datos más hostiles que se
+     me ocurren y mide el contraste de las 9 paletas. No es una
+     demostración: es la prueba que decide si una plantilla entra. */
+  const NOMBRE_LARGO = "María Fernanda Gutiérrez Caballeros";
+  const NOMBRE_LARGO2 = "José Andrés Guzmán Alvarado";
+  // Cadena obligatoria en toda plantilla. Si una la rompe, la
+  // plantilla está mal, no la cadena.
+  const PRUEBA_TEXTO = "ÁÉÍÓÚÜÑ áéíóúüñ ¿? ¡! 15 XV Nº";
+
+  function datosExtremos(tipo) {
+    const c = {};
+    EVENTOS[tipo].campos.forEach(f => {
+      if (f.tipo === "check") c[f.k] = true;
+      else if (f.tipo === "fecha") c[f.k] = "2026-03-14";
+      else if (f.tipo === "hora") c[f.k] = f.k === "horaFin" ? "19:30" :"16:00";
+      else if (f.tipo === "numero") c[f.k] = 15;
+      else if (f.tipo === "select") c[f.k] = f.opciones[1][0];
+      else if (f.tipo === "tel") c[f.k] = "55123456";
+      else if (f.tipo === "listarol") {
+        c[f.k] = (f.roles || ["Padrinos"]).map(rol => {
+          return {rol:rol,nombre:NOMBRE_LARGO + " y " + NOMBRE_LARGO2};
+       });
+     } else if (f.tipo === "area") {
+        c[f.k] = PRUEBA_TEXTO + " — Y sobre todas estas cosas vestíos de amor, que es el vínculo perfecto. Colosenses 3:14";
+     } else if (/novio|papa/i.test(f.k)) c[f.k] = NOMBRE_LARGO2;
+      else if (/nombre|novia|graduad|festejad|quincean|nino|mama|bebe|padres|chambelan|padrino/i.test(f.k)) c[f.k] = NOMBRE_LARGO;
+      else c[f.k] = PRUEBA_TEXTO + " " + (f.ph || f.et);
+   });
+    return c;
+ }
+
+  function lumRel(hex) {
+    const h = hex.replace("#","");
+    const v = [0,2,4].map(i => {
+      let c = parseInt(h.substr(i,2),16) / 255;
+      return c <= 0.03928 ? c / 12.92 :Math.pow((c + 0.055) / 1.055,2.4);
+   });
+    return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2];
+ }
+  function contraste(a,b) {
+    const l1 = lumRel(a),l2 = lumRel(b);
+    return (Math.max(l1,l2) + 0.05) / (Math.min(l1,l2) + 0.05);
+ }
+
+  function auditar(res,fmt) {
+    let minTam = Infinity,fuera = 0;
+    res.ops.forEach(o => {
+      if (o.op !== "texto") return;
+      if (o.tam < minTam) minTam = o.tam;
+      o.lineas.forEach(l => {if (l.y < 2 || l.y > fmt.h - 2) fuera++;});
+   });
+    return {minTam:isFinite(minTam) ? minTam :0,fuera:fuera,omitidos:res.omitidos || [],desborde:!!res.desborde};
+ }
+
+  function arrancarEstres() {
+    const sec = $("#estres");
+    sec.hidden = false;
+
+    /* contraste de las 9 paletas */
+    const filas = [];
+    Object.keys(PLANTILLAS).forEach(kp => {
+      PLANTILLAS[kp].paletas.forEach(p => {
+        const pruebas = [
+          ["tinta / fondo (nombres y datos)",contraste(p.tinta,p.fondo),4.5],
+          ["suave / fondo (texto menor)",contraste(p.suave,p.fondo),4.5],
+          ["acentoTxt / fondo (versalitas)",contraste(p.acentoTxt,p.fondo),4.5],
+          ["acento / fondo (ornamento)",contraste(p.acento,p.fondo),3]
+        ];
+        pruebas.forEach(pr => {
+          filas.push('<tr><td>' + PLANTILLAS[kp].et + ' · ' + p.et + '</td><td>' + pr[0] + '</td><td>' +
+            pr[1].toFixed(2) + ':1</td><td class="' + (pr[1] >= pr[2] ? "pasa" :"falla") + '">' +
+            (pr[1] >= pr[2] ? "PASA" :"FALLA (mín. " + pr[2] + ")") + '</td></tr>');
+       });
+     });
+   });
+    $("#estresContraste").innerHTML =
+      '<table><thead><tr><th>Paleta</th><th>Par</th><th>Contraste</th><th></th></tr></thead><tbody>' +
+      filas.join("") + '</tbody></table>';
+
+    /* 3 plantillas × 6 tipos, con las tres proporciones */
+    const rejilla = $("#estresRejilla");
+    rejilla.innerHTML = "";
+    const fuera = document.createElement("canvas");
+    const fctx = fuera.getContext("2d");
+    const med = crearMedidor(fctx);
+
+    Promise.all(Object.keys(PLANTILLAS).map(cargarFuentesDe)).then(() => {
+      Object.keys(PLANTILLAS).forEach(kp => {
+        Object.keys(EVENTOS).forEach(ke => {
+          const datos = datosExtremos(ke);
+          const r = EVENTOS[ke].ranuras(datos);
+          const pl = PLANTILLAS[kp];
+          const notas = [];
+          Object.keys(FORMATOS).forEach(kf => {
+            const fmt = FORMATOS[kf];
+            fuera.width = fmt.w; fuera.height = fmt.h;
+            const res = pl.componer(r,{w:fmt.w,h:fmt.h,pal:pl.paletas[0],med:crearMedidor(fuera.getContext("2d"))});
+            const a = auditar(res,fmt);
+            const mal = a.desborde || a.fuera || a.minTam < MIN_TXT;
+            notas.push('<span class="' + (mal ? "falla" :"pasa") + '">' + fmt.et + ": " +
+              (a.desborde ? "DESBORDA" :a.fuera ? a.fuera + " líneas fuera" :a.minTam < MIN_TXT ? "texto a " + a.minTam + "px" :"ok") +
+              (a.omitidos.length ? " · omite " + a.omitidos.join(", ") :"") + "</span>");
+         });
+
+          // Se repinta el formato historia para verlo con los ojos.
+          const fmt = FORMATOS.historia;
+          fuera.width = fmt.w; fuera.height = fmt.h;
+          const ctxF = fuera.getContext("2d");
+          const res = pl.componer(r,{w:fmt.w,h:fmt.h,pal:pl.paletas[0],med:crearMedidor(ctxF)});
+          pintar(ctxF,res.ops,fmt.w,fmt.h,{exportando:true});
+
+          const mini = el("canvas",{width:180,height:Math.round(180 * fmt.h / fmt.w)});
+          mini.getContext("2d").drawImage(fuera,0,0,mini.width,mini.height);
+          rejilla.appendChild(el("figure",null,[
+            mini,
+            el("figcaption",{html:'<b>' + pl.et + " · " + EVENTOS[ke].et + '</b><br>' + notas.join("<br>")})
+          ]));
+       });
+     });
+   });
+ }
+
+  arrancar();
+  </script>
+
+  <!-- PIEL PROGRAMASGT — comportamiento
+       Solo decoración. Si se borra este bloque junto con el
+       <style id="pgt-piel">, el generador sigue funcionando entero:
+       nada de aquí es requisito para componer ni para descargar. -->
+  <script id="pgt-piel-js">
+    (function () {
+      "use strict";
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+      // Entrada escalonada de los paneles, una sola vez y con techo:
+      // a partir del cuarto panel el retardo deja de crecer o la página
+      // tarda más en asentarse de lo que dura la paciencia de nadie.
+      var bloques = document.querySelectorAll(".panel, .vista");
+      Array.prototype.forEach.call(bloques,function (b,i) {
+        b.style.setProperty("--e",Math.min(i * 70,280) + "ms");
+        b.classList.add("pgt-entra");
+     });
+   })();
+  </script>
+</body>
+</html>
