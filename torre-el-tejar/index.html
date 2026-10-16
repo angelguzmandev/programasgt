@@ -1,0 +1,2095 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Planta Viva · El Tejar</title>
+<meta name="description" content="Torre de control de contabilidad por áreas de responsabilidad — Bimbo Guatemala, planta El Tejar. Ejercicio académico UMG.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* ===========================================================
+   TURNO DIURNO  (tema por defecto)
+   El tema oscuro no es una inversión de colores: es el TURNO
+   NOCTURNO, cuando la planta realmente hornea.
+   =========================================================== */
+:root {
+  --plane:      #f4f1ec;
+  --surface:    #fbf9f6;
+  --raised:     #ffffff;
+  --ink:        #17140f;
+  --ink-2:      #5c554a;
+  --muted:      #918879;
+  --grid:       #e3ddd2;
+  --baseline:   #c9c0b0;
+  --hairline:   rgba(23,20,15,0.11);
+  --hairline-2: rgba(23,20,15,0.05);
+
+  --crust:      #c2410c;   /* corteza de horno — acento estructural */
+  --crust-soft: #fde8d7;
+  --steel:      #334155;   /* acero de línea */
+  --wheat:      #b45309;
+
+  --good:       #0ca30c;
+  --warning:    #fab219;
+  --serious:    #ec835a;
+  --critical:   #d03b3b;
+  --good-ink:   #046304;
+
+  --belt:       #d8d0c2;
+  --belt-edge:  #b9ae9c;
+  --pkg:        #e8a765;
+  --glow:       0,0,0;
+  --glow-a:     0;
+
+  --shadow:   0 1px 2px rgba(23,20,15,.05), 0 10px 30px -14px rgba(23,20,15,.16);
+  --sans: "Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, "Courier New", monospace;
+  --shift: "TURNO DIURNO";
+}
+
+html[data-shift="noche"] {
+  --plane:      #0b0a09;
+  --surface:    #15130f;
+  --raised:     #1d1a15;
+  --ink:        #fdfaf4;
+  --ink-2:      #c7bda9;
+  --muted:      #8d8373;
+  --grid:       #2a2520;
+  --baseline:   #3b342c;
+  --hairline:   rgba(253,250,244,0.12);
+  --hairline-2: rgba(253,250,244,0.05);
+
+  --crust:      #fb923c;
+  --crust-soft: #3d2410;
+  --steel:      #94a3b8;
+  --wheat:      #fbbf24;
+
+  --good:       #0ca30c;
+  --good-ink:   #22c55e;
+
+  --belt:       #312a22;
+  --belt-edge:  #4a4137;
+  --pkg:        #fdba74;
+  --glow:       251,146,60;
+  --glow-a:     1;
+
+  --shadow:   0 1px 2px rgba(0,0,0,.6), 0 10px 34px -14px rgba(0,0,0,.8);
+  --shift: "TURNO NOCTURNO";
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--plane);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color .5s ease, color .5s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  body { transition: none; }
+  * { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+}
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; }
+
+/* ---------- barra superior ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 60;
+  background: color-mix(in srgb, var(--plane) 88%, transparent);
+  backdrop-filter: blur(14px) saturate(1.3);
+  border-bottom: 1px solid var(--hairline);
+}
+.topbar-in {
+  max-width: 1180px; margin: 0 auto;
+  padding: 11px 20px calc(11px + env(safe-area-inset-bottom, 0px));
+  display: flex; align-items: center; gap: 14px;
+}
+.logoslot { display: flex; align-items: center; gap: 11px; margin-right: auto; min-width: 0; }
+.logoslot img { height: 34px; width: auto; display: block; }
+.logoslot .mark { flex: none; }
+.logoslot .txt { min-width: 0; }
+.logoslot .txt b {
+  display: block; font-size: 14px; font-weight: 800; letter-spacing: -.015em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.logoslot .txt span {
+  display: block; font-family: var(--mono); font-size: 9.5px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em; white-space: nowrap;
+}
+.navlinks { display: flex; gap: 1px; }
+@media (max-width: 880px) { .navlinks { display: none; } }
+.navlinks a {
+  font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--ink-2); text-decoration: none; padding: 7px 10px; border-radius: 6px;
+}
+.navlinks a:hover { background: var(--hairline-2); color: var(--crust); }
+
+/* interruptor de turno */
+.shiftbtn {
+  display: flex; align-items: center; gap: 9px; flex: none;
+  font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  padding: 7px 12px 7px 9px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--hairline); background: var(--raised); color: var(--ink-2);
+  font-weight: 500;
+}
+.shiftbtn:hover { border-color: var(--crust); color: var(--crust); }
+.shiftbtn .orb {
+  width: 16px; height: 16px; border-radius: 50%; flex: none; position: relative;
+  background: radial-gradient(circle at 34% 34%, #fde68a, #f59e0b 62%, #b45309);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--warning) 28%, transparent);
+  transition: background .45s ease, box-shadow .45s ease;
+}
+html[data-shift="noche"] .shiftbtn .orb {
+  background: radial-gradient(circle at 64% 34%, #e2e8f0, #94a3b8 58%, #475569);
+  box-shadow: 0 0 0 2px rgba(148,163,184,.3), 0 0 14px rgba(148,163,184,.45);
+}
+.shiftbtn .lbl::after { content: var(--shift); }
+
+/* ---------- hero ---------- */
+.hero { padding-block: 44px 0; }
+.eyebrow {
+  font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .16em; color: var(--crust); margin: 0 0 16px;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.eyebrow .live {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--good);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 60%, transparent);
+  animation: ping 2.4s ease-out infinite;
+}
+@keyframes ping {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 55%, transparent); }
+  70%  { box-shadow: 0 0 0 9px rgba(12,163,12,0); }
+  100% { box-shadow: 0 0 0 0 rgba(12,163,12,0); }
+}
+
+h1.big {
+  margin: 0 0 18px;
+  font-size: clamp(44px, 10.5vw, 118px);
+  font-weight: 800; line-height: .86; letter-spacing: -.045em;
+  text-transform: uppercase; text-wrap: balance;
+}
+h1.big em {
+  font-style: normal; display: block;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--crust);
+  text-stroke: 1.5px var(--crust);
+}
+@supports not ((-webkit-text-stroke: 1px red) or (text-stroke: 1px red)) {
+  h1.big em { color: var(--crust); -webkit-text-stroke: 0; }
+}
+.herolede {
+  font-size: clamp(15px, 1.7vw, 18px); color: var(--ink-2);
+  max-width: 60ch; margin: 0 0 30px;
+}
+.herolede strong { color: var(--ink); font-weight: 600; }
+
+/* sombra de la mascota (el bloque .mascotbox se define más abajo) */
+.mascotbox .figure { filter: drop-shadow(0 12px 26px rgba(0,0,0,.16)); }
+
+/* ---------- panel de turno en vivo ---------- */
+.shiftpanel {
+  display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 1px; background: var(--hairline);
+  border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden;
+  box-shadow: var(--shadow);
+}
+@media (max-width: 920px) { .shiftpanel { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 420px) { .shiftpanel { grid-template-columns: 1fr; } }
+.sp { background: var(--surface); padding: 13px 15px 14px; position: relative; overflow: hidden; }
+.sp .k {
+  font-family: var(--mono); font-size: 9.5px; text-transform: uppercase;
+  letter-spacing: .09em; color: var(--muted); margin-bottom: 7px;
+}
+.sp .v {
+  font-family: var(--mono); font-size: 25px; font-weight: 600; letter-spacing: -.03em;
+  line-height: 1; font-variant-numeric: tabular-nums;
+}
+.sp .u { font-size: 11.5px; color: var(--ink-2); margin-top: 6px; }
+.sp.clock .v { color: var(--crust); }
+
+/* ---------- lienzo de la planta ---------- */
+.plantwrap { margin-top: 26px; }
+.planthead {
+  display: flex; justify-content: space-between; align-items: flex-end;
+  gap: 16px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.planthead h2 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
+.planthead p { margin: 2px 0 0; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.speedrow { display: flex; align-items: center; gap: 9px; }
+.speedrow label {
+  font-family: var(--mono); font-size: 9.5px; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--muted);
+}
+.plantbox {
+  position: relative; border: 1px solid var(--hairline); border-radius: 14px;
+  overflow: hidden; background: var(--surface); box-shadow: var(--shadow);
+}
+#plant { display: block; width: 100%; height: 280px; }
+@media (max-width: 760px) { #plant { height: 230px; } }
+.plantfoot {
+  display: flex; gap: 20px; flex-wrap: wrap; padding: 11px 15px;
+  border-top: 1px solid var(--hairline); background: var(--raised);
+}
+.plantfoot div { font-size: 12px; color: var(--ink-2); display: flex; align-items: center; gap: 7px; }
+.plantfoot i { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+
+/* ---------- secciones ---------- */
+section { padding-block: 52px; }
+section + section { border-top: 1px solid var(--hairline); }
+.sechead { margin-bottom: 24px; max-width: 72ch; }
+.kicker {
+  font-family: var(--mono); font-size: 10.5px; text-transform: uppercase;
+  letter-spacing: .13em; color: var(--crust); margin: 0 0 9px;
+}
+h2.sec {
+  font-size: clamp(23px, 3.4vw, 36px); font-weight: 800; letter-spacing: -.03em;
+  margin: 0 0 10px; line-height: 1.04; text-wrap: balance; text-transform: uppercase;
+}
+.sechead p { margin: 0; color: var(--ink-2); font-size: 14.5px; }
+.sechead p strong { color: var(--ink); font-weight: 600; }
+
+/* ---------- tarjetas / tiles ---------- */
+.card { background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; box-shadow: var(--shadow); }
+.tiles {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  background: var(--hairline); border: 1px solid var(--hairline);
+  border-radius: 12px; overflow: hidden;
+}
+@media (max-width: 880px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 420px) { .tiles { grid-template-columns: 1fr; } }
+.tile { background: var(--surface); padding: 17px 16px 16px; }
+.tile .lbl { font-size: 12.5px; color: var(--ink-2); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.tile .num { font-size: 31px; font-weight: 600; letter-spacing: -.035em; line-height: 1.02; }
+.tile .meta { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+.chip {
+  font-family: var(--mono); font-size: 9.5px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .07em; padding: 2px 7px; border-radius: 3px; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+.chip.c-crit { color: var(--critical); background: color-mix(in srgb, var(--critical) 14%, transparent); }
+.chip.c-warn { color: var(--serious);  background: color-mix(in srgb, var(--serious) 17%, transparent); }
+.chip.c-good { color: var(--good-ink); background: color-mix(in srgb, var(--good) 15%, transparent); }
+.chip.c-sim  { color: var(--crust);    background: color-mix(in srgb, var(--crust) 14%, transparent); }
+
+.btn {
+  font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em;
+  padding: 8px 13px; border-radius: 7px; border: 1px solid var(--hairline);
+  background: var(--raised); color: var(--ink-2); cursor: pointer; font-weight: 500;
+}
+.btn:hover { color: var(--ink); border-color: var(--baseline); }
+.btn[aria-pressed="true"] { background: var(--crust); color: #fff; border-color: var(--crust); }
+.btn.primary { background: var(--crust); color: #fff; border-color: var(--crust); }
+.btn.primary:hover { filter: brightness(1.1); color: #fff; }
+:focus-visible { outline: 2px solid var(--crust); outline-offset: 2px; }
+
+/* ---------- sankey ---------- */
+.sankeybox { padding: 6px 6px 0; overflow-x: auto; }
+.sankeybox svg { display: block; min-width: 680px; width: 100%; height: auto; }
+
+/* ---------- waterfall ---------- */
+.charthead { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 17px 19px 0; flex-wrap: wrap; }
+.charthead h3 { margin: 0 0 3px; font-size: 15.5px; font-weight: 600; letter-spacing: -.012em; }
+.charthead p { margin: 0; font-size: 11.5px; color: var(--muted); font-family: var(--mono); }
+.scroller { overflow-x: auto; padding: 10px 6px 4px; }
+.scroller svg { display: block; min-width: 720px; width: 100%; height: auto; }
+.legend { display: flex; gap: 18px; flex-wrap: wrap; padding: 4px 19px 18px; }
+.legend div { font-size: 12.5px; color: var(--ink-2); display: flex; align-items: center; gap: 7px; }
+.legend i { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+
+/* ---------- tablas ---------- */
+.tblwrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 540px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--hairline-2); vertical-align: top; }
+th {
+  font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--muted); font-weight: 500; border-bottom: 1px solid var(--hairline); white-space: nowrap;
+}
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+tr.tot td { font-weight: 600; border-top: 1px solid var(--baseline); border-bottom: none; }
+.fav { color: var(--good-ink); } .adv { color: var(--critical); } .nc { color: var(--muted); }
+
+/* ---------- simulador ---------- */
+.simgrid { display: grid; grid-template-columns: minmax(0,.92fr) minmax(0,1.08fr); gap: 20px; }
+@media (max-width: 920px) { .simgrid { grid-template-columns: 1fr; } }
+.levers { padding: 17px 19px; }
+.lever + .lever { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--hairline-2); }
+.lever .lhead { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.lever .lname { font-size: 13.5px; font-weight: 600; }
+.lever .lval { font-family: var(--mono); font-size: 15px; font-weight: 600; color: var(--crust); font-variant-numeric: tabular-nums; }
+.lever .lwho { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin: 2px 0 11px; }
+input[type=range] { width: 100%; margin: 0; accent-color: var(--crust); height: 22px; }
+.lever .lfoot { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.lever .lnote { font-size: 12.5px; color: var(--ink-2); margin-top: 8px; }
+.lever .lnote b { font-family: var(--mono); font-weight: 600; }
+.simout { padding: 17px 19px; }
+.bigout {
+  display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; background: var(--hairline);
+  border: 1px solid var(--hairline); border-radius: 10px; overflow: hidden; margin-bottom: 16px;
+}
+@media (max-width: 440px) { .bigout { grid-template-columns: 1fr; } }
+.bigout > div { background: var(--surface); padding: 14px 15px; }
+.bigout .k { font-size: 12px; color: var(--ink-2); margin-bottom: 7px; display: flex; gap: 7px; align-items: center; flex-wrap: wrap; }
+.bigout .v { font-family: var(--mono); font-size: 25px; font-weight: 600; letter-spacing: -.025em; font-variant-numeric: tabular-nums; }
+.bigout .d { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 5px; }
+.ceiling {
+  border: 1px solid var(--hairline); border-left: 3px solid var(--crust);
+  border-radius: 0 9px 9px 0; padding: 13px 15px; font-size: 13px; color: var(--ink-2);
+}
+.ceiling b { color: var(--ink); }
+
+/* ---------- áreas ---------- */
+.areas { display: flex; flex-direction: column; gap: 9px; }
+.area { background: var(--surface); border: 1px solid var(--hairline); border-radius: 12px; overflow: hidden; }
+.area > button {
+  width: 100%; display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center;
+  padding: 15px 17px; background: none; border: 0; cursor: pointer; text-align: left; color: inherit; font: inherit;
+}
+.area > button:hover { background: var(--hairline-2); }
+@media (max-width: 580px) { .area > button { grid-template-columns: 1fr auto; } .area .ctype { display: none; } }
+.area .nm { font-weight: 600; font-size: 14.5px; letter-spacing: -.012em; }
+.area .nm small { display: block; font-weight: 400; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.area .ctype {
+  font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .07em;
+  color: var(--ink-2); border: 1px solid var(--hairline); padding: 3px 8px; border-radius: 5px;
+}
+.area .amt { font-family: var(--mono); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.area .body { padding: 0 17px 19px; border-top: 1px solid var(--hairline); }
+.area .body > * + * { margin-top: 18px; }
+.blk h4 {
+  font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .1em;
+  color: var(--muted); font-weight: 500; margin: 0 0 9px;
+}
+.blk p { margin: 0; font-size: 13.5px; color: var(--ink-2); }
+.splitrow { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
+@media (max-width: 580px) { .splitrow { grid-template-columns: 1fr; } }
+.splitcell { border: 1px solid var(--hairline); border-radius: 8px; padding: 12px 14px; }
+.splitcell .k { font-family: var(--mono); font-size: 9.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+.splitcell .v { font-family: var(--mono); font-size: 19px; font-weight: 600; margin-top: 4px; }
+.splitcell .n2 { font-size: 12px; color: var(--ink-2); margin-top: 4px; }
+.actions { margin: 0; padding-left: 20px; font-size: 13.5px; color: var(--ink-2); }
+.actions li + li { margin-top: 5px; }
+
+/* ---------- excepciones ---------- */
+.autoexp { display: flex; flex-direction: column; gap: 9px; }
+.alert {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 13px; align-items: start;
+  padding: 13px 15px; border: 1px solid var(--hairline); border-radius: 10px; background: var(--surface);
+}
+@media (max-width: 580px) { .alert { grid-template-columns: auto 1fr; } .alert .aval { grid-column: 2; } }
+.alert .sev { width: 3px; border-radius: 2px; align-self: stretch; min-height: 36px; }
+.alert .atxt { font-size: 13.5px; color: var(--ink-2); }
+.alert .atxt b { color: var(--ink); font-weight: 600; }
+.alert .aval { font-family: var(--mono); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* ---------- pie ---------- */
+footer { padding-block: 36px 56px; font-size: 12.5px; color: var(--muted); border-top: 1px solid var(--hairline); }
+.disclaimer {
+  border: 1px solid var(--hairline); border-radius: 10px; padding: 14px 16px;
+  background: var(--surface); margin-bottom: 18px; color: var(--ink-2); font-size: 12.5px;
+}
+.disclaimer b { color: var(--ink); }
+footer p { margin: 0 0 9px; max-width: 80ch; }
+.slotnote {
+  font-family: var(--mono); font-size: 11px; color: var(--muted);
+  border: 1px dashed var(--baseline); border-radius: 8px; padding: 11px 13px; margin-top: 14px;
+}
+
+/* ===========================================================
+   MASCOTA QUE SALUDA
+   Si existe osito.png se usa esa imagen (y también saluda).
+   Si no, se usa "Teo", la mascota original del sistema:
+   un pan con casco de ingeniero — diseño propio, no una marca.
+   =========================================================== */
+.mascotbox {
+  float: right; width: clamp(150px, 21vw, 232px);
+  margin: 0 0 14px 26px; position: relative;
+}
+@media (max-width: 640px) { .mascotbox { width: 132px; margin-left: 16px; } }
+
+.mascotbox .figure { animation: idlebob 3.8s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes idlebob {
+  0%, 100% { transform: translateY(0) rotate(-1.2deg); }
+  50%      { transform: translateY(-8px) rotate(1.6deg); }
+}
+.mascotbox .figure svg, .mascotbox .figure img { display: block; width: 100%; height: auto; }
+
+/* el brazo saluda; el pivote va en el hombro.
+   transform-box: fill-box permite un origen en porcentaje relativo
+   al propio recuadro del grupo, que es fiable en SVG. */
+#wave-arm {
+  transform-box: fill-box; transform-origin: 11% 92%;
+  animation: wave 1.5s ease-in-out infinite;
+}
+@keyframes wave {
+  0%, 100% { transform: rotate(-8deg); }
+  50%      { transform: rotate(30deg); }
+}
+/* vapor del pan recién salido */
+.steam { animation: steam 2.8s ease-out infinite; }
+.steam:nth-child(2) { animation-delay: .5s; }
+.steam:nth-child(3) { animation-delay: 1s; }
+@keyframes steam {
+  0%   { opacity: 0; transform: translateY(2px) scale(.7); }
+  35%  { opacity: .55; }
+  100% { opacity: 0; transform: translateY(-16px) scale(1.25); }
+}
+
+.bubble {
+  position: relative; margin-bottom: 12px;
+  background: var(--raised); border: 1px solid var(--hairline);
+  border-radius: 13px; padding: 11px 13px; font-size: 12.5px; line-height: 1.45;
+  color: var(--ink-2); box-shadow: var(--shadow);
+}
+.bubble b { color: var(--ink); font-weight: 600; }
+.bubble::after {
+  content: ""; position: absolute; bottom: -7px; right: 30px;
+  width: 12px; height: 12px; background: var(--raised);
+  border-right: 1px solid var(--hairline); border-bottom: 1px solid var(--hairline);
+  transform: rotate(45deg);
+}
+@media (max-width: 520px) { .bubble { font-size: 11.5px; padding: 9px 11px; } }
+
+/* ===========================================================
+   BOTONES: estado seleccionado inequívoco
+   =========================================================== */
+.btn { transition: background-color .18s ease, color .18s ease, border-color .18s ease, transform .1s ease; }
+.btn:active { transform: scale(.96); }
+.btn[aria-pressed="true"] {
+  background: var(--crust); color: #fff; border-color: var(--crust);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 2px 10px -4px var(--crust);
+}
+.btn[aria-pressed="true"]::before {
+  content: "\2713\00a0"; font-weight: 700;
+}
+
+/* control segmentado con píldora deslizante */
+.seg {
+  position: relative; display: inline-flex; padding: 3px; gap: 0;
+  background: var(--plane); border: 1px solid var(--hairline); border-radius: 9px;
+}
+.seg .pill {
+  position: absolute; top: 3px; bottom: 3px; left: 3px;
+  border-radius: 6px; background: var(--crust);
+  transition: transform .26s cubic-bezier(.3,.9,.25,1), width .26s cubic-bezier(.3,.9,.25,1);
+  z-index: 0;
+}
+.seg button {
+  position: relative; z-index: 1; border: 0; background: none; cursor: pointer;
+  font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em;
+  padding: 7px 14px; border-radius: 6px; color: var(--ink-2); font-weight: 500;
+  transition: color .2s ease;
+}
+.seg button[aria-selected="true"] { color: #fff; }
+
+/* área abierta: se distingue sola */
+.area:has(> button[aria-expanded="true"]) { border-color: var(--crust); }
+.area > button[aria-expanded="true"] { background: color-mix(in srgb, var(--crust) 7%, transparent); }
+.area > button[aria-expanded="true"] .nm { color: var(--crust); }
+.area.flash { animation: flash 1.1s ease-out; }
+@keyframes flash {
+  0%   { box-shadow: 0 0 0 0 color-mix(in srgb, var(--crust) 55%, transparent); }
+  100% { box-shadow: 0 0 0 14px rgba(0,0,0,0); }
+}
+
+/* ===========================================================
+   REVELADO AL DESPLAZAR  (solo si JS corre; sin JS todo es visible)
+   =========================================================== */
+.js .reveal { opacity: 0; transform: translateY(18px); }
+.js .reveal.seen {
+  opacity: 1; transform: none;
+  transition: opacity .6s ease, transform .6s cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .js .reveal { opacity: 1; transform: none; }
+  .mascotbox .figure, #wave-arm, .steam { animation: none; }
+}
+
+/* ===========================================================
+   TOOLTIP DEL PUENTE
+   =========================================================== */
+#tip {
+  position: fixed; z-index: 90; pointer-events: none; max-width: 300px;
+  background: var(--raised); border: 1px solid var(--hairline); border-radius: 10px;
+  padding: 10px 12px; box-shadow: var(--shadow); font-size: 12.5px; line-height: 1.45;
+  opacity: 0; transition: opacity .14s ease;
+}
+#tip.on { opacity: 1; }
+#tip .t-h { font-weight: 600; color: var(--ink); margin-bottom: 3px; }
+#tip .t-w { font-family: var(--mono); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); }
+#tip .t-v { font-family: var(--mono); font-size: 17px; font-weight: 600; margin: 6px 0 2px; }
+#tip .t-n { color: var(--ink-2); font-size: 12px; }
+#tip .t-c {
+  display: inline-block; margin-top: 7px; font-family: var(--mono); font-size: 9.5px;
+  text-transform: uppercase; letter-spacing: .07em; padding: 2px 7px; border-radius: 3px;
+}
+
+/* ===========================================================
+   MODO PRESENTACIÓN + ATAJOS
+   =========================================================== */
+html[data-present="1"] body { zoom: 1.14; }
+html[data-present="1"] .topbar,
+html[data-present="1"] footer,
+html[data-present="1"] .navlinks { display: none; }
+html[data-present="1"] .hero { padding-top: 26px; }
+.presentbadge {
+  position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%);
+  z-index: 95; font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--ink-2); background: var(--raised);
+  border: 1px solid var(--hairline); border-radius: 999px; padding: 7px 15px;
+  box-shadow: var(--shadow);
+}
+
+#keys {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--plane) 82%, transparent);
+  backdrop-filter: blur(6px); padding: 20px;
+}
+#keys .panel {
+  background: var(--surface); border: 1px solid var(--hairline); border-radius: 16px;
+  padding: 24px 26px; box-shadow: var(--shadow); max-width: 440px; width: 100%;
+}
+#keys h3 { margin: 0 0 4px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; text-transform: uppercase; }
+#keys p.sub { margin: 0 0 18px; font-size: 13px; color: var(--ink-2); }
+#keys dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 9px 14px; align-items: center; }
+#keys dt {
+  font-family: var(--mono); font-size: 11px; font-weight: 600;
+  background: var(--plane); border: 1px solid var(--hairline); border-bottom-width: 2px;
+  border-radius: 6px; padding: 4px 9px; text-align: center; white-space: nowrap;
+}
+#keys dd { margin: 0; font-size: 13px; color: var(--ink-2); }
+#keys .close { margin-top: 20px; width: 100%; }
+
+/* controles solo de escritorio: presentar en un teléfono no tiene sentido */
+.deskonly { flex: none; }
+@media (max-width: 600px) { .deskonly { display: none; } }
+</style>
+</head>
+<body>
+
+<!-- =================== BARRA =================== -->
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="logoslot">
+      <!-- RANURA 1: si existe logo-bimbo.png en esta carpeta, se usa. Si no, marca original. -->
+      <img id="logo-img" src="logo-bimbo.png" alt="" hidden>
+      <svg id="logo-fallback" class="mark" width="34" height="34" viewBox="0 0 34 34" role="img" aria-label="Marca del sistema El Tejar">
+        <rect x="1" y="1" width="32" height="32" rx="9" fill="none" stroke="var(--crust)" stroke-width="1.6"/>
+        <path d="M17 7.5 C 11 12, 11 21, 17 26.5 C 23 21, 23 12, 17 7.5 Z" fill="none" stroke="var(--wheat)" stroke-width="1.5"/>
+        <line x1="17" y1="9" x2="17" y2="26.5" stroke="var(--crust)" stroke-width="1.5"/>
+        <circle cx="17" cy="17" r="2.1" fill="var(--crust)"/>
+      </svg>
+      <div class="txt">
+        <b>Planta Viva</b>
+        <span>El Tejar · Chimaltenango</span>
+      </div>
+    </div>
+    <nav class="navlinks" aria-label="Secciones">
+      <a href="#linea">Línea</a>
+      <a href="#consejo">Consejo</a>
+      <a href="#fuga">Fuga</a>
+      <a href="#puente">Puente</a>
+      <a href="#areas">Áreas</a>
+      <a href="#simulador">Simulador</a>
+    </nav>
+    <button class="btn deskonly" id="keys-btn" type="button" title="Atajos de teclado (?)" aria-label="Ver atajos de teclado">?</button>
+    <button class="btn deskonly" id="present-btn" type="button" aria-pressed="false" title="Modo presentación (P)">Presentar</button>
+    <button class="shiftbtn" id="shift-toggle" type="button" aria-pressed="false">
+      <span class="orb" aria-hidden="true"></span>
+      <span class="lbl"></span>
+    </button>
+  </div>
+</div>
+
+<!-- tooltip del puente -->
+<div id="tip" role="status" aria-live="polite"></div>
+
+<!-- panel de atajos -->
+<div id="keys" hidden>
+  <div class="panel" role="dialog" aria-modal="true" aria-labelledby="keys-h">
+    <h3 id="keys-h">Atajos para exponer</h3>
+    <p class="sub">Maneje la demostración sin buscar el mouse. Funcionan en cualquier momento.</p>
+    <dl>
+      <dt>P</dt><dd>Entrar o salir del modo presentación</dd>
+      <dt>N</dt><dd>Cambiar entre turno diurno y nocturno</dd>
+      <dt>M</dt><dd>Poner los cinco controles en su meta</dd>
+      <dt>R</dt><dd>Volver al cierre real</dd>
+      <dt>Espacio</dt><dd>Pausar o reanudar la línea</dd>
+      <dt>1 – 6</dt><dd>Saltar a Línea, Consejo, Fuga, Puente, Áreas, Simulador</dd>
+      <dt>T</dt><dd>Alternar gráfico y tabla del puente</dd>
+      <dt>?</dt><dd>Abrir o cerrar esta ayuda</dd>
+    </dl>
+    <button class="btn close" id="keys-close" type="button">Cerrar</button>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- =================== HERO =================== -->
+  <header class="hero" id="linea">
+    <!-- RANURA 2: si existe osito.png se usa esa imagen; si no, Teo. Ambos saludan. -->
+    <div class="mascotbox">
+      <div class="bubble" id="bubble" aria-live="polite">
+        <b>¡Bienvenidos a El Tejar!</b> Soy Teo. Les voy a mostrar dónde se fueron los treinta y siete millones.
+      </div>
+      <div class="figure" id="mascot-figure">
+        <img id="mascot-img" src="osito.png" alt="" hidden>
+        <svg id="mascot-svg" viewBox="0 0 200 200" role="img" aria-label="Teo, la mascota del sistema: un pan con casco de ingeniero que saluda">
+          <!-- vapor -->
+          <g fill="none" stroke="#d8b38a" stroke-width="3" stroke-linecap="round" opacity=".6">
+            <path class="steam" d="M84 48 q-5 -9 2 -16"/>
+            <path class="steam" d="M100 42 q-5 -10 2 -18"/>
+            <path class="steam" d="M116 48 q-5 -9 2 -16"/>
+          </g>
+
+          <!-- brazo izquierdo, en reposo -->
+          <g stroke="#e8b273" stroke-width="11" stroke-linecap="round" fill="none">
+            <path d="M54 142 L36 166"/>
+          </g>
+          <circle cx="34" cy="170" r="10" fill="#e8b273"/>
+
+          <!-- cuerpo: hogaza -->
+          <path d="M46 172 Q41 106 100 101 Q159 106 154 172 Z" fill="#e8b273"/>
+          <path d="M46 172 Q46 160 50 155 L150 155 Q154 160 154 172 Z" fill="#d19551"/>
+          <!-- cortes de la masa -->
+          <g stroke="#c98c52" stroke-width="3.5" stroke-linecap="round">
+            <path d="M74 124 l12 -13"/>
+            <path d="M98 120 l12 -13"/>
+            <path d="M122 124 l12 -13"/>
+          </g>
+
+          <!-- casco de ingeniero -->
+          <path d="M70 96 Q70 56 100 56 Q130 56 130 96 Z" fill="var(--crust)"/>
+          <path d="M70 96 Q70 76 78 66 Q82 80 82 96 Z" fill="#ffffff" opacity=".17"/>
+          <ellipse cx="100" cy="97" rx="41" ry="7.5" fill="var(--crust)"/>
+          <ellipse cx="100" cy="95" rx="41" ry="6" fill="#ffffff" opacity=".13"/>
+          <rect x="97" y="56" width="6" height="40" rx="3" fill="#ffffff" opacity=".2"/>
+
+          <!-- cara -->
+          <g fill="#2f1c0c">
+            <circle cx="84" cy="128" r="6.2"/>
+            <circle cx="116" cy="128" r="6.2"/>
+          </g>
+          <g fill="#ffffff">
+            <circle cx="86" cy="126" r="2.1"/>
+            <circle cx="118" cy="126" r="2.1"/>
+          </g>
+          <path d="M86 146 Q100 157 114 146" fill="none" stroke="#2f1c0c" stroke-width="3.6" stroke-linecap="round"/>
+          <ellipse cx="68" cy="140" rx="7" ry="4.5" fill="#e98a6a" opacity=".5"/>
+          <ellipse cx="132" cy="140" rx="7" ry="4.5" fill="#e98a6a" opacity=".5"/>
+
+          <!-- brazo que saluda -->
+          <g id="wave-arm">
+            <path d="M146 140 L178 106" fill="none" stroke="#e8b273" stroke-width="11" stroke-linecap="round"/>
+            <circle cx="181" cy="102" r="10.5" fill="#e8b273"/>
+            <g stroke="#d19551" stroke-width="2.4" stroke-linecap="round">
+              <path d="M176 95 l2 -6"/>
+              <path d="M183 93 l1 -6.5"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <p class="eyebrow"><span class="live" aria-hidden="true"></span> Sistema de control de gestión · Ejercicio 2026 · GTQ</p>
+    <h1 class="big">Treinta y siete<br>millones<em>con nombre</em></h1>
+    <p class="herolede">
+      La planta no se detiene a las seis de la tarde: <strong>hornea de noche</strong>. Este tablero tampoco.
+      Presupuestamos <strong>Q104.75 M</strong> de utilidad de operación y cerramos en <strong>Q67.5 M</strong>.
+      Aquí cada quetzal de esa diferencia tiene un responsable, una causa y un plan — y usted puede mover los
+      controles para ver qué habría pasado.
+    </p>
+
+    <div class="shiftpanel" id="shiftpanel">
+      <div class="sp clock">
+        <div class="k">Reloj de turno</div>
+        <div class="v" id="sv-clock">00:00</div>
+        <div class="u" id="sv-shift">Arranque de línea</div>
+      </div>
+      <div class="sp">
+        <div class="k">Paquetes producidos</div>
+        <div class="v" id="sv-pkg">0</div>
+        <div class="u">meta diaria 411,000</div>
+      </div>
+      <div class="sp">
+        <div class="k">Merma acumulada</div>
+        <div class="v adv" id="sv-merma">0</div>
+        <div class="u">kg de harina · estándar 2.5 %</div>
+      </div>
+      <div class="sp">
+        <div class="k">Camiones despachados</div>
+        <div class="v" id="sv-trk">0</div>
+        <div class="u">650 rutas DSD</div>
+      </div>
+      <div class="sp">
+        <div class="k">Devoluciones en retorno</div>
+        <div class="v adv" id="sv-dev">0</div>
+        <div class="u">paquetes vencidos en anaquel</div>
+      </div>
+    </div>
+
+    <div class="plantwrap">
+      <div class="planthead">
+        <div>
+          <h2>Línea de producción y distribución</h2>
+          <p id="plant-sub">Seis estaciones · cada una pertenece a un centro de responsabilidad</p>
+        </div>
+        <div class="speedrow">
+          <label for="speed">Velocidad</label>
+          <input type="range" id="speed" min="0" max="3" step="0.25" value="1" style="width:110px" aria-label="Velocidad de la simulación">
+          <button class="btn" id="pause" type="button" aria-pressed="false">Pausar</button>
+        </div>
+      </div>
+      <div class="plantbox">
+        <canvas id="plant" role="img" aria-label="Esquema animado de la línea: silos, amasado, horno, empaque, centro de distribución y rutas. La línea 2 de empaque muestra una falla activa."></canvas>
+        <div class="plantfoot">
+          <div><i style="background: var(--good)"></i>En meta</div>
+          <div><i style="background: var(--serious)"></i>En alerta</div>
+          <div><i style="background: var(--critical)"></i>Fuera de control — falla activa</div>
+          <div><i style="background: var(--muted)"></i>Precio de mercado, no controlable</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- =================== NIVEL 4 =================== -->
+  <section id="consejo">
+    <div class="sechead">
+      <p class="kicker">Nivel 4 · Consejo de Administración</p>
+      <h2 class="sec">La unidad como centro de inversión</h2>
+      <p>El Consejo no evalúa utilidad: evalúa <strong>el rendimiento de cada quetzal invertido</strong> en planta, flota y capital de trabajo. Cuatro medidas, las cuatro en rojo.</p>
+    </div>
+    <div class="tiles">
+      <div class="tile">
+        <div class="lbl">Utilidad de operación <span class="chip c-crit">Rojo</span></div>
+        <div class="num">Q67.5 M</div>
+        <div class="meta">meta Q104.75 M · −35.5 %</div>
+      </div>
+      <div class="tile">
+        <div class="lbl">ROI (DuPont) <span class="chip c-crit">Rojo</span></div>
+        <div class="num">8.9 %</div>
+        <div class="meta">meta 14.1 % · 5.21 % × 1.71</div>
+      </div>
+      <div class="tile">
+        <div class="lbl">Ingreso residual <span class="chip c-crit">Rojo</span></div>
+        <div class="num adv">−Q19.4 M</div>
+        <div class="meta">meta +Q19.16 M · cargo 11.5 %</div>
+      </div>
+      <div class="tile">
+        <div class="lbl">EVA <span class="chip c-crit">Rojo</span></div>
+        <div class="num adv">−Q26.1 M</div>
+        <div class="meta">meta +Q3.07 M · WACC 10.14 %</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== SANKEY =================== -->
+  <section id="fuga">
+    <div class="sechead">
+      <p class="kicker">Anatomía de la pérdida</p>
+      <h2 class="sec">Por dónde se fueron los Q37.2 M</h2>
+      <p>El mismo principio de controlabilidad, pero como caudal: la pérdida se divide primero en <strong>lo que esta casa controla y lo que no</strong>, y solo después baja a cada gerente. El ancho de cada cinta es proporcional a los quetzales.</p>
+    </div>
+    <div class="card">
+      <div class="sankeybox">
+        <svg id="sankey" role="img" aria-label="Diagrama de flujo: la variación total de 37.23 millones se divide en 11.73 no controlables (trigo neto 4.20 y diésel 7.53) y 25.50 controlables, repartidos entre Compras 8.71, Producción 6.96, Logística 5.99, Actividad comercial 2.26, Finanzas 1.17 y efecto neto comercial 0.41."></svg>
+      </div>
+      <div class="legend" style="border-top:1px solid var(--hairline); margin-top:4px; padding-top:13px;">
+        <div><i style="background: var(--critical)"></i>Controlable — tiene dueño y plan</div>
+        <div><i style="background: var(--muted)"></i>No controlable — precio de mercado</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== PUENTE =================== -->
+  <section id="puente">
+    <div class="sechead">
+      <p class="kicker">Nivel 3 · Contraloría</p>
+      <h2 class="sec">Puente de utilidad por responsable</h2>
+      <p>El color <strong>no dice si la cifra es buena o mala</strong>: dice si alguien de esta casa responde por ella. La letra F o D carga la dirección, como en el informe.</p>
+    </div>
+    <div class="card">
+      <div class="charthead">
+        <div>
+          <h3>De Q104.75 M a Q67.5 M</h3>
+          <p id="wf-state">Cifras del cierre 2026 · millones de quetzales</p>
+        </div>
+        <div class="seg" id="seg-wf" role="tablist" aria-label="Vista del puente">
+          <span class="pill" id="seg-pill" aria-hidden="true"></span>
+          <button type="button" id="btn-chart" role="tab" aria-selected="true">Gráfico</button>
+          <button type="button" id="btn-table" role="tab" aria-selected="false">Tabla</button>
+        </div>
+      </div>
+      <div id="wf-chart">
+        <div class="scroller"><svg id="wf" role="img" aria-label="Puente de utilidad de operación desde el presupuesto estático hasta el cierre real, con cada variación asignada a su responsable"></svg></div>
+        <div class="legend">
+          <div><i style="background: var(--good)"></i>Favorable, controlable</div>
+          <div><i style="background: var(--critical)"></i>Adversa, controlable</div>
+          <div><i style="background: var(--muted)"></i>No controlable (mercado)</div>
+          <div><i style="background: var(--crust)"></i>Subtotal / cierre</div>
+        </div>
+      </div>
+      <div id="wf-table" hidden style="padding: 4px 19px 19px;">
+        <div class="tblwrap"><table id="wf-tbl"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== ÁREAS =================== -->
+  <section id="areas">
+    <div class="sechead">
+      <p class="kicker">Nivel 2 · Rendición de cuentas</p>
+      <h2 class="sec">Los cinco centros</h2>
+      <p>Cada gerencia con sus indicadores, la separación entre lo que controla y lo que no, su caso de desviación y el plan comprometido.</p>
+    </div>
+    <div class="areas" id="areas-list"></div>
+  </section>
+
+  <!-- =================== SIMULADOR =================== -->
+  <section id="simulador">
+    <div class="sechead">
+      <p class="kicker">Modelo de decisión</p>
+      <h2 class="sec">¿Y si cada gerente cumpliera?</h2>
+      <p>Mueva los cinco controles que los gerentes de esta casa sí manejan. El puente se redibuja, la línea de arriba cambia de ritmo y las medidas del Consejo se recalculan. El modelo mantiene volumen, precio y mezcla constantes: es sensibilidad <em>ceteris paribus</em>, no un pronóstico.</p>
+    </div>
+    <div class="simgrid">
+      <div class="card levers" id="levers"></div>
+      <div class="card simout">
+        <div class="bigout">
+          <div>
+            <div class="k">Utilidad de operación <span class="chip c-sim" id="sim-flag" hidden>Simulado</span></div>
+            <div class="v" id="s-uo">Q67.5 M</div>
+            <div class="d" id="s-uo-d">cierre real · margen 5.2 %</div>
+          </div>
+          <div>
+            <div class="k">ROI</div>
+            <div class="v" id="s-roi">8.9 %</div>
+            <div class="d" id="s-roi-d">meta 14.1 %</div>
+          </div>
+          <div>
+            <div class="k">Ingreso residual</div>
+            <div class="v adv" id="s-ri">−Q19.4 M</div>
+            <div class="d">cargo de capital 11.5 %</div>
+          </div>
+          <div>
+            <div class="k">EVA</div>
+            <div class="v adv" id="s-eva">−Q26.1 M</div>
+            <div class="d">WACC 10.14 %</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px;">
+          <button class="btn primary" id="btn-meta" type="button">Todos cumplen su meta</button>
+          <button class="btn" id="btn-reset" type="button">Volver al cierre real</button>
+        </div>
+        <div class="ceiling" id="ceiling"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =================== EXCEPCIONES =================== -->
+  <section id="excepciones">
+    <div class="sechead">
+      <p class="kicker">Motor de excepciones</p>
+      <h2 class="sec">Lo que el sistema eleva solo</h2>
+      <p>El informe dicta que solo sube al Consejo lo que supera <strong>±2 % o ±Q0.5 M</strong>. El motor aplica esa regla, descompone precio contra cantidad y nombra al responsable. Son reglas auditables, no un modelo: cualquiera puede rehacer la cuenta.</p>
+    </div>
+    <div class="autoexp" id="alerts"></div>
+  </section>
+
+  <footer>
+    <div class="disclaimer">
+      <b>Ejercicio académico.</b> Universidad Mariano Gálvez de Guatemala, Facultad de Ingeniería en Sistemas de Información.
+      Las cifras consolidadas de Grupo Bimbo, el precio del trigo (CBOT), el diésel, el tipo de cambio y la inflación son datos
+      reales con fuente; las cifras de Bimbo Guatemala son una <b>estimación académica</b> calibrada para reproducir los márgenes
+      del Grupo. Esta página no es un sistema, un producto ni información oficial de Grupo Bimbo, ni está afiliada a la empresa.
+      Las marcas y logotipos de Grupo Bimbo pertenecen a sus titulares y aquí se usan únicamente con fines ilustrativos y académicos.
+    </div>
+    <p>Supuestos del modelo: ventas netas Q1,297.4 M · 149.0 M de paquetes · activos operativos Q756.2 M · ventas a crédito Q583 M · cargo de capital 11.5 % · WACC 10.14 % · ISR 25 %. Marco conceptual: Horngren, Datar y Rajan, <em>Contabilidad de costos: un enfoque gerencial</em>.</p>
+    <p>Datos al 16 de octubre de 2026. Esta página funciona sin conexión a internet.</p>
+    <div class="slotnote">
+      RANURAS DE IMAGEN · coloque <b>logo-bimbo.png</b> y <b>osito.png</b> en esta misma carpeta y la página los mostrará
+      automáticamente al recargar. Si no están, se usa la marca original del sistema.
+    </div>
+  </footer>
+</div>
+
+<script>
+"use strict";
+
+/* ===========================================================
+   1. TURNO (tema)
+   =========================================================== */
+(function shiftInit() {
+  const html = document.documentElement;
+  const btn  = document.getElementById("shift-toggle");
+  let stored = null;
+  try { stored = localStorage.getItem("eltejar-shift"); } catch (_) {}
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const start = stored || (prefersDark ? "noche" : "dia");
+  apply(start);
+
+  function apply(mode) {
+    if (mode === "noche") html.setAttribute("data-shift", "noche");
+    else html.removeAttribute("data-shift");
+    btn.setAttribute("aria-pressed", String(mode === "noche"));
+    try { localStorage.setItem("eltejar-shift", mode); } catch (_) {}
+    if (window.__plantRepaint) window.__plantRepaint();
+  }
+  btn.addEventListener("click", () => {
+    apply(html.getAttribute("data-shift") === "noche" ? "dia" : "noche");
+  });
+})();
+
+/* ===========================================================
+   2. RANURAS DE IMAGEN (logo oficial / osito)
+   =========================================================== */
+(function slots() {
+  const logo = document.getElementById("logo-img");
+  const fb   = document.getElementById("logo-fallback");
+  logo.addEventListener("load", () => { logo.hidden = false; fb.hidden = true; logo.alt = "Logotipo"; });
+  logo.addEventListener("error", () => { logo.remove(); });
+
+  /* Si la imagen oficial existe, reemplaza a Teo y hereda la animación
+     de saludo del contenedor .figure (inclinación y balanceo). */
+  const m = document.getElementById("mascot-img");
+  const msvg = document.getElementById("mascot-svg");
+  m.addEventListener("load", () => {
+    m.hidden = false; msvg.hidden = true; m.alt = "Mascota corporativa";
+  });
+  m.addEventListener("error", () => { m.remove(); });
+})();
+
+/* ===========================================================
+   3. MODELO FINANCIERO  (idéntico al informe; verificado)
+   =========================================================== */
+const F = {
+  uoPpto: 104.75, ventas: 1297.4, activos28: 743.4, creditSales: 583,
+  riRate: 0.115, wacc: 0.1014, isr: 0.25, uoRealPub: 67.52,
+  roiPub: "8.9 %", riPub: "−Q19.4 M", evaPub: "−Q26.1 M"
+};
+
+const LEVERS = [
+  { id:"cob", name:"Cobertura de trigo", who:"Gerente de Compras",
+    min:50, max:90, step:1, base:65, target:75,
+    fmt: v => v.toFixed(0) + " %",
+    cost: v => Math.max(0, 75 - v) * 0.187,
+    note: v => v >= 75
+      ? "Política cumplida. Cubrir más de 75 % no mejora esta variación: cambia el perfil de riesgo, no el costo estándar."
+      : "Exposición al mercado de <b>" + (100 - v).toFixed(0) + " %</b>. Costo de la cobertura incumplida: <b>Q" + (Math.max(0,75-v)*0.187).toFixed(2) + " M</b>." },
+
+  { id:"km", name:"Rendimiento de la flota", who:"Gerente de Logística",
+    min:14, max:17, step:0.1, base:15.4, target:16.0,
+    fmt: v => v.toFixed(1) + " km/gal",
+    cost: v => (24.18 / v - 24.18 / 16.0) * 38.20,
+    note: v => "Sobre 24.18 M de km y diésel a Q38.20/gal. " + (v >= 16
+      ? "En meta se liberan <b>Q2.25 M</b> de combustible."
+      : "Consumo adicional contra la meta: <b>Q" + ((24.18/v - 24.18/16.0)*38.20).toFixed(2) + " M</b>.") },
+
+  { id:"merma", name:"Merma de masa y harina", who:"Gerente de Planta",
+    min:2.0, max:4.0, step:0.01, base:3.04, target:2.5,
+    fmt: v => v.toFixed(2) + " %",
+    cost: v => Math.max(0, v - 2.5) * 3.685,
+    note: v => v <= 2.5
+      ? "Merma en estándar. La variación de cantidad de materiales se cierra."
+      : "<b>" + (v - 2.5).toFixed(2) + " pp</b> sobre el estándar de 2.5 %, a Q3.69 M por punto porcentual." },
+
+  { id:"dev", name:"Devoluciones de pan de caja", who:"Director Comercial",
+    min:4.0, max:8.0, step:0.1, base:6.2, target:5.0,
+    fmt: v => v.toFixed(1) + " %",
+    cost: v => Math.max(0, v - 5.0) * 7.133,
+    note: v => v <= 5
+      ? "Devolución en el nivel presupuestado: el pedido sugerido por ruta está calibrado."
+      : "<b>" + (v - 5).toFixed(1) + " pp</b> de producto vencido sobre lo presupuestado, a Q7.13 M por punto." },
+
+  { id:"dso", name:"Días de cartera (DSO)", who:"Contralor",
+    min:24, max:48, step:1, base:36, target:28, affectsAssets: true,
+    fmt: v => v.toFixed(0) + " días",
+    cost: () => 0,
+    note: v => v <= 28
+      ? "Cartera en meta. No libera utilidad de operación: libera <b>capital de trabajo</b>, y por eso mueve ROI, RI y EVA."
+      : "<b>" + (v - 28) + " días</b> sobre la meta inmovilizan <b>Q" + (F.creditSales*(v-28)/365).toFixed(1) + " M</b> en cuentas por cobrar. No afecta la utilidad: afecta los activos invertidos." }
+];
+LEVERS.forEach(l => { l.baseCost = l.cost(l.base); l.cur = l.base; });
+const L = id => LEVERS.find(l => l.id === id);
+
+function bridge() {
+  const cCob = L("cob").cost(L("cob").cur);
+  const cKm  = L("km").cost(L("km").cur);
+  const cMer = L("merma").cost(L("merma").cur);
+  const cDev = L("dev").cost(L("dev").cur);
+  return [
+    { label:"UO presupuestada (estática)", who:"Presupuesto estático", kind:"anchor", abs:F.uoPpto },
+    { label:"Actividad: volumen", who:"Marketing y Ventas", kind:"adv", d:-4.36, note:"149.0 vs 150.0 M de paquetes" },
+    { label:"Actividad: mezcla", who:"Marketing y Ventas", kind:"fav", d:+2.10, note:"más bollería, menos pastelitos" },
+    { label:"UO del presupuesto flexible", who:"Ajustado al volumen real", kind:"anchor" },
+    { label:"Precio neto de venta", who:"Marketing y Ventas", kind:"fav", d:+9.24, note:"+2.0 % en pan de caja" },
+    { label:"Devoluciones de producto vencido", who:"Marketing y Ventas", kind:"adv", d:-cDev, lever:"dev" },
+    { label:"Campaña Regreso a Clases y POP", who:"Marketing y Ventas", kind:"adv", d:-1.09, note:"sobreejecución de gasto" },
+    { label:"Eficiencia de planta", who:"Producción", kind:"adv", d:-(4.97 + cMer), lever:"merma", note:"merma, horas extra, GLP, mantenimiento" },
+    { label:"Trigo CBOT y tipo de cambio", who:"Compras", kind:"nc", d:-4.21, note:"mercado: US$5.50 → US$7.47/bu" },
+    { label:"Cobertura y precios negociados", who:"Compras", kind:"adv", d:-(6.84 + cCob), lever:"cob", note:"cobertura, ingredientes, empaque, fletes" },
+    { label:"Precio del diésel", who:"Logística", kind:"nc", d:-7.53, note:"Q34.00 → Q38.20 por galón" },
+    { label:"Kilometraje y rendimiento", who:"Logística", kind:"adv", d:-(3.744 + cKm), lever:"km", note:"desvíos, ralentí, mantenimiento" },
+    { label:"Gasto administrativo e incobrables", who:"Finanzas y Administración", kind:"adv", d:-1.17, note:"cartera, cobranza legal" },
+    { label:"UO real del ejercicio", who:"Cierre del ejercicio", kind:"anchor" }
+  ];
+}
+
+function compute() {
+  let uo = F.uoRealPub;
+  for (const l of LEVERS) if (!l.affectsAssets) uo += (l.baseCost - l.cost(l.cur));
+  const activos = F.activos28 + F.creditSales * (L("dso").cur - 28) / 365;
+  return {
+    uo, activos,
+    margen: uo / F.ventas,
+    roi: uo / activos,
+    ri: uo - F.riRate * activos,
+    eva: uo * (1 - F.isr) - F.wacc * activos,
+    dirty: LEVERS.some(l => Math.abs(l.cur - l.base) > 1e-9)
+  };
+}
+
+const MIN = "−";
+const qm  = v => (v < 0 ? MIN : "") + "Q" + Math.abs(v).toFixed(1) + " M";
+const qs  = v => (v < 0 ? MIN : "+") + Math.abs(v).toFixed(2);
+const pct = v => (v * 100).toFixed(1) + " %";
+const nf  = n => Math.round(n).toLocaleString("es-GT");
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* ===========================================================
+   4. LIENZO: LA LÍNEA VIVA
+   =========================================================== */
+const STATIONS = [
+  { k:"SILOS",   t:"Silos y harina",         who:"Compras",    sev:"nc",   area:"comp" },
+  { k:"AMASADO", t:"Amasado y división",     who:"Producción", sev:"good", area:"prod" },
+  { k:"HORNO",   t:"Horneo",                 who:"Producción", sev:"good", area:"prod", oven:true },
+  { k:"LÍNEA 2", t:"Empaque línea 2",        who:"Producción", sev:"crit", area:"prod", fault:true },
+  { k:"CEDI",    t:"Centro de distribución", who:"Logística",  sev:"warn", area:"log" },
+  { k:"RUTAS",   t:"650 rutas DSD",          who:"Comercial",  sev:"warn", area:"mkt" }
+];
+
+const plant = (function () {
+  const cv = document.getElementById("plant");
+  const ctx = cv.getContext("2d");
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* Respaldo para navegadores sin roundRect (la página debe correr en
+     cualquier laptop del salón, no solo en el navegador más nuevo). */
+  if (typeof ctx.roundRect !== "function") {
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+      const a = Array.isArray(r) ? r : [r, r, r, r];
+      const tl = a[0] || 0, tr = (a[1] !== undefined ? a[1] : tl) || 0;
+      const br = (a[2] !== undefined ? a[2] : tl) || 0, bl = (a[3] !== undefined ? a[3] : tr) || 0;
+      this.moveTo(x + tl, y);
+      this.lineTo(x + w - tr, y);       this.quadraticCurveTo(x + w, y, x + w, y + tr);
+      this.lineTo(x + w, y + h - br);   this.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+      this.lineTo(x + bl, y + h);       this.quadraticCurveTo(x, y + h, x, y + h - bl);
+      this.lineTo(x, y + tl);           this.quadraticCurveTo(x, y, x + tl, y);
+      return this;
+    };
+  }
+
+  let W = 0, H = 0, dpr = 1;
+  let pkgs = [], sparks = [], t = 0, speed = 1, paused = false, last = 0;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const r = cv.getBoundingClientRect();
+    W = Math.max(r.width, 320); H = Math.max(r.height, 180);
+    cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  const SEVC = () => ({
+    good: cssv("--good"), warn: cssv("--serious"),
+    crit: cssv("--critical"), nc: cssv("--muted")
+  });
+
+  function stationX(i) {
+    const pad = Math.min(72, W * 0.07);
+    return pad + (i * (W - pad * 2)) / (STATIONS.length - 1);
+  }
+
+  function spawn() {
+    pkgs.push({ x: 0, y: 0, w: 9 + Math.random() * 3, wob: Math.random() * 6.28 });
+  }
+
+  function draw() {
+    const night = document.documentElement.getAttribute("data-shift") === "noche";
+    const C = SEVC();
+    const beltY = H * 0.63;
+    const ink = cssv("--ink"), ink2 = cssv("--ink-2"), muted = cssv("--muted");
+
+    ctx.clearRect(0, 0, W, H);
+
+    /* fondo: resplandor del horno (solo de noche, el turno real de la planta) */
+    if (night) {
+      const ox = stationX(2);
+      const g = ctx.createRadialGradient(ox, beltY - 14, 6, ox, beltY - 14, Math.max(W * 0.42, 220));
+      g.addColorStop(0, "rgba(251,146,60,0.26)");
+      g.addColorStop(0.45, "rgba(194,65,12,0.10)");
+      g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    }
+
+    /* rejilla de piso */
+    ctx.strokeStyle = cssv("--grid"); ctx.lineWidth = 1;
+    for (let gy = beltY + 34; gy < H; gy += 16) {
+      ctx.globalAlpha = 0.5; ctx.beginPath(); ctx.moveTo(0, gy + .5); ctx.lineTo(W, gy + .5); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    /* banda transportadora */
+    const x0 = stationX(0), x1 = stationX(STATIONS.length - 1);
+    ctx.fillStyle = cssv("--belt");
+    ctx.beginPath(); ctx.roundRect(x0, beltY - 5, x1 - x0, 10, 5); ctx.fill();
+    ctx.strokeStyle = cssv("--belt-edge"); ctx.lineWidth = 1; ctx.stroke();
+
+    /* rodillos en movimiento */
+    ctx.strokeStyle = cssv("--belt-edge"); ctx.globalAlpha = .75; ctx.lineWidth = 1.5;
+    const off = (t * 26) % 20;
+    for (let rx = x0 + off; rx < x1; rx += 20) {
+      ctx.beginPath(); ctx.moveTo(rx, beltY - 3.5); ctx.lineTo(rx, beltY + 3.5); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+
+    /* paquetes */
+    pkgs.forEach(p => {
+      const px = x0 + p.x * (x1 - x0);
+      const bob = Math.sin(t * 5 + p.wob) * 1.1;
+      ctx.fillStyle = cssv("--pkg");
+      if (night) { ctx.shadowColor = "rgba(251,146,60,.55)"; ctx.shadowBlur = 9; }
+      ctx.beginPath(); ctx.roundRect(px - p.w / 2, beltY - 13 + bob, p.w, 8.5, 2.5); ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+
+    /* chispas de la falla en línea 2 */
+    sparks.forEach(s => {
+      ctx.globalAlpha = Math.max(0, s.life);
+      ctx.fillStyle = cssv("--critical");
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 6.2832); ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+
+    /* estaciones */
+    STATIONS.forEach((s, i) => {
+      const sx = stationX(i), col = C[s.sev];
+      const bw = Math.min(104, (W / STATIONS.length) - 8), bh = 46;
+      const by = beltY - 13 - 20 - bh;
+
+      /* poste */
+      ctx.strokeStyle = cssv("--baseline"); ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(sx, by + bh); ctx.lineTo(sx, beltY - 15); ctx.stroke();
+
+      /* caja */
+      ctx.fillStyle = cssv("--raised");
+      ctx.beginPath(); ctx.roundRect(sx - bw / 2, by, bw, bh, 7); ctx.fill();
+      ctx.strokeStyle = s.sev === "crit" ? col : cssv("--hairline");
+      ctx.lineWidth = s.sev === "crit" ? 1.6 : 1; ctx.stroke();
+
+      /* franja de severidad — radios [sup-izq, sup-der, inf-der, inf-izq] */
+      ctx.fillStyle = col;
+      ctx.beginPath(); ctx.roundRect(sx - bw / 2, by, 3, bh, [7, 0, 0, 7]); ctx.fill();
+
+      /* pulso en la estación en falla */
+      if (s.fault) {
+        const a = 0.5 + 0.5 * Math.sin(t * 4);
+        ctx.strokeStyle = col; ctx.globalAlpha = a * 0.55; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.roundRect(sx - bw / 2 - 3, by - 3, bw + 6, bh + 6, 9); ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+
+      /* horno encendido */
+      if (s.oven) {
+        const hg = 0.6 + 0.4 * Math.sin(t * 2.2);
+        ctx.fillStyle = night ? "rgba(251,146,60," + (0.5 * hg) + ")" : "rgba(194,65,12," + (0.22 * hg) + ")";
+        ctx.beginPath(); ctx.roundRect(sx - bw / 2 + 7, by + bh - 9, bw - 14, 5, 2.5); ctx.fill();
+      }
+
+      /* textos */
+      ctx.textAlign = "center";
+      ctx.fillStyle = ink;
+      ctx.font = "600 10.5px " + (cssv("--mono") || "monospace");
+      ctx.fillText(s.k, sx, by + 17);
+      ctx.fillStyle = ink2;
+      ctx.font = "11px " + (cssv("--sans") || "sans-serif");
+      const tt = s.t.length > 17 ? s.t.slice(0, 16) + "…" : s.t;
+      ctx.fillText(tt, sx, by + 31);
+      ctx.fillStyle = muted;
+      ctx.font = "9px " + (cssv("--mono") || "monospace");
+      ctx.fillText(s.who.toUpperCase(), sx, by + 42);
+    });
+
+    /* etiqueta de turno */
+    ctx.textAlign = "left";
+    ctx.fillStyle = muted;
+    ctx.font = "9.5px " + (cssv("--mono") || "monospace");
+    ctx.fillText(night ? "TURNO NOCTURNO · LOS HORNOS ENCENDIDOS" : "TURNO DIURNO · DESPACHO A RUTAS", 12, H - 12);
+  }
+
+  function step(ts) {
+    if (!last) last = ts;
+    const dt = Math.min((ts - last) / 1000, 0.05);
+    last = ts;
+
+    if (!paused) {
+      t += dt * Math.max(speed, 0.001);
+      /* avance de paquetes */
+      const merma = L("merma").cur;
+      const rate = 1.1 * speed;
+      pkgs.forEach(p => { p.x += dt * rate * 0.34; });
+      pkgs = pkgs.filter(p => p.x < 1.02);
+      if (pkgs.length < 26 && Math.random() < dt * rate * 9) spawn();
+
+      /* chispas proporcionales a la merma sobre el estándar */
+      const x = stationX(3), beltY = H * 0.63;
+      const intensity = Math.max(0, merma - 2.5) * 2.2;
+      if (Math.random() < dt * (3 + intensity * 12)) {
+        sparks.push({ x: x + (Math.random() - 0.5) * 18, y: beltY - 22 + Math.random() * 10,
+                      vx: (Math.random() - 0.5) * 42, vy: -18 - Math.random() * 34,
+                      r: 1 + Math.random() * 1.6, life: 1 });
+      }
+      sparks.forEach(s => { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 86 * dt; s.life -= dt * 1.5; });
+      sparks = sparks.filter(s => s.life > 0);
+    }
+
+    draw();
+    requestAnimationFrame(step);
+  }
+
+  resize();
+  for (let i = 0; i < 18; i++) pkgs.push({ x: i / 18, y: 0, w: 9 + Math.random() * 3, wob: Math.random() * 6.28 });
+  window.addEventListener("resize", () => { resize(); draw(); });
+  window.__plantRepaint = draw;
+
+  if (reduce) { draw(); }
+  else requestAnimationFrame(step);
+
+  /* estación más cercana a una coordenada x del lienzo, para poder
+     hacer clic en una estación y saltar a su área responsable */
+  function nearest(cx) {
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < STATIONS.length; i++) {
+      const d = Math.abs(stationX(i) - cx);
+      if (d < bd) { bd = d; best = i; }
+    }
+    return bd < 70 ? best : -1;
+  }
+
+  cv.style.cursor = "pointer";
+  cv.addEventListener("click", e => {
+    const r = cv.getBoundingClientRect();
+    const i = nearest(e.clientX - r.left);
+    if (i >= 0 && window.__openArea) window.__openArea(STATIONS[i].area);
+  });
+
+  return {
+    setSpeed: v => { speed = v; },
+    setPaused: v => { paused = v; },
+    repaint: draw
+  };
+})();
+
+document.getElementById("speed").addEventListener("input", e => {
+  plant.setSpeed(parseFloat(e.target.value));
+  document.getElementById("plant-sub").textContent = parseFloat(e.target.value) === 0
+    ? "Línea detenida"
+    : "Seis estaciones · cada una pertenece a un centro de responsabilidad";
+});
+document.getElementById("pause").addEventListener("click", e => {
+  const on = e.currentTarget.getAttribute("aria-pressed") === "true";
+  e.currentTarget.setAttribute("aria-pressed", String(!on));
+  e.currentTarget.textContent = on ? "Pausar" : "Reanudar";
+  plant.setPaused(!on);
+});
+
+/* ===========================================================
+   5. RELOJ Y CONTADORES DEL TURNO
+   =========================================================== */
+(function shiftClock() {
+  const DAY_PKG = 411000, ROUTES = 650;
+  let simMin = 0;
+  const elc = {
+    clock: document.getElementById("sv-clock"), shift: document.getElementById("sv-shift"),
+    pkg: document.getElementById("sv-pkg"), merma: document.getElementById("sv-merma"),
+    trk: document.getElementById("sv-trk"), dev: document.getElementById("sv-dev")
+  };
+  setInterval(() => {
+    const sp = parseFloat(document.getElementById("speed").value) || 0;
+    const running = document.getElementById("pause").getAttribute("aria-pressed") !== "true";
+    if (running) simMin = (simMin + 3 * Math.max(sp, 0)) % 1440;
+
+    const hh = String(Math.floor(simMin / 60)).padStart(2, "0");
+    const mm = String(Math.floor(simMin % 60)).padStart(2, "0");
+    elc.clock.textContent = hh + ":" + mm;
+
+    const h = simMin / 60;
+    elc.shift.textContent =
+      h < 6  ? "Turno nocturno · horneo" :
+      h < 12 ? "Turno matutino · despacho a rutas" :
+      h < 18 ? "Turno vespertino · segunda vuelta" :
+               "Preparación de masa madre";
+
+    const frac = simMin / 1440;
+    const pkg = DAY_PKG * frac;
+    elc.pkg.textContent = nf(pkg);
+
+    /* merma: paquetes × 0.5 kg de harina por paquete × % de merma sobre estándar */
+    const mermaPct = L("merma").cur;
+    elc.merma.textContent = nf(pkg * 0.5 * (mermaPct / 100));
+
+    elc.trk.textContent = nf(Math.min(ROUTES, ROUTES * Math.max(0, (frac - 0.17) / 0.5)));
+    elc.dev.textContent = nf(pkg * (L("dev").cur / 100) * Math.max(0, (frac - 0.45) / 0.55));
+  }, 220);
+})();
+
+/* ===========================================================
+   6. SANKEY DE LA FUGA
+   =========================================================== */
+function drawSankey() {
+  const NS = "http://www.w3.org/2000/svg";
+  const mk = (n, a) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+  const svg = document.getElementById("sankey");
+  svg.textContent = "";
+
+  const TOTAL = 37.23;
+  const groups = [
+    { name: "No controlable", v: 11.73, kind: "nc",
+      leaves: [
+        { n: "Trigo CBOT, neto de tipo de cambio", v: 4.20, who: "Mercado" },
+        { n: "Precio del diésel",                  v: 7.53, who: "Mercado" }
+      ] },
+    { name: "Controlable", v: 25.50, kind: "ctrl",
+      leaves: [
+        { n: "Compras · cobertura y negociación", v: 8.71, who: "Gerente de Compras" },
+        { n: "Producción · eficiencia de planta", v: 6.96, who: "Gerente de Planta" },
+        { n: "Logística · km y rendimiento",      v: 5.99, who: "Gerente de Logística" },
+        { n: "Comercial · actividad y mezcla",    v: 2.26, who: "Director Comercial" },
+        { n: "Finanzas · gasto e incobrables",    v: 1.17, who: "Contralor" },
+        { n: "Comercial · efecto neto",           v: 0.41, who: "Director Comercial" }
+      ] }
+  ];
+
+  const W = 940, PAD_T = 26, PAD_B = 26, GAP = 10;
+  const SCALE = 6.7;      // px por millón de quetzales — el ancho ES la cifra
+  const PITCH = 30;       // paso mínimo por fila, para que dos etiquetas no se traslapen
+
+  const X0 = 8,   W0 = 20;    // origen
+  const X1 = 190, W1 = 18;    // grupo
+  const X2 = 395, W2 = 16;    // hoja
+
+  const CTRL = cssv("--critical"), NCC = cssv("--muted");
+  const colFor = k => (k === "nc" ? NCC : CTRL);
+
+  /* ---- paso 1: geometría, sin dibujar nada ---- */
+  const srcY = PAD_T, srcH = TOTAL * SCALE;
+  let srcCur = srcY, leafCur = PAD_T;
+  const geo = [];
+
+  groups.forEach(g => {
+    const gh = g.v * SCALE;
+    const gLeavesH = g.leaves.reduce((s, l) => s + Math.max(l.v * SCALE, PITCH), 0) + GAP * (g.leaves.length - 1);
+    const gy = leafCur + (gLeavesH - gh) / 2;
+    const G = { g, gh, gy, srcY0: srcCur, leaves: [] };
+    srcCur += gh;
+
+    let gCur = gy;
+    g.leaves.forEach(lf => {
+      const lh = Math.max(lf.v * SCALE, 3);
+      G.leaves.push({ lf, lh, ly: leafCur + (Math.max(lh, PITCH) - lh) / 2, gy0: gCur });
+      gCur += lh;
+      leafCur += Math.max(lh, PITCH) + GAP;
+    });
+    leafCur += GAP;
+    geo.push(G);
+  });
+
+  const H = leafCur + PAD_B;
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+
+  /* ---- paso 2: todas las cintas primero, al fondo ---- */
+  geo.forEach(G => {
+    svg.appendChild(mk("path", {
+      d: ribbon(X0 + W0, G.srcY0, G.srcY0 + G.gh, X1, G.gy, G.gy + G.gh),
+      fill: colFor(G.g.kind), opacity: 0.26 }));
+    G.leaves.forEach(Lf => {
+      svg.appendChild(mk("path", {
+        d: ribbon(X1 + W1, Lf.gy0, Lf.gy0 + Lf.lh, X2, Lf.ly, Lf.ly + Lf.lh),
+        fill: colFor(G.g.kind), opacity: 0.22 }));
+    });
+  });
+
+  /* ---- paso 3: barras y etiquetas encima ---- */
+  svg.appendChild(mk("rect", { x: X0, y: srcY, width: W0, height: srcH, rx: 4, fill: cssv("--crust") }));
+
+  geo.forEach(G => {
+    const col = colFor(G.g.kind);
+    const cy = G.gy + G.gh / 2;
+    svg.appendChild(mk("rect", { x: X1, y: G.gy, width: W1, height: G.gh, rx: 4, fill: col }));
+    svg.appendChild(mk("rect", { x: X1 + W1 + 4, y: cy - 20, width: 152, height: 40, rx: 6,
+      fill: cssv("--surface"), opacity: 0.92 }));
+    const gt = mk("text", { x: X1 + W1 + 10, y: cy - 3, fill: cssv("--ink"), "font-size": 12.5, "font-weight": 600 });
+    gt.textContent = G.g.name; svg.appendChild(gt);
+    const gp = mk("text", { x: X1 + W1 + 10, y: cy + 14, fill: cssv("--ink-2"), "font-size": 11.5, "font-family": cssv("--mono") });
+    gp.textContent = "−Q" + G.g.v.toFixed(2) + " M · " + Math.round(G.g.v / TOTAL * 100) + " %";
+    svg.appendChild(gp);
+
+    G.leaves.forEach(Lf => {
+      const ly = Lf.ly + Lf.lh / 2;
+      svg.appendChild(mk("rect", { x: X2, y: Lf.ly, width: W2, height: Lf.lh, rx: 3, fill: col }));
+      const lt = mk("text", { x: X2 + W2 + 10, y: ly - 2, fill: cssv("--ink"), "font-size": 12.5 });
+      lt.textContent = Lf.lf.n; svg.appendChild(lt);
+      const lw = mk("text", { x: X2 + W2 + 10, y: ly + 13, fill: cssv("--muted"), "font-size": 10.5, "font-family": cssv("--mono") });
+      lw.textContent = Lf.lf.who.toUpperCase(); svg.appendChild(lw);
+      const lv = mk("text", { x: W - 8, y: ly + 4, fill: cssv("--ink"), "font-size": 12.5,
+        "font-family": cssv("--mono"), "font-weight": 600, "text-anchor": "end" });
+      lv.textContent = "−" + Lf.lf.v.toFixed(2); svg.appendChild(lv);
+    });
+  });
+
+  /* La etiqueta de origen va al final para quedar SOBRE las cintas,
+     con un respaldo en color de superficie que la mantiene legible. */
+  const lx = X0 + W0 + 10, ly = srcY + srcH / 2;
+  svg.appendChild(mk("rect", { x: lx - 6, y: ly - 20, width: 132, height: 40, rx: 6,
+    fill: cssv("--surface"), opacity: 0.9 }));
+  const st = mk("text", { x: lx, y: ly - 3, fill: cssv("--ink"), "font-size": 13, "font-weight": 600 });
+  st.textContent = "Variación total";
+  svg.appendChild(st);
+  const st2 = mk("text", { x: lx, y: ly + 14, fill: cssv("--ink-2"), "font-size": 12, "font-family": cssv("--mono") });
+  st2.textContent = "−Q37.23 M";
+  svg.appendChild(st2);
+
+  function ribbon(xa, ya0, ya1, xb, yb0, yb1) {
+    const cx = (xa + xb) / 2;
+    return "M" + xa + " " + ya0 +
+           " C" + cx + " " + ya0 + ", " + cx + " " + yb0 + ", " + xb + " " + yb0 +
+           " L" + xb + " " + yb1 +
+           " C" + cx + " " + yb1 + ", " + cx + " " + ya1 + ", " + xa + " " + ya1 + " Z";
+  }
+}
+
+/* ===========================================================
+   7. WATERFALL
+   =========================================================== */
+const SVGNS = "http://www.w3.org/2000/svg";
+const el = (n, a) => { const e = document.createElementNS(SVGNS, n); for (const k in a) e.setAttribute(k, a[k]); return e; };
+const WW = 900, PAD_L = 238, PAD_R = 76, ROW = 34, BAR = 20, TOP = 16, AXIS = 42;
+
+function drawBridge() {
+  const rows = bridge();
+  let run = 0;
+  rows.forEach((r, i) => {
+    if (r.kind === "anchor") {
+      if (i === 0) { run = r.abs; } else { r.abs = run; }
+      r.start = 0; r.end = run;
+    } else { r.start = run; run += r.d; r.end = run; }
+  });
+
+  const maxV = Math.max.apply(null, rows.map(r => Math.max(r.start, r.end)));
+  const dom = Math.ceil(maxV / 20) * 20;
+  const plotW = WW - PAD_L - PAD_R;
+  const x = v => PAD_L + (v / dom) * plotW;
+  const H = TOP + rows.length * ROW + AXIS;
+
+  const svg = document.getElementById("wf");
+  svg.textContent = "";
+  svg.setAttribute("viewBox", "0 0 " + WW + " " + H);
+
+  const COL = { fav: cssv("--good"), adv: cssv("--critical"), nc: cssv("--muted"), anchor: cssv("--crust") };
+
+  for (let v = 0; v <= dom; v += 20) {
+    svg.appendChild(el("line", { x1: x(v), x2: x(v), y1: TOP, y2: TOP + rows.length * ROW,
+      stroke: cssv("--grid"), "stroke-width": 1 }));
+    const tk = el("text", { x: x(v), y: TOP + rows.length * ROW + 20, fill: cssv("--muted"),
+      "font-size": 11, "font-family": cssv("--mono"), "text-anchor": "middle" });
+    tk.textContent = v; svg.appendChild(tk);
+  }
+  const ax = el("text", { x: PAD_L, y: TOP + rows.length * ROW + 36, fill: cssv("--muted"),
+    "font-size": 10, "font-family": cssv("--mono") });
+  ax.textContent = "MILLONES DE QUETZALES"; svg.appendChild(ax);
+
+  rows.forEach((r, i) => {
+    const yTop = TOP + i * ROW + (ROW - BAR) / 2;
+    const isA = r.kind === "anchor";
+    const xa = x(Math.min(r.start, r.end)), xb = x(Math.max(r.start, r.end));
+    const w = Math.max(xb - xa, 2);
+
+    const lb = el("text", { x: PAD_L - 12, y: TOP + i * ROW + ROW / 2 + 1,
+      fill: isA ? cssv("--ink") : cssv("--ink-2"), "font-size": 12,
+      "font-weight": isA ? 600 : 400, "text-anchor": "end", "dominant-baseline": "middle" });
+    lb.textContent = r.label.length > 36 ? r.label.slice(0, 35) + "…" : r.label;
+    svg.appendChild(lb);
+
+    const fill = isA ? COL.anchor : COL[r.kind];
+    const rr = Math.min(4, w / 2);
+    if (isA) {
+      svg.appendChild(el("path", { fill, d:
+        "M" + xa + " " + yTop + " H" + (xa + w - rr) + " a" + rr + " " + rr + " 0 0 1 " + rr + " " + rr +
+        " V" + (yTop + BAR - rr) + " a" + rr + " " + rr + " 0 0 1 " + (-rr) + " " + rr + " H" + xa + " Z" }));
+    } else {
+      svg.appendChild(el("rect", { x: xa, y: yTop, width: w, height: BAR, fill, rx: rr }));
+    }
+
+    if (i < rows.length - 1) {
+      svg.appendChild(el("line", { x1: x(r.end), x2: x(r.end),
+        y1: yTop + BAR, y2: TOP + (i + 1) * ROW + (ROW - BAR) / 2,
+        stroke: cssv("--baseline"), "stroke-width": 1 }));
+    }
+
+    const vt = el("text", { x: xb + 9, y: TOP + i * ROW + ROW / 2 + 1, fill: cssv("--ink"),
+      "font-size": 11.5, "font-family": cssv("--mono"), "font-weight": isA ? 600 : 500,
+      "dominant-baseline": "middle" });
+    vt.textContent = isA ? r.abs.toFixed(1) : qs(r.d) + (r.d < 0 ? " D" : " F");
+    svg.appendChild(vt);
+
+    /* zona de interacción: alimenta el tooltip propio (ver más abajo).
+       Lleva aria-label para lectores de pantalla y tabindex para teclado. */
+    const hit = el("rect", { x: PAD_L, y: TOP + i * ROW, width: plotW, height: ROW,
+      fill: "transparent", tabindex: 0, role: "img",
+      "aria-label": isA
+        ? r.label + ": Q" + r.abs.toFixed(2) + " M, " + r.who
+        : r.label + ": " + qs(r.d) + " millones, " + (r.d < 0 ? "desfavorable" : "favorable") +
+          ", responsable " + r.who + (r.kind === "nc" ? ", no controlable" : "") });
+    hit.__row = r;
+    svg.appendChild(hit);
+  });
+
+  const tbl = document.getElementById("wf-tbl");
+  tbl.innerHTML = "<thead><tr><th>Concepto</th><th>Responsable</th><th>Controlabilidad</th><th class='n'>Efecto en UO (Q M)</th></tr></thead>";
+  const tb = document.createElement("tbody");
+  rows.forEach(r => {
+    const tr = document.createElement("tr");
+    if (r.kind === "anchor") tr.className = "tot";
+    const ctrl = r.kind === "anchor" ? "—" : (r.kind === "nc" ? "No controlable" : "Controlable");
+    const cls  = r.kind === "fav" ? "fav" : r.kind === "nc" ? "nc" : r.kind === "adv" ? "adv" : "";
+    tr.innerHTML = "<td>" + r.label + "</td><td>" + r.who + "</td>" +
+      "<td class='" + (r.kind === "nc" ? "nc" : "") + "'>" + ctrl + "</td>" +
+      "<td class='n " + cls + "'>" + (r.kind === "anchor" ? r.abs.toFixed(2) : qs(r.d)) + "</td>";
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb);
+}
+
+/* ===========================================================
+   8. ÁREAS
+   =========================================================== */
+const AREAS = [
+  { id:"prod", name:"Producción", role:"Integrante 1 · Gerente de Planta", center:"Centro de costos",
+    amt:-6.96, sev:"crit", ctrl:6.96, nc:0,
+    why:"Responde por el uso de los recursos y por los costos estándar, no por los precios de compra ni por el volumen que vende el área comercial. Se evalúa contra el presupuesto flexible, valorado a precio estándar.",
+    controls:"Merma de masa y harina, horas-hombre y horas extra, consumo de energéticos, programa de mantenimiento, calidad en línea y reproceso.",
+    kpis:[["Merma de masa/harina","(harina usada − estándar) ÷ estándar","≤ 2.5 %","3.04 %","crit"],
+          ["Productividad laboral","kg ÷ horas-hombre","23.3 kg/HH","22.6 kg/HH","crit"],
+          ["OEE de la línea 2","Disponibilidad × Rendimiento × Calidad","≥ 80 %","71 %","crit"],
+          ["Variación de eficiencia total","(real a precio std − flexible) ÷ flexible","≤ 0.5 %","1.08 %","warn"]],
+    caseTitle:"Falla de la rebanadora-empacadora de la línea 2",
+    caseText:"Un rodamiento del eje de cuchillas falló: la rebanadora perdió calibración y se trabajaron turnos extra para reponer inventario en ruta. Aquí el método separa dos culpas que a simple vista se confunden: la harina costó más por kilo <em>y</em> se usó más harina. El precio es de Compras; <strong>la cantidad es de la planta</strong> — Q0.84 M de merma atribuibles a la línea 2.",
+    actions:["Mantenimiento predictivo con análisis de vibración en los ejes de corte","SMED para reducir tiempo de cambio y reproceso","Reinstalar el control estadístico de peso en la línea 2"] },
+
+  { id:"log", name:"Logística y Distribución", role:"Integrante 2 · Gerente de Logística", center:"Centro de costos",
+    amt:-13.52, sev:"crit", ctrl:5.99, nc:7.53,
+    why:"Responde por el costo de llevar el producto al punto de venta, medido por paquete despachado. El precio internacional del diésel no es suyo; el kilómetro recorrido de más, sí.",
+    controls:"Diseño de rutas, kilometraje, rendimiento de la flota, mantenimiento preventivo, horas extra de reparto, cumplimiento de entregas.",
+    kpis:[["Costo logístico por paquete","gasto ÷ paquetes despachados","Q1.552","Q1.653","crit"],
+          ["Costo a diésel presupuestado","(gasto − variación de precio) ÷ paquetes","Q1.552","Q1.602","warn"],
+          ["Rendimiento de combustible","km ÷ galones","16.0 km/gal","15.4 km/gal","warn"],
+          ["Entregas completas y a tiempo","entregas OK ÷ programadas","≥ 98 %","97.1 %","warn"]],
+    caseTitle:"Diésel récord de septiembre y kilometraje extra",
+    caseText:"El diésel alcanzó Q46–47 el 3 de septiembre y cerró el año en un promedio de <strong>Q38.20 contra Q34.00 presupuestado</strong>. A la vez, los cierres de carretera en la CA-1 subieron el recorrido a 37,200 km por camión y el rendimiento cayó a 15.4 km/gal. De los Q13.52 M, <strong>Q7.53 M son del mercado y Q5.99 M de esta gerencia</strong>.",
+    actions:["Reoptimizar rutas con ventanas de entrega por autoservicio","Telemetría de ralentí y conducción eficiente","Reemplazo programado de llantas por kilometraje"] },
+
+  { id:"comp", name:"Compras y Cadena de Suministro", role:"Integrante 3 · Gerente de Compras", center:"Centro de costos",
+    amt:-12.92, sev:"crit", ctrl:8.71, nc:4.21,
+    why:"Responde por el precio al que entran los materiales y por el cumplimiento de la política de cobertura, no por la cotización internacional del trigo ni por el tipo de cambio.",
+    controls:"Negociación con proveedores, política y ejecución de coberturas, sustitución de insumos, condiciones de pago, desempeño de proveedores.",
+    kpis:[["Variación en precio de compra","(precio real − std) × cantidad ÷ compras a std","≤ 1.0 %","2.7 %","crit"],
+          ["Cumplimiento de cobertura","bushels cubiertos ÷ necesidad anual","75 %","65 %","crit"],
+          ["OTIF de proveedores","recepciones a tiempo ÷ total","≥ 97 %","96.2 %","warn"],
+          ["Ahorro negociado en empaque","(std − real) × volumen","≥ Q0.5 M","Q0.74 M","good"]],
+    caseTitle:"Alza del trigo, tipo de cambio y cobertura insuficiente",
+    caseText:"El presupuesto suponía trigo a US$5.50/bu con el 75 % cubierto. El trigo subió a <strong>US$7.47/bu, +36 %</strong>, y solo se había cubierto el 65 %. La descomposición es el corazón del método: de los Q6.07 M de desviación en harina, <strong>Q4.66 M son mercado</strong>, <strong>Q1.87 M son la cobertura incumplida</strong> y Q0.46 M favorables vienen del tipo de cambio. A esta gerencia se le cobran Q1.87 M, no Q6.07 M.",
+    actions:["Restablecer la cobertura al 75 % con compra escalonada","Comité mensual de coberturas con Finanzas y límite de desviación","Indexar contratos de empaque y homologar un segundo proveedor"] },
+
+  { id:"mkt", name:"Marketing y Ventas", role:"Integrante 4 · Director Comercial", center:"Centro de utilidad",
+    amt:-0.41, sev:"warn", ctrl:0.41, nc:0,
+    ctrlNote:"Efecto neto en la utilidad. Medida por contribución comercial, el área cayó Q2.81 M: Q524.5 M → Q521.7 M.",
+    why:"Es la única área que responde por ingresos y costos a la vez, así que se evalúa por contribución. Se descartó tratarla como centro de ingresos: evaluar solo la venta incentiva sobrecargar el anaquel y dispara las devoluciones. Cada ruta DSD funciona como un mini centro de utilidad.",
+    controls:"Precio neto y descuentos, mezcla, pedido sugerido por ruta y por lo tanto las devoluciones, rotación en anaquel, campañas y su retorno, comisiones, cobertura de puntos de venta.",
+    kpis:[["Tasa de devoluciones","devueltos ÷ despachados","3.83 %","4.30 %","crit"],
+          ["ROI de la campaña Regreso a Clases","(contribución incremental − gasto) ÷ gasto","≥ +34 %","−1 %","crit"],
+          ["Precio neto por paquete","ventas netas ÷ paquetes","Q9.015","Q9.081","good"],
+          ["Cumplimiento de ventas netas","real ÷ presupuesto","100 %","99.6 %","warn"]],
+    caseTitle:"Producto vencido en anaquel y una campaña que no alcanzó volumen",
+    caseText:"La devolución de pan de caja subió de 5.0 % a 6.2 %: <strong>−Q8.56 M</strong>. Se despachó más de lo que la rotación permitía. La campaña se planeó con 6.0 M de paquetes y Q9.0 M de gasto — retorno de 34 %; se vendieron 5.0 M con gasto de Q10.1 M — <strong>retorno de −1 %</strong>. El punto de equilibrio era 4.49 M de paquetes al gasto presupuestado y 5.05 M al real: <strong>el sobregasto fue lo que la hizo perder</strong>.",
+    actions:["Pedido sugerido por ruta con pronóstico de rotación por punto de venta","Pruebas A/B regionales antes de una campaña nacional, con retorno mínimo de 20 %","Aprovechar la mezcla favorable de bollería en exhibidores"] },
+
+  { id:"fin", name:"Finanzas y Administración", role:"Integrante 5 · Director de Finanzas", center:"Centro de inversión",
+    amt:-1.17, sev:"warn", ctrl:1.17, nc:0,
+    why:"Responde por la utilidad y por los activos invertidos: es el único centro medido con ROI, ingreso residual y EVA. También responde por el gasto administrativo discrecional y por el sistema de costos estándar con el que se evalúa a todos los demás.",
+    controls:"Asignación de capital y aprobación de inversiones, días de cartera, días de inventario y proveedores, política de coberturas, costo de financiamiento, gasto administrativo, sistema de información y de costos.",
+    kpis:[["ROI (DuPont)","margen × rotación de activos","14.1 %","8.9 %","crit"],
+          ["Ingreso residual","UO − 11.5 % × activos","+Q19.16 M","−Q19.44 M","crit"],
+          ["EVA","UO × (1 − 25 %) − WACC × activos","+Q3.07 M","−Q26.07 M","crit"],
+          ["Días de cartera (DSO)","CxC ÷ venta a crédito × 365","28 días","36 días","crit"]],
+    caseTitle:"Ocho días de cartera y la lección del conflicto ROI contra ingreso residual",
+    caseText:"La cartera pasó de 28 a 36 días, con un costo de oportunidad de <strong>Q1.47 M al año</strong> al 11.5 %, más Q0.57 M de incobrables y Q0.60 M de cobranza legal. Y hay una lección de gobierno: un gerente evaluado <em>solo por ROI</em> rechazaría un proyecto rentable si su ROI actual fuera mayor, para no diluir su promedio. Por eso esta dirección evalúa con <strong>ingreso residual y EVA</strong>, que miden valor en quetzales y no un porcentaje que conviene proteger.",
+    actions:["Plan de cobranza por antigüedad con escalamiento sobre 45 días","Condiciones de crédito por canal y scoring de cliente","Aprobación de inversiones por ingreso residual y EVA, no solo por ROI"] }
+];
+
+const SEV = { crit:["Rojo","c-crit"], warn:["Amarillo","c-warn"], good:["Verde","c-good"] };
+
+function renderAreas() {
+  const host = document.getElementById("areas-list");
+  AREAS.forEach(a => {
+    const wrap = document.createElement("div");
+    wrap.className = "area";
+    wrap.id = "area-" + a.id;
+    const bid = "ab-" + a.id;
+    const sv = SEV[a.sev];
+
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.setAttribute("aria-expanded", "false");
+    btn.setAttribute("aria-controls", bid);
+    btn.innerHTML = "<span class='nm'>" + a.name + "<small>" + a.role + "</small></span>" +
+      "<span class='ctype'>" + a.center + "</span>" +
+      "<span class='amt " + (a.amt < 0 ? "adv" : "fav") + "'>" + qs(a.amt) +
+      " <span class='chip " + sv[1] + "' style='margin-left:6px'>" + sv[0] + "</span></span>";
+
+    const body = document.createElement("div");
+    body.className = "body"; body.id = bid; body.hidden = true;
+    const kpiRows = a.kpis.map(k => {
+      const s = SEV[k[4]];
+      return "<tr><td><strong>" + k[0] + "</strong></td>" +
+        "<td style='font-family:" + "var(--mono)" + ";font-size:11.5px;color:var(--muted)'>" + k[1] + "</td>" +
+        "<td class='n'>" + k[2] + "</td><td class='n'>" + k[3] + "</td>" +
+        "<td><span class='chip " + s[1] + "'>" + s[0] + "</span></td></tr>";
+    }).join("");
+
+    body.innerHTML =
+      "<div class='blk' style='padding-top:17px'><h4>Por qué es un " + a.center.toLowerCase() + "</h4><p>" + a.why + "</p></div>" +
+      "<div class='blk'><h4>Qué controla esta gerencia</h4><p>" + a.controls + "</p></div>" +
+      "<div class='blk'><h4>Separación de la desviación</h4><div class='splitrow'>" +
+        "<div class='splitcell'><div class='k'>Controlable</div><div class='v adv'>" + qs(-a.ctrl) + "</div>" +
+          "<div class='n2'>" + (a.ctrlNote || "Se evalúa a esta gerencia por esta cifra.") + "</div></div>" +
+        "<div class='splitcell'><div class='k'>No controlable</div><div class='v nc'>" + (a.nc ? qs(-a.nc) : "—") + "</div>" +
+          "<div class='n2'>" + (a.nc ? "Mercado. Se informa, no se imputa." : "Sin componente de mercado en esta área.") + "</div></div>" +
+      "</div></div>" +
+      "<div class='blk'><h4>Indicadores de evaluación</h4><div class='tblwrap'><table><thead><tr>" +
+        "<th>Indicador</th><th>Fórmula</th><th class='n'>Meta</th><th class='n'>Real</th><th>Semáforo</th>" +
+        "</tr></thead><tbody>" + kpiRows + "</tbody></table></div></div>" +
+      "<div class='blk'><h4>Caso de desviación</h4><p><strong>" + a.caseTitle + ".</strong> " + a.caseText + "</p></div>" +
+      "<div class='blk'><h4>Plan de acción comprometido</h4><ol class='actions'>" +
+        a.actions.map(x => "<li>" + x + "</li>").join("") + "</ol></div>";
+
+    btn.addEventListener("click", () => {
+      const open = btn.getAttribute("aria-expanded") === "true";
+      btn.setAttribute("aria-expanded", String(!open));
+      body.hidden = open;
+    });
+    wrap.appendChild(btn); wrap.appendChild(body); host.appendChild(wrap);
+  });
+}
+
+/* ===========================================================
+   9. MOTOR DE EXCEPCIONES
+   =========================================================== */
+const EXPL = {
+  "Trigo CBOT y tipo de cambio":"Variación de <b>precio</b> de mercado. De los Q6.07 M de harina, Q4.66 M son CBOT y Q0.46 M favorables son tipo de cambio. No se imputa a la gerencia.",
+  "Precio del diésel":"Variación de <b>precio</b> de mercado. Se informa al Consejo y se excluye de la evaluación del Gerente de Logística, que responde por el consumo, no por la cotización.",
+  "Cobertura y precios negociados":"Variación de <b>precio controlable</b>. La política era 75 % y se ejecutó 65 %: Q1.87 M imputables. El resto son precios negociados de ingredientes, empaque y fletes.",
+  "Eficiencia de planta":"Variación de <b>cantidad</b>: merma, horas extra y mantenimiento correctivo sobre el presupuesto flexible a precio estándar.",
+  "Devoluciones de producto vencido":"Variación <b>comercial</b>. El pedido sugerido excedió la rotación del anaquel y el producto vencido vuelve como costo.",
+  "Kilometraje y rendimiento":"Variación de <b>cantidad</b> y uso: kilómetros de más y rendimiento por galón bajo la meta.",
+  "Precio neto de venta":"Variación <b>favorable</b> de precio. Compensa parcialmente el efecto de las devoluciones en la contribución.",
+  "Actividad: volumen":"Variación de <b>actividad</b>. Se aísla antes de evaluar a cualquier centro de costos: la planta no responde por el volumen que no se vendió.",
+  "Actividad: mezcla":"Variación <b>favorable</b> de mezcla: más bollería y menos pastelitos en el mix real.",
+  "Campaña Regreso a Clases y POP":"Variación de <b>gasto discrecional</b>. El sobregasto, no el volumen, llevó el retorno de +34 % a −1 %.",
+  "Gasto administrativo e incobrables":"Variación de <b>gasto discrecional</b> más deterioro de cartera: incobrables y cobranza legal."
+};
+
+function renderAlerts() {
+  const rows = bridge().filter(r => r.kind !== "anchor" && Math.abs(r.d) >= 0.5);
+  rows.sort((a, b) => Math.abs(b.d) - Math.abs(a.d));
+  const host = document.getElementById("alerts");
+  host.innerHTML = "";
+  rows.forEach(r => {
+    const sev = r.kind === "nc" ? cssv("--muted") : r.kind === "fav" ? cssv("--good") : cssv("--critical");
+    const d = document.createElement("div");
+    d.className = "alert";
+    d.innerHTML = "<span class='sev' style='background:" + sev + "' aria-hidden='true'></span>" +
+      "<span class='atxt'><b>" + r.label + "</b> — " + r.who +
+      (r.kind === "nc" ? " · <b>no controlable</b>" : "") + "<br>" + (EXPL[r.label] || r.note || "") + "</span>" +
+      "<span class='aval " + (r.kind === "nc" ? "nc" : r.d < 0 ? "adv" : "fav") + "'>" +
+      qs(r.d) + " " + (r.d < 0 ? "D" : "F") + "</span>";
+    host.appendChild(d);
+  });
+}
+
+/* ===========================================================
+   10. SIMULADOR
+   =========================================================== */
+function renderLevers() {
+  const host = document.getElementById("levers");
+  LEVERS.forEach(l => {
+    const d = document.createElement("div");
+    d.className = "lever";
+    d.innerHTML =
+      "<div class='lhead'><span class='lname'>" + l.name + "</span>" +
+      "<span class='lval' id='lv-" + l.id + "'>" + l.fmt(l.cur) + "</span></div>" +
+      "<div class='lwho'>" + l.who + " · meta " + l.fmt(l.target) + "</div>" +
+      "<input type='range' id='sl-" + l.id + "' min='" + l.min + "' max='" + l.max +
+        "' step='" + l.step + "' value='" + l.cur + "' aria-label='" + l.name + "'>" +
+      "<div class='lfoot'><span>" + l.fmt(l.min) + "</span><span>" + l.fmt(l.max) + "</span></div>" +
+      "<div class='lnote' id='ln-" + l.id + "'>" + l.note(l.cur) + "</div>";
+    host.appendChild(d);
+    d.querySelector("input").addEventListener("input", e => { l.cur = parseFloat(e.target.value); refresh(); });
+  });
+}
+
+function refresh() {
+  const c = compute();
+  LEVERS.forEach(l => {
+    document.getElementById("lv-" + l.id).textContent = l.fmt(l.cur);
+    document.getElementById("ln-" + l.id).innerHTML = l.note(l.cur);
+    const sl = document.getElementById("sl-" + l.id);
+    if (parseFloat(sl.value) !== l.cur) sl.value = l.cur;
+  });
+
+  document.getElementById("sim-flag").hidden = !c.dirty;
+
+  /* los números se interpolan solo cuando el cambio viene de un botón;
+     durante el arrastre de un deslizador se asignan directo, porque una
+     interpolación por cada evento input pelearía consigo misma. */
+  const anim = TWEEN.pending; TWEEN.pending = false;
+  if (c.dirty) {
+    showNum("s-uo",  c.uo,  qm,  anim);
+    showNum("s-roi", c.roi, pct, anim);
+    showNum("s-ri",  c.ri,  qm,  anim);
+    showNum("s-eva", c.eva, qm,  anim);
+  } else {
+    TWEEN.last["s-uo"] = c.uo; TWEEN.last["s-roi"] = c.roi;
+    TWEEN.last["s-ri"] = c.ri; TWEEN.last["s-eva"] = c.eva;
+    document.getElementById("s-uo").textContent  = "Q67.5 M";
+    document.getElementById("s-roi").textContent = F.roiPub;
+    document.getElementById("s-ri").textContent  = F.riPub;
+    document.getElementById("s-eva").textContent = F.evaPub;
+  }
+  updateBubble(c);
+  document.getElementById("s-uo-d").textContent = c.dirty
+    ? "recupera " + qm(c.uo - F.uoRealPub) + " · margen " + pct(c.margen)
+    : "cierre real · margen 5.2 %";
+  document.getElementById("s-roi-d").textContent = c.dirty
+    ? "meta 14.1 % · activos " + qm(c.activos) : "meta 14.1 %";
+  document.getElementById("s-ri").className  = "v " + (c.dirty && c.ri  >= 0 ? "fav" : "adv");
+  document.getElementById("s-eva").className = "v " + (c.dirty && c.eva >= 0 ? "fav" : "adv");
+
+  const maxRec = LEVERS.filter(l => !l.affectsAssets).reduce((s, l) => s + (l.baseCost - l.cost(l.target)), 0);
+  document.getElementById("ceiling").innerHTML =
+    "<b>El límite de los diales.</b> Con los cinco controles en su meta se recuperan <b>" + qm(maxRec) +
+    "</b> de los Q25.5 M controlables. Los <b>" + qm(25.49 - maxRec) + "</b> restantes no se mueven con una perilla: " +
+    "exigen los planes estructurales — mantenimiento predictivo y SMED en planta, reconfiguración de rutas, " +
+    "disciplina de gasto en campañas — y los <b>Q11.7 M</b> de trigo, diésel y tipo de cambio no son de esta casa. " +
+    "Un sistema honesto muestra ese techo.";
+
+  document.getElementById("wf-state").textContent = c.dirty
+    ? "Escenario simulado · millones de quetzales"
+    : "Cifras del cierre 2026 · millones de quetzales";
+
+  drawBridge();
+  renderAlerts();
+}
+
+/* ===========================================================
+   11. ARRANQUE
+   =========================================================== */
+const REDUCE = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/* ===========================================================
+   12. NÚMEROS QUE SE INTERPOLAN
+   =========================================================== */
+const TWEEN = { last: {}, pending: false };
+
+function showNum(id, num, fmt, animate) {
+  const el = document.getElementById(id);
+  const from = (typeof TWEEN.last[id] === "number") ? TWEEN.last[id] : num;
+  TWEEN.last[id] = num;
+  if (!animate || REDUCE || Math.abs(from - num) < 1e-9) { el.textContent = fmt(num); return; }
+  const t0 = performance.now(), DUR = 560;
+  (function frame(t) {
+    const k = Math.min((t - t0) / DUR, 1);
+    const e = 1 - Math.pow(1 - k, 3);          // salida cúbica
+    el.textContent = fmt(from + (num - from) * e);
+    if (k < 1) requestAnimationFrame(frame);
+  })(t0);
+}
+
+/* ===========================================================
+   13. TEO HABLA — mensajes atados a los datos en pantalla
+   =========================================================== */
+const IDLE = [
+  "<b>¡Bienvenidos a El Tejar!</b> Soy Teo. Les voy a mostrar dónde se fueron los treinta y siete millones.",
+  "<b>Fíjense en la línea 2.</b> Echa chispas porque la merma va en 3.04 % y el estándar es 2.5 %.",
+  "<b>Regla de la casa:</b> a nadie se le cobra lo que no controla. El precio del diésel no es culpa del Gerente de Logística.",
+  "<b>De los Q6.07 M de la harina</b>, solo Q1.87 M son de Compras. El resto lo puso la bolsa de Chicago.",
+  "<b>Pruebe el turno nocturno.</b> Es cuando la planta de verdad hornea, y cuando el horno se ve encendido.",
+  "<b>Haga clic en una estación</b> de la línea y le abro el área que responde por ella.",
+  "<b>Mueva los controles del simulador</b> y vea cómo el puente se redibuja solo."
+];
+let idleIx = 0, idleTimer = null;
+
+function updateBubble(c) {
+  const b = document.getElementById("bubble");
+  if (!b) return;
+  const atTarget = LEVERS.every(l => Math.abs(l.cur - l.target) < 1e-9);
+
+  if (atTarget) {
+    b.innerHTML = "<b>¡Así se ve una planta en meta!</b> La utilidad sube a " + qm(c.uo) +
+      " … pero no llega a los Q104.7 M. Los diales tienen techo, y eso también hay que decirlo.";
+  } else if (c.dirty) {
+    const rec = c.uo - F.uoRealPub;
+    b.innerHTML = rec > 0.05
+      ? "Van recuperando <b>" + qm(rec) + "</b> de los Q25.5 M controlables. Sigan moviendo."
+      : (rec < -0.05
+          ? "Cuidado: así la utilidad <b>baja</b> a " + qm(c.uo) + ". Ese es el costo de aflojar."
+          : "Los controles están en el cierre real. Muévalos y le digo qué pasa.");
+  } else {
+    b.innerHTML = IDLE[idleIx];
+  }
+}
+
+function startIdleRotation() {
+  if (REDUCE) return;
+  idleTimer = setInterval(() => {
+    if (LEVERS.some(l => Math.abs(l.cur - l.base) > 1e-9)) return;   // no interrumpir un escenario
+    idleIx = (idleIx + 1) % IDLE.length;
+    const b = document.getElementById("bubble");
+    b.style.opacity = "0";
+    setTimeout(() => { b.innerHTML = IDLE[idleIx]; b.style.opacity = "1"; }, 220);
+  }, 7500);
+  document.getElementById("bubble").style.transition = "opacity .22s ease";
+}
+
+/* ===========================================================
+   14. CONTROL SEGMENTADO DEL PUENTE
+   =========================================================== */
+(function segControl() {
+  const seg = document.getElementById("seg-wf");
+  const pill = document.getElementById("seg-pill");
+  const bChart = document.getElementById("btn-chart");
+  const bTable = document.getElementById("btn-table");
+
+  function movePill(btn) {
+    pill.style.width = btn.offsetWidth + "px";
+    pill.style.transform = "translateX(" + (btn.offsetLeft - 3) + "px)";
+  }
+  function select(which) {
+    const chart = which === "chart";
+    document.getElementById("wf-chart").hidden = !chart;
+    document.getElementById("wf-table").hidden = chart;
+    bChart.setAttribute("aria-selected", String(chart));
+    bTable.setAttribute("aria-selected", String(!chart));
+    movePill(chart ? bChart : bTable);
+    if (chart) drawBridge();
+  }
+  bChart.addEventListener("click", () => select("chart"));
+  bTable.addEventListener("click", () => select("table"));
+  window.addEventListener("resize", () => {
+    movePill(bChart.getAttribute("aria-selected") === "true" ? bChart : bTable);
+  });
+  window.__segToggle = () =>
+    select(bChart.getAttribute("aria-selected") === "true" ? "table" : "chart");
+  requestAnimationFrame(() => movePill(bChart));
+  seg.dataset.ready = "1";
+})();
+
+/* ===========================================================
+   15. BOTONES DEL SIMULADOR
+   =========================================================== */
+function setAll(kind) {
+  LEVERS.forEach(l => { l.cur = (kind === "meta" ? l.target : l.base); });
+  TWEEN.pending = true;
+  refresh();
+}
+document.getElementById("btn-meta").addEventListener("click", () => setAll("meta"));
+document.getElementById("btn-reset").addEventListener("click", () => setAll("base"));
+
+/* el cambio de turno redibuja los vectores con los tokens nuevos */
+document.getElementById("shift-toggle").addEventListener("click", () => {
+  setTimeout(() => { drawSankey(); drawBridge(); renderAlerts(); plant.repaint(); }, 60);
+});
+
+/* ===========================================================
+   16. ABRIR UN ÁREA DESDE LA LÍNEA
+   =========================================================== */
+window.__openArea = function (id) {
+  const wrap = document.getElementById("area-" + id);
+  if (!wrap) return;
+  const btn = wrap.querySelector("button");
+  const body = wrap.querySelector(".body");
+  btn.setAttribute("aria-expanded", "true");
+  body.hidden = false;
+  wrap.scrollIntoView({ behavior: REDUCE ? "auto" : "smooth", block: "center" });
+  wrap.classList.remove("flash");
+  void wrap.offsetWidth;                 // reinicia la animación
+  wrap.classList.add("flash");
+};
+
+/* ===========================================================
+   17. TOOLTIP DEL PUENTE
+   =========================================================== */
+(function bridgeTip() {
+  const tip = document.getElementById("tip");
+  const svg = document.getElementById("wf");
+
+  function fill(r) {
+    const kindTxt = r.kind === "anchor" ? "Subtotal"
+      : r.kind === "nc" ? "No controlable" : "Controlable";
+    const kindCol = r.kind === "anchor" ? cssv("--crust")
+      : r.kind === "nc" ? cssv("--muted")
+      : r.kind === "fav" ? cssv("--good") : cssv("--critical");
+    const val = r.kind === "anchor"
+      ? "Q" + r.abs.toFixed(2) + " M"
+      : qs(r.d) + " M " + (r.d < 0 ? "D" : "F");
+    tip.innerHTML =
+      "<div class='t-h'>" + r.label + "</div>" +
+      "<div class='t-w'>" + r.who + "</div>" +
+      "<div class='t-v' style='color:" + kindCol + "'>" + val + "</div>" +
+      (r.note ? "<div class='t-n'>" + r.note + "</div>" : "") +
+      "<span class='t-c' style='color:" + kindCol +
+        ";background:color-mix(in srgb," + kindCol + " 14%, transparent)'>" + kindTxt + "</span>";
+  }
+  function place(x, y) {
+    const pad = 14, w = tip.offsetWidth, h = tip.offsetHeight;
+    let lx = x + pad, ly = y + pad;
+    if (lx + w > innerWidth - 8) lx = x - w - pad;
+    if (ly + h > innerHeight - 8) ly = y - h - pad;
+    tip.style.left = Math.max(8, lx) + "px";
+    tip.style.top = Math.max(8, ly) + "px";
+  }
+  function show(r, x, y) { fill(r); tip.classList.add("on"); place(x, y); }
+  function hide() { tip.classList.remove("on"); }
+
+  svg.addEventListener("mousemove", e => {
+    const r = e.target.__row;
+    if (r) show(r, e.clientX, e.clientY); else hide();
+  });
+  svg.addEventListener("mouseleave", hide);
+  svg.addEventListener("focusin", e => {
+    const r = e.target.__row;
+    if (!r) return;
+    const b = e.target.getBoundingClientRect();
+    show(r, b.left + b.width / 2, b.top + b.height);
+  });
+  svg.addEventListener("focusout", hide);
+})();
+
+/* ===========================================================
+   18. REVELADO AL DESPLAZAR
+   =========================================================== */
+(function reveals() {
+  document.documentElement.classList.add("js");
+  const items = Array.from(document.querySelectorAll("section"));
+  items.forEach(s => s.classList.add("reveal"));
+
+  if (!("IntersectionObserver" in window) || REDUCE) {
+    items.forEach(s => s.classList.add("seen"));
+    return;
+  }
+  const io = new IntersectionObserver((entries, obs) => {
+    entries.forEach(en => {
+      if (en.isIntersecting) { en.target.classList.add("seen"); obs.unobserve(en.target); }
+    });
+  }, { rootMargin: "0px 0px -8% 0px", threshold: 0.04 });
+  items.forEach(s => io.observe(s));
+})();
+
+/* ===========================================================
+   19. MODO PRESENTACIÓN Y ATAJOS
+   =========================================================== */
+(function stage() {
+  const html = document.documentElement;
+  const pBtn = document.getElementById("present-btn");
+  const kBtn = document.getElementById("keys-btn");
+  const panel = document.getElementById("keys");
+  let badge = null;
+
+  function setPresent(on) {
+    if (on) {
+      html.setAttribute("data-present", "1");
+      const el = document.documentElement;
+      const rq = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (rq) { try { rq.call(el); } catch (_) {} }
+      badge = document.createElement("div");
+      badge.className = "presentbadge";
+      badge.textContent = "Modo presentación · P para salir · ? para atajos";
+      document.body.appendChild(badge);
+    } else {
+      html.removeAttribute("data-present");
+      const ex = document.exitFullscreen || document.webkitExitFullscreen;
+      if (document.fullscreenElement && ex) { try { ex.call(document); } catch (_) {} }
+      if (badge) { badge.remove(); badge = null; }
+    }
+    pBtn.setAttribute("aria-pressed", String(on));
+    setTimeout(() => { drawSankey(); drawBridge(); plant.repaint(); }, 120);
+  }
+  function togglePresent() { setPresent(html.getAttribute("data-present") !== "1"); }
+  function toggleKeys(force) {
+    const open = force !== undefined ? force : panel.hidden;
+    panel.hidden = !open;
+    if (open) document.getElementById("keys-close").focus();
+  }
+
+  pBtn.addEventListener("click", togglePresent);
+  kBtn.addEventListener("click", () => toggleKeys());
+  document.getElementById("keys-close").addEventListener("click", () => toggleKeys(false));
+  panel.addEventListener("click", e => { if (e.target === panel) toggleKeys(false); });
+  document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement && html.getAttribute("data-present") === "1") setPresent(false);
+  });
+
+  const SECTIONS = ["linea", "consejo", "fuga", "puente", "areas", "simulador"];
+
+  document.addEventListener("keydown", e => {
+    const tag = (e.target.tagName || "").toLowerCase();
+    if (tag === "textarea" || tag === "input" || e.metaKey || e.ctrlKey || e.altKey) return;
+
+    if (e.key === "Escape") { toggleKeys(false); if (html.getAttribute("data-present") === "1") setPresent(false); return; }
+    if (e.key === "?" || (e.shiftKey && e.key === "/")) { e.preventDefault(); toggleKeys(); return; }
+
+    const k = e.key.toLowerCase();
+    if (k === "p") { e.preventDefault(); togglePresent(); }
+    else if (k === "n") { e.preventDefault(); document.getElementById("shift-toggle").click(); }
+    else if (k === "m") { e.preventDefault(); setAll("meta"); }
+    else if (k === "r") { e.preventDefault(); setAll("base"); }
+    else if (k === "t") { e.preventDefault(); window.__segToggle(); }
+    else if (e.key === " ") { e.preventDefault(); document.getElementById("pause").click(); }
+    else if (k >= "1" && k <= "6") {
+      e.preventDefault();
+      const id = SECTIONS[parseInt(k, 10) - 1];
+      const t = document.getElementById(id);
+      if (t) t.scrollIntoView({ behavior: REDUCE ? "auto" : "smooth", block: "start" });
+    }
+  });
+})();
+
+/* ===========================================================
+   20. ARRANQUE
+   =========================================================== */
+renderAreas();
+renderLevers();
+drawSankey();
+refresh();
+startIdleRotation();
+</script>
+</body>
+</html>
