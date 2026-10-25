@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sistema de Reservas de Cabañas · Proyecto Final de Algoritmos</title>
+<meta name="description" content="Sistema de reservas de cabañas turísticas en C++ con arquitectura Modelo Vista Controlador. Pruébalo en la terminal del navegador.">
+<meta name="theme-color" content="#0b0f0c">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏕️</text></svg>">
+
+<meta property="og:title" content="Sistema de Reservas de Cabañas Turísticas">
+<meta property="og:description" content="Proyecto Final de Algoritmos. Pruébalo en vivo desde el navegador.">
+<meta property="og:type" content="website">
+
+<script>
+/* Se marca antes de pintar, para que la aparicion no provoque un parpadeo.
+   Si el navegador no soporta el observador, nunca se oculta nada. */
+if("IntersectionObserver" in window) document.documentElement.className += " js-anim";
+</script>
+
+<style>
+:root{
+  --fondo:#0b0f0c;
+  --fondo-2:#111713;
+  --tarjeta:#141b16;
+  --borde:#20291f;
+  --texto:#e8ece6;
+  --texto-2:#9aa89a;
+  --texto-3:#6d7a6d;
+  --musgo:#9bc26a;
+  --musgo-claro:#c3e39a;
+  --ambar:#e09a4e;
+  --rojo:#e2705f;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,Helvetica,Arial,sans-serif;
+  --salida:cubic-bezier(.23,1,.32,1);
+  --suave:cubic-bezier(.77,0,.175,1);
+  --radio:14px;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--fondo);color:var(--texto);
+  font-family:var(--sans);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+/* Resplandor tenue, sin bandas de color */
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(60rem 40rem at 72% -10%, rgba(155,194,106,.07), transparent 65%),
+    radial-gradient(45rem 30rem at 8% 12%, rgba(224,154,78,.05), transparent 60%);
+}
+.envoltura{position:relative;z-index:1}
+.limite{max-width:1120px;margin:0 auto;padding:0 24px}
+
+a{color:inherit}
+h1,h2,h3{margin:0;line-height:1.12;letter-spacing:-.022em;font-weight:650}
+p{margin:0}
+
+/* ---------- Aparicion al entrar en pantalla ----------
+   Solo se oculta si el navegador trae JavaScript y soporta el observador.
+   Sin eso la pagina se ve completa desde el primer momento. */
+.js-anim .aparece{opacity:0;transform:translateY(14px);
+  transition:opacity .5s var(--salida),transform .5s var(--salida)}
+.js-anim .aparece.visible{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .js-anim .aparece{opacity:1;transform:none;transition:none}
+  *{animation-duration:.01ms !important;transition-duration:.01ms !important}
+}
+
+/* ---------- Encabezado ---------- */
+header.barra{
+  position:sticky;top:0;z-index:40;
+  backdrop-filter:saturate(160%) blur(14px);
+  -webkit-backdrop-filter:saturate(160%) blur(14px);
+  background:rgba(11,15,12,.72);
+  border-bottom:1px solid transparent;
+  transition:border-color .25s var(--salida),background .25s var(--salida);
+}
+header.barra.pegada{border-bottom-color:var(--borde);background:rgba(11,15,12,.88)}
+.barra-fila{display:flex;align-items:center;justify-content:space-between;height:60px;gap:16px}
+.marca{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px;letter-spacing:-.01em}
+.marca .punto{width:9px;height:9px;border-radius:50%;background:var(--musgo);
+  box-shadow:0 0 0 4px rgba(155,194,106,.14)}
+.barra nav{display:flex;gap:4px}
+.barra nav a{
+  font-size:13.5px;color:var(--texto-2);text-decoration:none;padding:7px 11px;border-radius:9px;
+  transition:color .18s ease,background-color .18s ease;
+}
+@media (hover:hover) and (pointer:fine){
+  .barra nav a:hover{color:var(--texto);background:rgba(255,255,255,.045)}
+}
+@media (max-width:760px){.barra nav{display:none}}
+
+/* ---------- Portada ---------- */
+.portada{padding:92px 0 64px;text-align:left}
+.etiqueta{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:12.5px;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--musgo);background:rgba(155,194,106,.08);
+  border:1px solid rgba(155,194,106,.18);
+  padding:6px 12px;border-radius:999px;margin-bottom:22px;font-weight:600;
+}
+.portada h1{font-size:clamp(2.3rem,6.2vw,4.1rem);max-width:17ch}
+.portada h1 .suave{color:var(--texto-3)}
+.portada .entrada{margin-top:20px;max-width:56ch;color:var(--texto-2);font-size:clamp(1rem,2.1vw,1.14rem)}
+.acciones{display:flex;flex-wrap:wrap;gap:11px;margin-top:32px}
+
+.boton{
+  --b:var(--musgo);
+  display:inline-flex;align-items:center;gap:9px;
+  font:inherit;font-size:14.5px;font-weight:600;
+  padding:11px 19px;border-radius:11px;cursor:pointer;
+  border:1px solid transparent;text-decoration:none;
+  transition:transform .16s var(--salida),background-color .18s ease,border-color .18s ease,color .18s ease;
+}
+.boton:active{transform:scale(.97)}
+.boton.primario{background:var(--musgo);color:#0b1309;border-color:var(--musgo)}
+.boton.secundario{background:rgba(255,255,255,.04);color:var(--texto);border-color:var(--borde)}
+@media (hover:hover) and (pointer:fine){
+  .boton.primario:hover{background:var(--musgo-claro);border-color:var(--musgo-claro)}
+  .boton.secundario:hover{background:rgba(255,255,255,.075);border-color:#2c3a2a}
+}
+.boton svg{width:15px;height:15px;flex:none}
+
+.cifras{display:flex;gap:30px;margin-top:44px;flex-wrap:wrap}
+.cifra .n{font-size:1.65rem;font-weight:650;letter-spacing:-.03em}
+.cifra .t{font-size:12.5px;color:var(--texto-3);margin-top:1px}
+
+/* ---------- Secciones ---------- */
+section{padding:72px 0;position:relative}
+.titulo-seccion{font-size:clamp(1.5rem,3.4vw,2.05rem);margin-bottom:10px}
+.bajada{color:var(--texto-2);max-width:62ch;margin-bottom:32px;font-size:15.5px}
+
+/* ---------- Terminal ---------- */
+.marco{
+  border:1px solid var(--borde);border-radius:var(--radio);overflow:hidden;
+  background:var(--fondo-2);
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 24px 60px -30px rgba(0,0,0,.9);
+}
+.marco-barra{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:rgba(255,255,255,.022);border-bottom:1px solid var(--borde);
+}
+.semaforo{display:flex;gap:6px}
+.semaforo i{width:11px;height:11px;border-radius:50%;display:block;opacity:.55}
+.semaforo i:nth-child(1){background:#e2705f}
+.semaforo i:nth-child(2){background:#e0bb4e}
+.semaforo i:nth-child(3){background:#7fc46a}
+.marco-titulo{font-family:var(--mono);font-size:12.5px;color:var(--texto-3);flex:1;text-align:center}
+.marco-acciones{display:flex;gap:6px}
+.mini{
+  font:inherit;font-size:12px;font-weight:600;color:var(--texto-2);
+  background:transparent;border:1px solid var(--borde);border-radius:8px;
+  padding:5px 10px;cursor:pointer;
+  transition:transform .16s var(--salida),color .18s ease,border-color .18s ease,background-color .18s ease;
+}
+.mini:active{transform:scale(.96)}
+@media (hover:hover) and (pointer:fine){
+  .mini:hover{color:var(--texto);border-color:#2c3a2a;background:rgba(255,255,255,.04)}
+}
+
+#terminal{
+  font-family:var(--mono);font-size:13px;line-height:1.5;
+  padding:18px 18px 16px;height:clamp(380px,56vh,560px);
+  overflow-y:auto;overflow-x:auto;cursor:text;
+  scrollbar-width:thin;scrollbar-color:#2a362a transparent;
+}
+#terminal::-webkit-scrollbar{width:9px;height:9px}
+#terminal::-webkit-scrollbar-thumb{background:#2a362a;border-radius:9px}
+#salida{white-space:pre;margin:0;color:#cfd8cb}
+.l-menu{color:var(--musgo-claro)}
+.l-error{color:var(--rojo)}
+.l-ok{color:var(--musgo)}
+.l-aviso{color:var(--ambar)}
+.l-tenue{color:var(--texto-3)}
+.l-eco{color:#f0f4ee;font-weight:600}
+
+.fila-entrada{display:flex;align-items:baseline;gap:0;font-family:var(--mono);font-size:13px;white-space:pre}
+#indicador{color:#cfd8cb}
+#campo{
+  font:inherit;color:#f0f4ee;background:transparent;border:0;outline:0;
+  flex:1;min-width:2ch;padding:0;caret-color:var(--musgo);
+}
+#campo::placeholder{color:#3f4c3f}
+
+.pie-terminal{
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center;
+  padding:11px 14px;border-top:1px solid var(--borde);background:rgba(255,255,255,.018);
+}
+.pie-terminal .ayuda{font-size:12.5px;color:var(--texto-3);margin-right:auto}
+.atajo{
+  font:inherit;font-family:var(--mono);font-size:11.5px;font-weight:600;
+  color:var(--texto-2);background:rgba(255,255,255,.04);
+  border:1px solid var(--borde);border-radius:7px;padding:4px 9px;cursor:pointer;
+  transition:transform .16s var(--salida),color .18s ease,border-color .18s ease,background-color .18s ease;
+}
+.atajo:active{transform:scale(.96)}
+@media (hover:hover) and (pointer:fine){
+  .atajo:hover{color:var(--musgo);border-color:rgba(155,194,106,.35);background:rgba(155,194,106,.09)}
+}
+
+.nota-replica{
+  display:flex;gap:11px;align-items:flex-start;
+  margin-top:16px;padding:13px 15px;border-radius:11px;
+  background:rgba(224,154,78,.055);border:1px solid rgba(224,154,78,.18);
+  font-size:13.5px;color:#d9c3a3;
+}
+.nota-replica svg{width:16px;height:16px;flex:none;margin-top:2px;color:var(--ambar)}
+.nota-replica a{color:var(--ambar);text-underline-offset:3px}
+
+/* ---------- Tarjetas ---------- */
+.rejilla{display:grid;gap:14px}
+.rejilla.tres{grid-template-columns:repeat(3,1fr)}
+.rejilla.dos{grid-template-columns:repeat(2,1fr)}
+@media (max-width:880px){.rejilla.tres,.rejilla.dos{grid-template-columns:1fr}}
+
+.tarjeta{
+  background:var(--tarjeta);border:1px solid var(--borde);border-radius:var(--radio);
+  padding:22px;transition:border-color .22s ease,transform .22s var(--salida);
+}
+@media (hover:hover) and (pointer:fine){
+  .tarjeta:hover{border-color:#2c3a2a;transform:translateY(-2px)}
+}
+.tarjeta .num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:9px;margin-bottom:14px;
+  background:rgba(155,194,106,.12);color:var(--musgo);
+  font-family:var(--mono);font-size:13px;font-weight:700;
+}
+.tarjeta h3{font-size:16.5px;margin-bottom:6px}
+.tarjeta .archivos{font-family:var(--mono);font-size:11.5px;color:var(--texto-3);margin-bottom:10px}
+.tarjeta p{font-size:14px;color:var(--texto-2)}
+
+.regla{
+  margin-top:16px;padding:16px 18px;border-radius:12px;
+  background:rgba(155,194,106,.06);border:1px solid rgba(155,194,106,.16);
+  font-size:14.5px;color:var(--musgo-claro);
+}
+
+/* ---------- Codigo ---------- */
+.pestanas{display:flex;gap:4px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.pestanas::-webkit-scrollbar{display:none}
+.pestana{
+  font:inherit;font-family:var(--mono);font-size:12.5px;
+  color:var(--texto-3);background:transparent;border:1px solid transparent;
+  padding:7px 13px;border-radius:9px;cursor:pointer;white-space:nowrap;
+  transition:transform .16s var(--salida),color .18s ease,background-color .18s ease,border-color .18s ease;
+}
+.pestana:active{transform:scale(.97)}
+.pestana[aria-selected="true"]{color:var(--texto);background:rgba(255,255,255,.055);border-color:var(--borde)}
+@media (hover:hover) and (pointer:fine){
+  .pestana:not([aria-selected="true"]):hover{color:var(--texto-2);background:rgba(255,255,255,.028)}
+}
+.visor{
+  margin-top:12px;border:1px solid var(--borde);border-radius:var(--radio);
+  background:var(--fondo-2);overflow:hidden;
+}
+.visor-barra{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  padding:9px 14px;border-bottom:1px solid var(--borde);background:rgba(255,255,255,.022);
+  font-family:var(--mono);font-size:12px;color:var(--texto-3);
+}
+#visor-codigo{
+  margin:0;padding:16px 18px;max-height:440px;overflow:auto;
+  font-family:var(--mono);font-size:12.5px;line-height:1.55;color:#c9d3c5;
+  white-space:pre;scrollbar-width:thin;scrollbar-color:#2a362a transparent;
+  transition:opacity .16s ease,filter .16s ease;
+}
+#visor-codigo::-webkit-scrollbar{width:9px;height:9px}
+#visor-codigo::-webkit-scrollbar-thumb{background:#2a362a;border-radius:9px}
+#visor-codigo.cambiando{opacity:.35;filter:blur(2px)}
+.c-com{color:#5f7a5c;font-style:italic}
+.c-pre{color:#c08adf}
+.c-str{color:#d9a86c}
+.c-pal{color:#7fb2e8}
+.c-tip{color:#67c2a8}
+.c-num{color:#dba0a0}
+
+/* ---------- Pie ---------- */
+footer{border-top:1px solid var(--borde);padding:40px 0 56px;margin-top:28px}
+.pie-rejilla{display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;align-items:flex-start}
+footer .datos{font-size:13.5px;color:var(--texto-3);line-height:1.8}
+footer .datos strong{color:var(--texto-2);font-weight:600}
+footer .enlaces{display:flex;flex-direction:column;gap:7px;font-size:13.5px}
+footer .enlaces a{color:var(--texto-2);text-decoration:none;transition:color .18s ease}
+@media (hover:hover) and (pointer:fine){footer .enlaces a:hover{color:var(--musgo)}}
+
+@media (max-width:620px){
+  .portada{padding:64px 0 48px}
+  section{padding:56px 0}
+  #terminal{font-size:12px;padding:14px}
+  .fila-entrada{font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="envoltura">
+
+<header class="barra" id="barra">
+  <div class="limite barra-fila">
+    <div class="marca"><span class="punto"></span> Reservas de Cabañas</div>
+    <nav>
+      <a href="#probar">Probar</a>
+      <a href="#arquitectura">Arquitectura</a>
+      <a href="#codigo">Código</a>
+      <a href="#proyecto">Proyecto</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section class="portada">
+  <div class="limite">
+    <span class="etiqueta aparece">Proyecto Final · Algoritmos</span>
+    <h1 class="aparece">Sistema de reservas<br><span class="suave">de cabañas turísticas</span></h1>
+    <p class="entrada aparece">
+      Un negocio que rentaba cabañas llevaba sus reservas en un cuaderno. Esto es lo que
+      lo reemplazó: un programa en C++ separado en Modelo, Vista y Controlador, que guarda
+      todo en un archivo de texto y no deja pasar un dato malo.
+    </p>
+    <div class="acciones aparece">
+      <a href="#probar" class="boton primario">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Probar el programa
+      </a>
+      <a href="#codigo" class="boton secundario">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        Ver el código
+      </a>
+    </div>
+    <div class="cifras aparece">
+      <div class="cifra"><div class="n">7</div><div class="t">archivos fuente</div></div>
+      <div class="cifra"><div class="n">16</div><div class="t">reglas de validación</div></div>
+      <div class="cifra"><div class="n">33</div><div class="t">casos de prueba</div></div>
+      <div class="cifra"><div class="n">0</div><div class="t">advertencias al compilar</div></div>
+    </div>
+  </div>
+</section>
+
+<section id="probar">
+  <div class="limite">
+    <h2 class="titulo-seccion aparece">Pruébelo aquí mismo</h2>
+    <p class="bajada aparece">
+      Escriba en la terminal como lo haría en una consola. Empiece con <strong>5</strong> para
+      ver las reservas, o con <strong>1</strong> para registrar una nueva. Los botones de abajo
+      escriben la opción por usted.
+    </p>
+
+    <div class="marco aparece">
+      <div class="marco-barra">
+        <div class="semaforo"><i></i><i></i><i></i></div>
+        <div class="marco-titulo">ProyectoFinal_Reservas.exe</div>
+        <div class="marco-acciones">
+          <button class="mini" id="btn-reiniciar" type="button">Reiniciar</button>
+        </div>
+      </div>
+      <div id="terminal" tabindex="-1">
+        <pre id="salida"></pre>
+        <div class="fila-entrada" id="fila">
+          <span id="indicador"></span><input id="campo" autocomplete="off" autocapitalize="off"
+            autocorrect="off" spellcheck="false" aria-label="Entrada de la terminal">
+        </div>
+      </div>
+      <div class="pie-terminal">
+        <span class="ayuda">Atajos</span>
+        <button class="atajo" data-mete="5">5 · Listar</button>
+        <button class="atajo" data-mete="1">1 · Registrar</button>
+        <button class="atajo" data-mete="2">2 · Consultar</button>
+        <button class="atajo" data-mete="6">6 · Cambiar estado</button>
+        <button class="atajo" data-mete="7">7 · Salir</button>
+      </div>
+    </div>
+
+    <div class="nota-replica aparece">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span>
+        Esta terminal reproduce el programa dentro del navegador: mismos menús, mismos mensajes y
+        mismas validaciones, carácter por carácter. No es C++ ejecutándose aquí. Para correr el
+        programa compilado de verdad está
+        <a href="https://wandbox.org/permlink/BBsLjYRh1RENAjbR" target="_blank" rel="noopener">este enlace</a>,
+        y el código fuente completo se puede leer más abajo.
+      </span>
+    </div>
+  </div>
+</section>
+
+<section id="arquitectura">
+  <div class="limite">
+    <h2 class="titulo-seccion aparece">Cómo está organizado</h2>
+    <p class="bajada aparece">
+      El enunciado pedía separar el programa en tres componentes. Lo difícil no fue dividirlo,
+      sino respetar la división cuando salía más rápido no hacerlo.
+    </p>
+    <div class="rejilla tres">
+      <div class="tarjeta aparece">
+        <div class="num">1</div>
+        <h3>Modelo</h3>
+        <div class="archivos">modelo.h · modelo.cpp</div>
+        <p>Guarda las reservas en memoria y es el único que abre <code>reservas.txt</code>. Busca, agrega, modifica, elimina y saca las estadísticas.</p>
+      </div>
+      <div class="tarjeta aparece">
+        <div class="num">2</div>
+        <h3>Vista</h3>
+        <div class="archivos">vista.h · vista.cpp</div>
+        <p>Dibuja los menús y valida todo lo que se teclea. Lee siempre la línea completa y después la convierte, para que una letra no deje el programa dando vueltas.</p>
+      </div>
+      <div class="tarjeta aparece">
+        <div class="num">3</div>
+        <h3>Controlador</h3>
+        <div class="archivos">controlador.h · controlador.cpp</div>
+        <p>Coordina a los otros dos. Pide los datos a la vista, le ordena la operación al modelo y manda mostrar el resultado.</p>
+      </div>
+    </div>
+    <div class="regla aparece">
+      La regla que mantiene todo en orden: la vista nunca abre el archivo ni toca el arreglo,
+      el modelo nunca imprime ni lee del teclado, y el controlador es el único que habla con los dos.
+    </div>
+
+    <div class="rejilla dos" style="margin-top:14px">
+      <div class="tarjeta aparece">
+        <h3 style="margin-bottom:8px">Se escribe un temporal antes de reemplazar</h3>
+        <p>Al guardar, el programa escribe <code>reservas.tmp</code> y solo cuando quedó completo reemplaza el original. Si falla a media escritura, los datos anteriores siguen ahí.</p>
+      </div>
+      <div class="tarjeta aparece">
+        <h3 style="margin-bottom:8px">Finalizada y cancelada no se tocan</h3>
+        <p>Son registros históricos. Cambiarles las noches o el precio alteraría un ingreso ya contabilizado, así que el programa lo impide.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="codigo">
+  <div class="limite">
+    <h2 class="titulo-seccion aparece">El código fuente</h2>
+    <p class="bajada aparece">
+      Los siete archivos tal como se entregaron. Compilan sin una sola advertencia con <code>-Wall</code>.
+    </p>
+    <div class="aparece">
+      <div class="pestanas" role="tablist" id="pestanas"></div>
+      <div class="visor">
+        <div class="visor-barra">
+          <span id="visor-nombre">modelo.h</span>
+          <button class="mini" id="btn-copiar" type="button">Copiar</button>
+        </div>
+        <pre id="visor-codigo"></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="proyecto">
+  <div class="limite">
+    <h2 class="titulo-seccion aparece">Sobre el proyecto</h2>
+    <div class="rejilla dos">
+      <div class="tarjeta aparece">
+        <h3 style="margin-bottom:10px">Qué resuelve</h3>
+        <p>Registrar reservas, consultarlas por código, modificarlas, eliminarlas, listarlas, cambiarles el estado y sacar estadísticas básicas. Todo queda guardado en un único archivo de texto, así que los datos siguen ahí al cerrar el programa.</p>
+      </div>
+      <div class="tarjeta aparece">
+        <h3 style="margin-bottom:10px">Cómo se probó</h3>
+        <p>33 casos ejecutados contra el programa real, seis baterías de pruebas automáticas y 17 capturas de la ejecución. Entre los casos: líneas dañadas en el archivo, el disco sin permiso de escritura y el arreglo lleno.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="limite pie-rejilla">
+    <div class="datos">
+      <strong>Eduardo Samuel Nuñez Gutiérrez</strong> · Carné 5390-26-14961<br>
+      Universidad Mariano Gálvez de Guatemala<br>
+      Facultad de Ingeniería en Sistemas de Información · Centro Universitario de Villa Nueva<br>
+      Curso de Algoritmos · Sección B · Docente: Ing. Lorena España
+    </div>
+    <div class="enlaces">
+      <a href="https://wandbox.org/permlink/BBsLjYRh1RENAjbR" target="_blank" rel="noopener">Ejecutar el C++ compilado →</a>
+      <a href="../">Ver otros proyectos →</a>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+<script type="text/plain" id="fuente-modelo-h">
+// =====================================================================
+// Universidad Mariano Galvez de Guatemala
+// Facultad de Ingenieria en Sistemas de Informacion
+// Centro Universitario de Villa Nueva
+// Curso: Algoritmos            Seccion: B
+// Docente: Ing. Lorena Espana
+// Estudiante: Eduardo Samuel Nunez Gutierrez   Carne: 5390-26-14961
+// PROYECTO FINAL - SISTEMA DE RESERVAS DE CABANAS TURISTICAS
+//
+// Archivo: modelo.h
+// Modulo:  MODELO - datos y operaciones sobre las reservas
+// Descripcion: declara la estructura Reserva, las constantes y lo que el
+//              controlador le puede pedir al modelo. Es el unico modulo
+//              que toca el archivo reservas.txt.
+// =====================================================================
+
+#ifndef MODELO_H
+#define MODELO_H
+
+#include <string>
+
+using namespace std;
+
+// ---- ESTRUCTURA DE DATOS ----
+
+struct Reserva {
+    int    codigo;        // identificador unico
+    string cliente;       // nombre del huesped
+    string cabania;       // numero o nombre de la cabana
+    string fechaEntrada;  // dd/mm/aaaa
+    int    noches;
+    double precioNoche;
+    double total;         // noches * precioNoche
+    string estado;        // uno de los valores de ESTADOS
+};
+
+// ---- CONSTANTES ----
+
+const int MAX_RESERVAS  = 200;
+const int TOTAL_ESTADOS = 4;
+
+// Unica fuente de los estados: ningun modulo escribe estos textos sueltos
+const string ESTADOS[TOTAL_ESTADOS] = {"Reservada", "Ocupada", "Finalizada", "Cancelada"};
+
+// ---- OPERACIONES CON EL ARCHIVO ----
+
+void cargarReservas();              // lee reservas.txt y llena el arreglo
+bool guardarReservas();             // reescribe el archivo; false si no pudo
+bool archivoExcedioCapacidad();     // true si el archivo traia mas de MAX_RESERVAS
+
+// ---- CONSULTAS ----
+
+int     contarReservas();
+Reserva obtenerReserva(int indice); // con indice invalido devuelve una reserva vacia
+int     buscarPorCodigo(int codigo); // devuelve la posicion o -1
+bool    esHistorica(int indice);     // Finalizada o Cancelada
+
+// ---- OPERACIONES SOBRE LAS RESERVAS ----
+// Ninguna escribe el archivo: el guardado lo ordena el controlador
+
+bool agregarReserva(Reserva nueva);                 // false si el arreglo esta lleno
+void modificarReserva(int indice, Reserva datos);   // conserva codigo y estado
+void eliminarReserva(int indice);
+void cambiarEstado(int indice, string nuevoEstado);
+
+// ---- ESTADISTICAS BASICAS ----
+
+int    contarPorEstado(string estado);
+double ingresoTotal();      // suma los totales que no estan cancelados
+double promedioNoches();    // 0 si no hay reservas
+
+// ---- CALCULOS ----
+
+double calcularTotal(int noches, double precioNoche);
+
+#endif
+</script>
+<script type="text/plain" id="fuente-modelo-cpp">
+// =====================================================================
+// Universidad Mariano Galvez de Guatemala
+// Facultad de Ingenieria en Sistemas de Informacion
+// Centro Universitario de Villa Nueva
+// Curso: Algoritmos            Seccion: B
+// Docente: Ing. Lorena Espana
+// Estudiante: Eduardo Samuel Nunez Gutierrez   Carne: 5390-26-14961
+// PROYECTO FINAL - SISTEMA DE RESERVAS DE CABANAS TURISTICAS
+//
+// Archivo: modelo.cpp
+// Modulo:  MODELO - datos y operaciones sobre las reservas
+// Descripcion: mantiene el arreglo de reservas en memoria y lo mantiene
+//              sincronizado con el archivo reservas.txt. Este modulo no
+//              imprime en pantalla ni lee del teclado: solo devuelve
+//              datos y resultados al controlador.
+// =====================================================================
+
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <cmath>
+#include <cstdio>
+#include "modelo.h"
+
+using namespace std;
+
+// Nombre del archivo de datos y del temporal que se usa para escribir
+// sin riesgo de dejar el archivo a medias
+const string ARCHIVO_DATOS = "reservas.txt";
+const string ARCHIVO_TEMPORAL = "reservas.tmp";
+
+// ---- ESTADO DEL MODULO ----
+// El arreglo vive solo aqui: puesto en el encabezado, cada modulo tendria
+// su propia copia vacia y nadie veria el mismo dato.
+Reserva reservas[MAX_RESERVAS];
+int totalReservas = 0;
+bool excedioCapacidad = false;
+
+// ---- FUNCIONES AUXILIARES INTERNAS ----
+// No se declaran en modelo.h porque ningun otro modulo las necesita.
+
+// Convierte texto a entero. Devuelve false si el texto no es un numero.
+// Se usa istringstream y no stoi, que ante "dos" lanzaria una excepcion
+// y el programa se caeria al arrancar.
+bool aEntero(string texto, int &destino) {
+    istringstream conversor(texto);
+    int valor;
+    if (!(conversor >> valor)) return false;
+    string sobrante;
+    if (conversor >> sobrante) return false;   // habia basura despues del numero
+    destino = valor;
+    return true;
+}
+
+// Convierte texto a real con el mismo criterio que aEntero
+bool aReal(string texto, double &destino) {
+    istringstream conversor(texto);
+    double valor;
+    if (!(conversor >> valor)) return false;
+    string sobrante;
+    if (conversor >> sobrante) return false;
+    destino = valor;
+    return true;
+}
+
+// Comprueba que el estado leido sea exactamente uno de los cuatro validos
+bool esEstadoValido(string estado) {
+    for (int i = 0; i < TOTAL_ESTADOS; i++) {
+        if (estado == ESTADOS[i]) return true;
+    }
+    return false;
+}
+
+// Parte una linea por el separador '|'. Solo da true con ocho campos y
+// ninguno vacio. Un noveno campo significa que el separador se colo
+// dentro de un nombre, asi que el registro no sirve.
+bool dividirLinea(string linea, string campos[8]) {
+    int cantidad = 0;
+    string actual = "";
+
+    for (int i = 0; i < (int)linea.size(); i++) {
+        if (linea[i] == '|') {
+            if (cantidad >= 8) return false;   // vendria un noveno campo
+            campos[cantidad] = actual;
+            cantidad++;
+            actual = "";
+        } else {
+            actual += linea[i];
+        }
+    }
+
+    if (cantidad >= 8) return false;
+    campos[cantidad] = actual;
+    cantidad++;
+
+    if (cantidad != 8) return false;
+    for (int i = 0; i < 8; i++) {
+        if (campos[i].empty()) return false;
+    }
+    return true;
+}
+
+// ---- ESTADISTICAS BASICAS ----
+
+// Cuenta las reservas que estan en el estado indicado. El estado llega
+// siempre desde ESTADOS, nunca como texto escrito a mano.
+int contarPorEstado(string estado) {
+    int cantidad = 0;
+    for (int i = 0; i < totalReservas; i++) {
+        if (reservas[i].estado == estado) cantidad++;
+    }
+    return cantidad;
+}
+
+// Suma los totales de las reservas que no estan canceladas: una reserva
+// cancelada no representa ingreso para el negocio
+double ingresoTotal() {
+    double suma = 0.0;
+    for (int i = 0; i < totalReservas; i++) {
+        if (reservas[i].estado != ESTADOS[3]) {
+            suma += reservas[i].total;
+        }
+    }
+    return suma;
+}
+
+// Promedio de noches de todas las reservas registradas.
+// Con el arreglo vacio devuelve cero en vez de dividir entre cero.
+double promedioNoches() {
+    if (totalReservas == 0) return 0.0;
+    int suma = 0;
+    for (int i = 0; i < totalReservas; i++) {
+        suma += reservas[i].noches;
+    }
+    return (double)suma / totalReservas;
+}
+
+// ---- CALCULOS ----
+
+// Total a pagar: noches por precio, redondeado a dos decimales para que
+// el monto mostrado, el guardado y el recargado sean siempre el mismo
+double calcularTotal(int noches, double precioNoche) {
+    double bruto = noches * precioNoche;
+    return floor(bruto * 100.0 + 0.5) / 100.0;
+}
+
+// ---- OPERACIONES CON EL ARCHIVO ----
+
+// Lee reservas.txt linea por linea y llena el arreglo. Una linea mal
+// formada se omite y la carga continua con el resto del archivo.
+void cargarReservas() {
+    totalReservas = 0;
+    excedioCapacidad = false;
+
+    // Se usa is_open y no good: en este MinGW un ifstream sobre un archivo
+    // que no existe devuelve good() verdadero.
+    ifstream archivo(ARCHIVO_DATOS.c_str());
+    if (!archivo.is_open()) return;    // primer arranque: no hay archivo todavia
+
+    string linea;
+    while (getline(archivo, linea)) {
+        // Quita el retorno de carro de Windows; si no, el estado quedaria
+        // como "Reservada\r" y no cuadraria con ninguno de ESTADOS.
+        if (!linea.empty() && linea[linea.size() - 1] == '\r') {
+            linea.erase(linea.size() - 1);
+        }
+        if (linea.empty()) continue;
+
+        // Al llegar al limite se deja de cargar y se marca el aviso. Sin
+        // este corte se escribiria fuera del arreglo.
+        if (totalReservas >= MAX_RESERVAS) {
+            excedioCapacidad = true;
+            break;
+        }
+
+        string campos[8];
+        if (!dividirLinea(linea, campos)) continue;
+
+        Reserva registro;
+        double totalDelArchivo;
+
+        if (!aEntero(campos[0], registro.codigo)) continue;
+        registro.cliente      = campos[1];
+        registro.cabania      = campos[2];
+        registro.fechaEntrada = campos[3];
+        if (!aEntero(campos[4], registro.noches)) continue;
+        if (!aReal(campos[5], registro.precioNoche)) continue;
+        if (!aReal(campos[6], totalDelArchivo)) continue;
+        if (!esEstadoValido(campos[7])) continue;
+        registro.estado = campos[7];
+
+        // El total se recalcula en vez de confiar en el campo del archivo:
+        // asi nunca se muestra un total que no cuadre con noches x precio
+        registro.total = calcularTotal(registro.noches, registro.precioNoche);
+
+        reservas[totalReservas] = registro;
+        totalReservas++;
+    }
+    archivo.close();
+}
+
+// Reescribe el archivo completo. Primero escribe un temporal y solo si
+// quedo bien reemplaza el original, para no perderlo todo si falla a
+// media escritura.
+bool guardarReservas() {
+    ofstream salida(ARCHIVO_TEMPORAL.c_str());
+    if (!salida.is_open()) return false;
+
+    // Sin fixed y setprecision se usan seis digitos significativos y
+    // 700.00 se guardaria como 700, perdiendo centavos.
+    salida << fixed << setprecision(2);
+
+    for (int i = 0; i < totalReservas; i++) {
+        salida << reservas[i].codigo       << "|"
+               << reservas[i].cliente      << "|"
+               << reservas[i].cabania      << "|"
+               << reservas[i].fechaEntrada << "|"
+               << reservas[i].noches       << "|"
+               << reservas[i].precioNoche  << "|"
+               << reservas[i].total        << "|"
+               << reservas[i].estado       << "\n";
+    }
+    salida.close();
+    if (salida.fail()) {
+        remove(ARCHIVO_TEMPORAL.c_str());
+        return false;
+    }
+
+    remove(ARCHIVO_DATOS.c_str());
+    if (rename(ARCHIVO_TEMPORAL.c_str(), ARCHIVO_DATOS.c_str()) != 0) {
+        return false;
+    }
+    return true;
+}
+
+// Indica si la carga se detuvo por llegar al limite de capacidad
+bool archivoExcedioCapacidad() {
+    return excedioCapacidad;
+}
+
+// ---- CONSULTAS SOBRE EL ARREGLO ----
+
+// Cantidad de reservas registradas en este momento
+int contarReservas() {
+    return totalReservas;
+}
+
+// Devuelve la posicion del codigo, o -1 si no existe. Sirve para ver si
+// un codigo esta duplicado y para localizar una reserva.
+int buscarPorCodigo(int codigo) {
+    for (int i = 0; i < totalReservas; i++) {
+        if (reservas[i].codigo == codigo) return i;
+    }
+    return -1;
+}
+
+// Una reserva Finalizada o Cancelada es un registro historico: cambiarla
+// alteraria un ingreso ya contabilizado
+bool esHistorica(int indice) {
+    if (indice < 0 || indice >= totalReservas) return false;
+    return reservas[indice].estado == ESTADOS[2] ||
+           reservas[indice].estado == ESTADOS[3];
+}
+
+// ---- OPERACIONES SOBRE LAS RESERVAS ----
+
+// Agrega al final del arreglo. Devuelve false solo si ya no hay espacio.
+// El guardado lo pide despues el controlador, para poder distinguir esa
+// falla de la de no poder escribir el archivo.
+bool agregarReserva(Reserva nueva) {
+    if (totalReservas >= MAX_RESERVAS) return false;
+    nueva.total = calcularTotal(nueva.noches, nueva.precioNoche);
+    reservas[totalReservas] = nueva;
+    totalReservas++;
+    return true;
+}
+
+// Reemplaza los cinco datos editables. El codigo identifica el registro
+// y el estado tiene su propia opcion, asi que no se tocan aqui.
+void modificarReserva(int indice, Reserva datos) {
+    if (indice < 0 || indice >= totalReservas) return;
+    reservas[indice].cliente      = datos.cliente;
+    reservas[indice].cabania      = datos.cabania;
+    reservas[indice].fechaEntrada = datos.fechaEntrada;
+    reservas[indice].noches       = datos.noches;
+    reservas[indice].precioNoche  = datos.precioNoche;
+    reservas[indice].total        = calcularTotal(datos.noches, datos.precioNoche);
+}
+
+// Desplaza una posicion hacia atras las reservas posteriores. El ciclo
+// llega hasta totalReservas - 1; con totalReservas leeria fuera.
+void eliminarReserva(int indice) {
+    if (indice < 0 || indice >= totalReservas) return;
+    for (int i = indice; i < totalReservas - 1; i++) {
+        reservas[i] = reservas[i + 1];
+    }
+    totalReservas--;
+}
+
+// Asigna el nuevo estado sin tocar ningun otro dato de la reserva
+void cambiarEstado(int indice, string nuevoEstado) {
+    if (indice < 0 || indice >= totalReservas) return;
+    reservas[indice].estado = nuevoEstado;
+}
+
+// Copia de la reserva en esa posicion. Con un indice invalido devuelve
+// una reserva vacia en lugar de leer fuera del arreglo.
+Reserva obtenerReserva(int indice) {
+    if (indice < 0 || indice >= totalReservas) {
+        Reserva vacia;
+        vacia.codigo = 0;
+        vacia.cliente = "";
+        vacia.cabania = "";
+        vacia.fechaEntrada = "";
+        vacia.noches = 0;
+        vacia.precioNoche = 0.0;
+        vacia.total = 0.0;
+        vacia.estado = "";
+        return vacia;
+    }
+    return reservas[indice];
+}
+</script>
+<script type="text/plain" id="fuente-vista-h">
+// =====================================================================
+// Universidad Mariano Galvez de Guatemala
+// Facultad de Ingenieria en Sistemas de Informacion
+// Centro Universitario de Villa Nueva
+// Curso: Algoritmos            Seccion: B
+// Docente: Ing. Lorena Espana
+// Estudiante: Eduardo Samuel Nunez Gutierrez   Carne: 5390-26-14961
+// PROYECTO FINAL - SISTEMA DE RESERVAS DE CABANAS TURISTICAS
+//
+// Archivo: vista.h
+// Modulo:  VISTA - menus, entradas y reportes
+// Descripcion: declara todo lo que el usuario ve y teclea. La vista no
+//              abre el archivo ni toca el arreglo de reservas.
+// =====================================================================
+
+#ifndef VISTA_H
+#define VISTA_H
+
+#include <string>
+#include "modelo.h"
+
+using namespace std;
+
+// ---- SALIDAS EN PANTALLA ----
+
+void mostrarMenu();
+void mostrarReserva(Reserva r);         // el detalle, campo por campo
+void mostrarEncabezadoTabla();
+void mostrarFilaReserva(Reserva r);
+void mostrarMensaje(string mensaje);
+
+// Recibe los numeros ya calculados por el modelo
+void mostrarEstadisticas(int total, int reservadas, int ocupadas,
+                         int finalizadas, int canceladas,
+                         double ingreso, double promedio);
+
+// ---- ENTRADAS DEL USUARIO ----
+
+int     leerOpcion();                   // 1 a 7; devuelve 7 si se acaba la entrada
+int     leerCodigo(string etiqueta);    // 1 a 99999
+Reserva leerDatosReserva();             // los cinco datos que escribe el usuario
+string  leerEstado();                   // submenu de los cuatro estados
+bool    confirmar(string pregunta);     // solo S o s cuentan como si
+void    pausar();
+
+#endif
+</script>
+<script type="text/plain" id="fuente-vista-cpp">
+// =====================================================================
+// Universidad Mariano Galvez de Guatemala
+// Facultad de Ingenieria en Sistemas de Informacion
+// Centro Universitario de Villa Nueva
+// Curso: Algoritmos            Seccion: B
+// Docente: Ing. Lorena Espana
+// Estudiante: Eduardo Samuel Nunez Gutierrez   Carne: 5390-26-14961
+// PROYECTO FINAL - SISTEMA DE RESERVAS DE CABANAS TURISTICAS
+//
+// Archivo: vista.cpp
+// Modulo:  VISTA - menus, entradas y reportes
+// Descripcion: implementa la interfaz de consola. Todo dato que entra por
+//              el teclado pasa primero por las funciones de validacion de
+//              este archivo, de modo que el controlador y el modelo nunca
+//              reciben un dato invalido.
+// =====================================================================
+
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <cctype>
+#include "vista.h"
+
+using namespace std;
+
+// Largos maximos para que las columnas de la tabla nunca se rompan
+const int LARGO_CLIENTE = 30;
+const int LARGO_CABANIA = 15;
+
+// Limites de los datos numericos
+const int    CODIGO_MINIMO = 1;
+const int    CODIGO_MAXIMO = 99999;
+const int    NOCHES_MINIMO = 1;
+const int    NOCHES_MAXIMO = 365;
+const double PRECIO_MINIMO = 0.01;
+const double PRECIO_MAXIMO = 100000.00;
+
+// ---- FUNCIONES DE VALIDACION DE ENTRADA ----
+// Internas de este archivo, por eso no aparecen en vista.h.
+
+// Lee una linea completa del teclado. Devuelve false si ya no hay mas
+// entrada. Todo se lee asi y nunca con cin >>, que ante una letra donde
+// va un numero deja el flujo en error y produce un ciclo infinito.
+bool leerLinea(string &destino) {
+    if (!getline(cin, destino)) return false;
+    return true;
+}
+
+// Quita los espacios del inicio y del final de un texto
+string quitarEspacios(string texto) {
+    int inicio = 0;
+    int fin = (int)texto.size() - 1;
+    while (inicio <= fin && isspace((unsigned char)texto[inicio])) inicio++;
+    while (fin >= inicio && isspace((unsigned char)texto[fin])) fin--;
+    if (fin < inicio) return "";
+    return texto.substr(inicio, fin - inicio + 1);
+}
+
+// Rechaza el texto vacio, el que pasa del largo y el que lleva el
+// separador. Sin esa ultima regla, "Ana|Lopez" dejaria una linea de
+// nueve campos y esa reserva se perderia al reabrir el programa.
+string leerTexto(string etiqueta, int largoMaximo, string mensajeVacio) {
+    string dato;
+    do {
+        cout << etiqueta;
+        if (!leerLinea(dato)) return "SIN DATO";
+        dato = quitarEspacios(dato);
+
+        if (dato.empty()) {
+            cout << mensajeVacio << endl;
+        } else if (dato.find('|') != string::npos) {
+            cout << "El texto no puede contener el caracter |." << endl;
+            dato = "";
+        } else if ((int)dato.size() > largoMaximo) {
+            cout << "El texto no puede pasar de " << largoMaximo << " caracteres." << endl;
+            dato = "";
+        }
+    } while (dato.empty());
+    return dato;
+}
+
+// Pide un numero entero dentro de un rango. Convierte con istringstream
+// para que una letra no rompa el flujo de entrada.
+int leerEntero(string etiqueta, int minimo, int maximo, string mensajeRango) {
+    string dato;
+    int valor = 0;
+    bool valido = false;
+
+    do {
+        cout << etiqueta;
+        if (!leerLinea(dato)) return minimo;
+        dato = quitarEspacios(dato);
+
+        istringstream conversor(dato);
+        string sobrante;
+        if (!(conversor >> valor) || (conversor >> sobrante)) {
+            cout << "Dato invalido. Ingrese un numero." << endl;
+        } else if (valor < minimo || valor > maximo) {
+            cout << mensajeRango << endl;
+        } else {
+            valido = true;
+        }
+    } while (!valido);
+    return valor;
+}
+
+// Pide un numero real dentro de un rango, con el mismo criterio
+double leerReal(string etiqueta, double minimo, double maximo, string mensajeRango) {
+    string dato;
+    double valor = 0.0;
+    bool valido = false;
+
+    do {
+        cout << etiqueta;
+        if (!leerLinea(dato)) return minimo;
+        dato = quitarEspacios(dato);
+
+        istringstream conversor(dato);
+        string sobrante;
+        if (!(conversor >> valor) || (conversor >> sobrante)) {
+            cout << "Dato invalido. Ingrese un numero." << endl;
+        } else if (valor < minimo || valor > maximo) {
+            cout << mensajeRango << endl;
+        } else {
+            valido = true;
+        }
+    } while (!valido);
+    return valor;
+}
+
+// Comprueba que la fecha tenga el formato dd/mm/aaaa y que el dia exista
+// de verdad en ese mes, contemplando los anios bisiestos
+bool esFechaValida(string fecha) {
+    if (fecha.size() != 10) return false;
+    if (fecha[2] != '/' || fecha[5] != '/') return false;
+    for (int i = 0; i < 10; i++) {
+        if (i == 2 || i == 5) continue;
+        if (!isdigit((unsigned char)fecha[i])) return false;
+    }
+
+    int dia  = (fecha[0] - '0') * 10 + (fecha[1] - '0');
+    int mes  = (fecha[3] - '0') * 10 + (fecha[4] - '0');
+    int anio = (fecha[6] - '0') * 1000 + (fecha[7] - '0') * 100 +
+               (fecha[8] - '0') * 10 + (fecha[9] - '0');
+
+    if (mes < 1 || mes > 12) return false;
+    if (anio < 2000 || anio > 2100) return false;
+
+    // Dias que tiene cada mes; febrero gana un dia en los anios bisiestos
+    const int DIAS_MES[12] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+    bool bisiesto = (anio % 4 == 0 && anio % 100 != 0) || (anio % 400 == 0);
+    int maximoDia = DIAS_MES[mes - 1];
+    if (mes == 2 && bisiesto) maximoDia = 29;
+
+    if (dia < 1 || dia > maximoDia) return false;
+    return true;
+}
+
+// Pide una fecha y la rechaza hasta que sea valida
+string leerFecha(string etiqueta) {
+    string dato;
+    bool valido = false;
+    do {
+        cout << etiqueta;
+        if (!leerLinea(dato)) return "01/01/2026";
+        dato = quitarEspacios(dato);
+        if (esFechaValida(dato)) {
+            valido = true;
+        } else {
+            cout << "Fecha invalida. Use el formato dd/mm/aaaa." << endl;
+        }
+    } while (!valido);
+    return dato;
+}
+
+// Devuelve el monto con dos decimales como texto, para poder pegarle la
+// Q antes de alinear. Con la Q impresa aparte la columna se descuadra.
+string formatoQuetzales(double monto) {
+    ostringstream salida;
+    salida << fixed << setprecision(2) << monto;
+    return salida.str();
+}
+
+// Recorta solo lo que se muestra; el dato guardado no se toca. setw
+// rellena pero no recorta, asi que sin esto un nombre largo rompe la
+// alineacion de toda la tabla.
+string recortar(string texto, int ancho) {
+    if ((int)texto.size() <= ancho) return texto;
+    return texto.substr(0, ancho - 1) + ".";
+}
+
+// ---- SALIDAS EN PANTALLA ----
+
+// Dibuja el menu principal. Se mantiene activo hasta que el usuario
+// elige la opcion 7.
+void mostrarMenu() {
+    cout << endl;
+    cout << "=================================================" << endl;
+    cout << "   CABANAS TURISTICAS - SISTEMA DE RESERVAS" << endl;
+    cout << "=================================================" << endl;
+    cout << " 1. Registrar reserva" << endl;
+    cout << " 2. Consultar reserva por codigo" << endl;
+    cout << " 3. Modificar reserva" << endl;
+    cout << " 4. Eliminar reserva" << endl;
+    cout << " 5. Listar reservas" << endl;
+    cout << " 6. Cambiar estado de reserva" << endl;
+    cout << " 7. Salir" << endl;
+    cout << "=================================================" << endl;
+}
+
+// Muestra el detalle completo de una reserva, un campo por linea
+void mostrarReserva(Reserva r) {
+    cout << endl;
+    cout << "-------------------------------------------------" << endl;
+    cout << " Codigo          : " << r.codigo << endl;
+    cout << " Cliente         : " << r.cliente << endl;
+    cout << " Cabana          : " << r.cabania << endl;
+    cout << " Fecha de entrada: " << r.fechaEntrada << endl;
+    cout << " Noches          : " << r.noches << endl;
+    cout << " Precio por noche: Q" << formatoQuetzales(r.precioNoche) << endl;
+    cout << " Total           : Q" << formatoQuetzales(r.total) << endl;
+    cout << " Estado          : " << r.estado << endl;
+    cout << "-------------------------------------------------" << endl;
+}
+
+// Titulos de columna del listado. Los anchos tienen que coincidir uno a
+// uno con los de mostrarFilaReserva o la tabla se descuadra.
+void mostrarEncabezadoTabla() {
+    cout << endl;
+    cout << setw(6)  << right << "CODIGO" << "  "
+         << setw(17) << left  << "CLIENTE"
+         << setw(12) << left  << "CABANA"
+         << setw(13) << left  << "F. ENTRADA"
+         << setw(6)  << right << "NOCHES"
+         << setw(11) << right << "P/NOCHE"
+         << setw(11) << right << "TOTAL"
+         << "    " << "ESTADO" << endl;
+    cout << "------------------------------------------------------------------------------------------" << endl;
+}
+
+// Una reserva como fila de la tabla. Los montos llevan la Q ya pegada
+// antes de alinear, para que la columna cuadre.
+void mostrarFilaReserva(Reserva r) {
+    cout << setw(6)  << right << r.codigo << "  "
+         << setw(17) << left  << recortar(r.cliente, 16)
+         << setw(12) << left  << recortar(r.cabania, 11)
+         << setw(13) << left  << r.fechaEntrada
+         << setw(6)  << right << r.noches
+         << setw(11) << right << ("Q" + formatoQuetzales(r.precioNoche))
+         << setw(11) << right << ("Q" + formatoQuetzales(r.total))
+         << "    " << r.estado << endl;
+}
+
+// Bloque de estadisticas basicas que cierra el listado. El enunciado pide
+// generar estadisticas basicas; el rotulo las hace faciles de ubicar.
+void mostrarEstadisticas(int total, int reservadas, int ocupadas,
+                         int finalizadas, int canceladas,
+                         double ingreso, double promedio) {
+    cout << endl;
+    cout << "--- ESTADISTICAS BASICAS ---" << endl;
+    cout << "Total de reservas: " << total << endl;
+    cout << "Reservadas: " << reservadas
+         << "   Ocupadas: " << ocupadas
+         << "   Finalizadas: " << finalizadas
+         << "   Canceladas: " << canceladas << endl;
+    cout << "Ingreso total (sin canceladas): Q" << formatoQuetzales(ingreso) << endl;
+    cout << "Promedio de noches: " << formatoQuetzales(promedio) << endl;
+}
+
+// Muestra un aviso al usuario, con una linea en blanco antes para que no
+// se confunda con la informacion anterior
+void mostrarMensaje(string mensaje) {
+    cout << endl << mensaje << endl;
+}
+
+// ---- ENTRADAS DEL USUARIO ----
+
+// No usa leerEntero porque el fin de entrada necesita trato propio:
+// devuelve 7 para que el programa salga por la opcion normal.
+int leerOpcion() {
+    string dato;
+    int valor = 0;
+    bool valido = false;
+
+    do {
+        cout << "Seleccione una opcion: ";
+        if (!leerLinea(dato)) return 7;
+        dato = quitarEspacios(dato);
+
+        istringstream conversor(dato);
+        string sobrante;
+        if (!(conversor >> valor) || (conversor >> sobrante)) {
+            cout << "Dato invalido. Ingrese un numero." << endl;
+        } else if (valor < 1 || valor > 7) {
+            cout << "Opcion invalida. Elija una opcion del 1 al 7." << endl;
+        } else {
+            valido = true;
+        }
+    } while (!valido);
+    return valor;
+}
+
+// Pide un codigo de reserva
+int leerCodigo(string etiqueta) {
+    return leerEntero(etiqueta, CODIGO_MINIMO, CODIGO_MAXIMO,
+                      "El codigo debe ser un numero entre 1 y 99999.");
+}
+
+// Pide los cinco datos que el usuario escribe de una reserva
+Reserva leerDatosReserva() {
+    Reserva datos;
+
+    datos.cliente      = leerTexto("Nombre del cliente: ", LARGO_CLIENTE,
+                                   "El nombre del cliente no puede quedar vacio.");
+    datos.cabania      = leerTexto("Cabana: ", LARGO_CABANIA,
+                                   "Debe indicar la cabana.");
+    datos.fechaEntrada = leerFecha("Fecha de entrada (dd/mm/aaaa): ");
+    datos.noches       = leerEntero("Numero de noches: ", NOCHES_MINIMO, NOCHES_MAXIMO,
+                                    "Las noches deben estar entre 1 y 365.");
+    datos.precioNoche  = leerReal("Precio por noche (Q): ", PRECIO_MINIMO, PRECIO_MAXIMO,
+                                  "El precio por noche debe estar entre 0.01 y 100000.00.");
+
+    // La vista no inventa estos tres: el codigo lo asigna el controlador,
+    // el total lo calcula el modelo y el estado lo fija el controlador
+    datos.codigo = 0;
+    datos.total  = 0.0;
+    datos.estado = "";
+    return datos;
+}
+
+// Muestra el submenu de estados y devuelve el que se eligio. El texto del
+// estado sale de ESTADOS, nunca escrito a mano.
+string leerEstado() {
+    cout << endl;
+    cout << "ESTADOS DISPONIBLES" << endl;
+    for (int i = 0; i < TOTAL_ESTADOS; i++) {
+        cout << " " << (i + 1) << ". " << ESTADOS[i] << endl;
+    }
+    int opcion = leerEntero("Nuevo estado: ", 1, TOTAL_ESTADOS,
+                            "Opcion invalida. Elija del 1 al 4.");
+    return ESTADOS[opcion - 1];
+}
+
+// Pregunta de si o no. Cualquier respuesta que no sea S se toma como no,
+// de modo que una tecla equivocada nunca borra una reserva por accidente.
+bool confirmar(string pregunta) {
+    string dato;
+    cout << pregunta;
+    if (!leerLinea(dato)) return false;
+    dato = quitarEspacios(dato);
+    return dato == "S" || dato == "s";
+}
+
+// Detiene la pantalla hasta que el usuario presiona ENTER
+void pausar() {
+    string dato;
+    cout << endl << "Presione ENTER para continuar...";
+    leerLinea(dato);
+    cout << endl;
+}
+</script>
+<script type="text/plain" id="fuente-controlador-h">
+// =====================================================================
+// Universidad Mariano Galvez de Guatemala
+// Facultad de Ingenieria en Sistemas de Informacion
+// Centro Universitario de Villa Nueva
+// Curso: Algoritmos            Seccion: B
+// Docente: Ing. Lorena Espana
+// Estudiante: Eduardo Samuel Nunez Gutierrez   Carne: 5390-26-14961
+// PROYECTO FINAL - SISTEMA DE RESERVAS DE CABANAS TURISTICAS
+//
+// Archivo: controlador.h
+// Modulo:  CONTROLADOR - coordina el modelo y la vista
+// Descripcion: declara el ciclo del menu y una funcion por cada opcion.
+//              Es el unico modulo que habla con los otros dos.
+// =====================================================================
+
+#ifndef CONTROLADOR_H
+#define CONTROLADOR_H
+
+#include "modelo.h"
+
+using namespace std;
+
+// Carga el archivo y mantiene el menu activo hasta la opcion 7
+void iniciarSistema();
+
+// ---- UNA FUNCION POR CADA OPCION DEL MENU ----
+// El prefijo "opcion" evita confundirlas con las del modelo, que tienen
+// nombres parecidos y estan visibles en este archivo
+
+void opcionRegistrarReserva();   // 1
+void opcionConsultarReserva();   // 2
+void opcionModificarReserva();   // 3
+void opcionEliminarReserva();    // 4
+void opcionListarReservas();     // 5
+void opcionCambiarEstado();      // 6
+
+#endif
+</script>
+<script type="text/plain" id="fuente-controlador-cpp">
+// =====================================================================
+// Universidad Mariano Galvez de Guatemala
+// Facultad de Ingenieria en Sistemas de Informacion
+// Centro Universitario de Villa Nueva
+// Curso: Algoritmos            Seccion: B
+// Docente: Ing. Lorena Espana
+// Estudiante: Eduardo Samuel Nunez Gutierrez   Carne: 5390-26-14961
+// PROYECTO FINAL - SISTEMA DE RESERVAS DE CABANAS TURISTICAS
+//
+// Archivo: controlador.cpp
+// Modulo:  CONTROLADOR - coordina el modelo y la vista
+// Descripcion: implementa el ciclo del menu y las siete operaciones. El
+//              controlador no imprime por su cuenta ni toca el arreglo:
+//              le pide a la vista que muestre y al modelo que opere.
+// =====================================================================
+
+#include "controlador.h"
+#include "vista.h"
+
+using namespace std;
+
+// Etiquetas y mensajes que se repiten en varias opciones
+const string ETIQUETA_CODIGO   = "Codigo de la reserva: ";
+const string MSJ_NO_ENCONTRADA = "No se encontro ninguna reserva con ese codigo.";
+const string MSJ_HISTORICA     = "No se puede modificar una reserva Finalizada o Cancelada.";
+const string MSJ_NO_SE_GUARDO  = "ADVERTENCIA: el cambio quedo en memoria pero no se pudo escribir reservas.txt.";
+
+// ---- CICLO PRINCIPAL ----
+
+// Carga los datos y mantiene el menu hasta la opcion 7. Es un do-while
+// porque el menu debe verse al menos una vez.
+void iniciarSistema() {
+    cargarReservas();
+
+    // Si el archivo traia mas registros de los que caben, hay que avisar:
+    // callarlo haria que el primer guardado borrara el resto del archivo
+    if (archivoExcedioCapacidad()) {
+        mostrarMensaje("AVISO: el archivo contiene mas reservas de las que el sistema puede manejar. Solo se cargaron las primeras 200.");
+    }
+
+    int opcion;
+    do {
+        mostrarMenu();
+        opcion = leerOpcion();
+
+        switch (opcion) {
+            case 1: opcionRegistrarReserva(); break;
+            case 2: opcionConsultarReserva(); break;
+            case 3: opcionModificarReserva(); break;
+            case 4: opcionEliminarReserva();  break;
+            case 5: opcionListarReservas();   break;
+            case 6: opcionCambiarEstado();    break;
+            case 7: mostrarMensaje("Gracias por usar el sistema de reservas. Hasta pronto."); break;
+        }
+
+        if (opcion != 7) pausar();
+    } while (opcion != 7);
+}
+
+// ---- OPCION 1: REGISTRAR ----
+
+// Pide el codigo primero para no hacer teclear todo a quien se equivoco.
+// No hay espacio y no se pudo escribir son fallas distintas, asi que se
+// avisan por separado.
+void opcionRegistrarReserva() {
+    int codigo = leerCodigo(ETIQUETA_CODIGO);
+
+    if (buscarPorCodigo(codigo) != -1) {
+        mostrarMensaje("Ya existe una reserva con ese codigo.");
+        return;
+    }
+
+    Reserva nueva = leerDatosReserva();
+    nueva.codigo = codigo;
+    nueva.estado = ESTADOS[0];   // toda reserva nueva nace Reservada
+
+    if (!agregarReserva(nueva)) {
+        mostrarMensaje("No hay espacio para mas reservas.");
+        return;
+    }
+    if (!guardarReservas()) {
+        mostrarMensaje(MSJ_NO_SE_GUARDO);
+        return;
+    }
+    mostrarMensaje("Reserva registrada correctamente.");
+}
+
+// ---- OPCION 2: CONSULTAR ----
+
+void opcionConsultarReserva() {
+    int codigo = leerCodigo(ETIQUETA_CODIGO);
+    int indice = buscarPorCodigo(codigo);
+
+    if (indice == -1) {
+        mostrarMensaje(MSJ_NO_ENCONTRADA);
+        return;
+    }
+    mostrarReserva(obtenerReserva(indice));
+}
+
+// ---- OPCION 3: MODIFICAR ----
+
+// Se vuelven a pedir los cinco datos; no se puede dejar uno en blanco.
+// El codigo y el estado no se tocan aqui.
+void opcionModificarReserva() {
+    int codigo = leerCodigo(ETIQUETA_CODIGO);
+    int indice = buscarPorCodigo(codigo);
+
+    if (indice == -1) {
+        mostrarMensaje(MSJ_NO_ENCONTRADA);
+        return;
+    }
+    if (esHistorica(indice)) {
+        mostrarMensaje(MSJ_HISTORICA);
+        return;
+    }
+
+    mostrarReserva(obtenerReserva(indice));
+    mostrarMensaje("Ingrese los datos nuevos de la reserva:");
+
+    Reserva datos = leerDatosReserva();
+    modificarReserva(indice, datos);
+
+    if (!guardarReservas()) {
+        mostrarMensaje(MSJ_NO_SE_GUARDO);
+        return;
+    }
+    mostrarMensaje("Reserva modificada correctamente.");
+}
+
+// ---- OPCION 4: ELIMINAR ----
+
+// Se permite eliminar en cualquier estado: la confirmacion ya protege la
+// operacion y una reserva cancelada tambien debe poder borrarse.
+void opcionEliminarReserva() {
+    int codigo = leerCodigo(ETIQUETA_CODIGO);
+    int indice = buscarPorCodigo(codigo);
+
+    if (indice == -1) {
+        mostrarMensaje(MSJ_NO_ENCONTRADA);
+        return;
+    }
+
+    mostrarReserva(obtenerReserva(indice));
+
+    if (!confirmar("Confirma eliminar esta reserva? (S/N): ")) {
+        mostrarMensaje("Operacion cancelada. La reserva no se elimino.");
+        return;
+    }
+
+    eliminarReserva(indice);
+
+    if (!guardarReservas()) {
+        mostrarMensaje(MSJ_NO_SE_GUARDO);
+        return;
+    }
+    mostrarMensaje("Reserva eliminada correctamente.");
+}
+
+// ---- OPCION 5: LISTAR ----
+
+// Le pide los datos al modelo y el dibujo a la vista. La vista recibe
+// valores ya calculados y nunca consulta al modelo.
+void opcionListarReservas() {
+    if (contarReservas() == 0) {
+        mostrarMensaje("No hay reservas registradas.");
+        return;
+    }
+
+    mostrarEncabezadoTabla();
+    for (int i = 0; i < contarReservas(); i++) {
+        mostrarFilaReserva(obtenerReserva(i));
+    }
+
+    mostrarEstadisticas(contarReservas(),
+                        contarPorEstado(ESTADOS[0]),
+                        contarPorEstado(ESTADOS[1]),
+                        contarPorEstado(ESTADOS[2]),
+                        contarPorEstado(ESTADOS[3]),
+                        ingresoTotal(),
+                        promedioNoches());
+}
+
+// ---- OPCION 6: CAMBIAR ESTADO ----
+
+void opcionCambiarEstado() {
+    int codigo = leerCodigo(ETIQUETA_CODIGO);
+    int indice = buscarPorCodigo(codigo);
+
+    if (indice == -1) {
+        mostrarMensaje(MSJ_NO_ENCONTRADA);
+        return;
+    }
+    if (esHistorica(indice)) {
+        mostrarMensaje(MSJ_HISTORICA);
+        return;
+    }
+
+    mostrarMensaje("Estado actual: " + obtenerReserva(indice).estado);
+    string nuevoEstado = leerEstado();
+    cambiarEstado(indice, nuevoEstado);
+
+    if (!guardarReservas()) {
+        mostrarMensaje(MSJ_NO_SE_GUARDO);
+        return;
+    }
+    mostrarMensaje("Estado actualizado correctamente.");
+}
+</script>
+<script type="text/plain" id="fuente-main-cpp">
+// =====================================================================
+// Universidad Mariano Galvez de Guatemala
+// Facultad de Ingenieria en Sistemas de Informacion
+// Centro Universitario de Villa Nueva
+// Curso: Algoritmos            Seccion: B
+// Docente: Ing. Lorena Espana
+// Estudiante: Eduardo Samuel Nunez Gutierrez   Carne: 5390-26-14961
+// PROYECTO FINAL - SISTEMA DE RESERVAS DE CABANAS TURISTICAS
+//
+// Archivo: main.cpp
+// Modulo:  PROGRAMA PRINCIPAL
+// Descripcion: punto de entrada del programa. Lo unico que hace es poner
+//              en marcha el controlador, que es quien coordina el modelo
+//              y la vista. Toda la logica vive en los otros tres modulos.
+// =====================================================================
+
+#include "controlador.h"
+
+int main() {
+    iniciarSistema();
+    return 0;
+}
+</script>
+
+<script>
+(function(){
+"use strict";
+
+/* ====================================================================
+   Réplica del programa en C++. Cada mensaje y cada ancho de columna
+   sale del codigo original, para que la terminal se comporte igual.
+   ==================================================================== */
+
+var ESTADOS = ["Reservada","Ocupada","Finalizada","Cancelada"];
+var MAX_RESERVAS = 200;
+var LARGO_CLIENTE = 30, LARGO_CABANIA = 15;
+
+var SEMILLA = [
+ {codigo:501,cliente:"Ana Lopez",  cabania:"Cabana 1",fecha:"15/11/2026",noches:2,precio:350.00,estado:"Ocupada"},
+ {codigo:502,cliente:"Luis Perez", cabania:"Cabana 2",fecha:"16/11/2026",noches:4,precio:350.00,estado:"Ocupada"},
+ {codigo:503,cliente:"Marta Ruiz", cabania:"Cabana 3",fecha:"10/11/2026",noches:1,precio:300.00,estado:"Finalizada"},
+ {codigo:504,cliente:"Jose Garcia",cabania:"Cabana 1",fecha:"20/11/2026",noches:2,precio:350.00,estado:"Cancelada"},
+ {codigo:505,cliente:"Carlos Mejia",cabania:"Cabana 4",fecha:"25/11/2026",noches:3,precio:450.00,estado:"Reservada"},
+ {codigo:506,cliente:"Sofia Lopez",cabania:"Cabana 2",fecha:"29/02/2028",noches:2,precio:500.00,estado:"Reservada"},
+ {codigo:507,cliente:"Rosa Diaz",  cabania:"Cabana 5",fecha:"01/12/2026",noches:3,precio:333.33,estado:"Reservada"}
+];
+
+var LLAVE = "reservas_cabanas_v1";
+var reservas = [];
+
+function calcularTotal(n,p){ return Math.floor(n*p*100 + 0.5)/100; }
+function dosDecimales(x){ return (Math.round(x*100)/100).toFixed(2); }
+
+function cargarReservas(){
+  var crudo = null;
+  try{ crudo = localStorage.getItem(LLAVE); }catch(e){}
+  if(!crudo){ reservas = SEMILLA.map(function(r){ return clonar(r); }); return; }
+  reservas = [];
+  crudo.split("\n").forEach(function(linea){
+    linea = linea.replace(/\r$/,"");
+    if(!linea) return;
+    var c = linea.split("|");
+    if(c.length !== 8) return;
+    for(var i=0;i<8;i++) if(c[i] === "") return;
+    var cod = aEntero(c[0]), noc = aEntero(c[4]), pre = aReal(c[5]), tot = aReal(c[6]);
+    if(cod===null||noc===null||pre===null||tot===null) return;
+    if(ESTADOS.indexOf(c[7]) === -1) return;
+    reservas.push({codigo:cod,cliente:c[1],cabania:c[2],fecha:c[3],
+                   noches:noc,precio:pre,estado:c[7]});
+  });
+}
+function guardarReservas(){
+  var t = reservas.map(function(r){
+    return [r.codigo,r.cliente,r.cabania,r.fecha,r.noches,
+            dosDecimales(r.precio),dosDecimales(calcularTotal(r.noches,r.precio)),r.estado].join("|");
+  }).join("\n");
+  try{ localStorage.setItem(LLAVE,t); return true; }catch(e){ return false; }
+}
+function clonar(r){ return {codigo:r.codigo,cliente:r.cliente,cabania:r.cabania,
+                            fecha:r.fecha,noches:r.noches,precio:r.precio,estado:r.estado}; }
+
+function aEntero(t){
+  t = String(t).trim();
+  if(!/^[+-]?\d+$/.test(t)) return null;
+  return parseInt(t,10);
+}
+function aReal(t){
+  t = String(t).trim();
+  if(!/^[+-]?(\d+(\.\d*)?|\.\d+)$/.test(t)) return null;
+  return parseFloat(t);
+}
+function buscarPorCodigo(c){
+  for(var i=0;i<reservas.length;i++) if(reservas[i].codigo===c) return i;
+  return -1;
+}
+function esHistorica(i){
+  return reservas[i].estado===ESTADOS[2] || reservas[i].estado===ESTADOS[3];
+}
+function contarPorEstado(e){
+  var n=0; reservas.forEach(function(r){ if(r.estado===e) n++; }); return n;
+}
+function ingresoTotal(){
+  var s=0; reservas.forEach(function(r){
+    if(r.estado!==ESTADOS[3]) s+=calcularTotal(r.noches,r.precio); }); return s;
+}
+function promedioNoches(){
+  if(!reservas.length) return 0;
+  var s=0; reservas.forEach(function(r){ s+=r.noches; }); return s/reservas.length;
+}
+
+/* ---- Fechas, igual que esFechaValida en vista.cpp ---- */
+var DIAS_MES=[31,28,31,30,31,30,31,31,30,31,30,31];
+function esFechaValida(f){
+  if(f.length!==10) return false;
+  if(f[2]!=="/"||f[5]!=="/") return false;
+  for(var i=0;i<10;i++){ if(i===2||i===5) continue; if(f[i]<"0"||f[i]>"9") return false; }
+  var d=+f.slice(0,2), m=+f.slice(3,5), a=+f.slice(6,10);
+  if(m<1||m>12) return false;
+  if(a<2000||a>2100) return false;
+  var bis=(a%4===0&&a%100!==0)||(a%400===0);
+  var max=DIAS_MES[m-1]; if(m===2&&bis) max=29;
+  return !(d<1||d>max);
+}
+
+/* ---- Salida con el mismo formato que la consola ---- */
+function rellena(t,n){ t=String(t); while(t.length<n) t+=" "; return t; }
+function derecha(t,n){ t=String(t); while(t.length<n) t=" "+t; return t; }
+function recortar(t,n){ return t.length<=n ? t : t.slice(0,n-1)+"."; }
+
+var salida = document.getElementById("salida");
+var terminal = document.getElementById("terminal");
+var campo = document.getElementById("campo");
+var indicador = document.getElementById("indicador");
+var fila = document.getElementById("fila");
+
+function escribir(texto,clase){
+  var n = document.createElement("span");
+  if(clase) n.className = clase;
+  n.textContent = texto + "\n";
+  salida.appendChild(n);
+  abajo();
+}
+function abajo(){ terminal.scrollTop = terminal.scrollHeight; }
+
+function mostrarMenu(){
+  escribir("");
+  escribir("=================================================",  "l-menu");
+  escribir("   CABANAS TURISTICAS - SISTEMA DE RESERVAS",        "l-menu");
+  escribir("=================================================",  "l-menu");
+  escribir(" 1. Registrar reserva");
+  escribir(" 2. Consultar reserva por codigo");
+  escribir(" 3. Modificar reserva");
+  escribir(" 4. Eliminar reserva");
+  escribir(" 5. Listar reservas");
+  escribir(" 6. Cambiar estado de reserva");
+  escribir(" 7. Salir");
+  escribir("=================================================",  "l-menu");
+}
+function mostrarMensaje(m,clase){ escribir(""); escribir(m,clase); }
+
+function mostrarReserva(r){
+  escribir("");
+  escribir("-------------------------------------------------","l-tenue");
+  escribir(" Codigo          : "+r.codigo);
+  escribir(" Cliente         : "+r.cliente);
+  escribir(" Cabana          : "+r.cabania);
+  escribir(" Fecha de entrada: "+r.fecha);
+  escribir(" Noches          : "+r.noches);
+  escribir(" Precio por noche: Q"+dosDecimales(r.precio));
+  escribir(" Total           : Q"+dosDecimales(calcularTotal(r.noches,r.precio)));
+  escribir(" Estado          : "+r.estado);
+  escribir("-------------------------------------------------","l-tenue");
+}
+function mostrarEncabezadoTabla(){
+  escribir("");
+  escribir(derecha("CODIGO",6)+"  "+rellena("CLIENTE",17)+rellena("CABANA",12)+
+           rellena("F. ENTRADA",13)+derecha("NOCHES",6)+derecha("P/NOCHE",11)+
+           derecha("TOTAL",11)+"    "+"ESTADO","l-menu");
+  escribir("------------------------------------------------------------------------------------------","l-tenue");
+}
+function mostrarFilaReserva(r){
+  escribir(derecha(r.codigo,6)+"  "+rellena(recortar(r.cliente,16),17)+
+           rellena(recortar(r.cabania,11),12)+rellena(r.fecha,13)+
+           derecha(r.noches,6)+derecha("Q"+dosDecimales(r.precio),11)+
+           derecha("Q"+dosDecimales(calcularTotal(r.noches,r.precio)),11)+"    "+r.estado);
+}
+function mostrarEstadisticas(){
+  escribir("");
+  escribir("--- ESTADISTICAS BASICAS ---","l-ok");
+  escribir("Total de reservas: "+reservas.length);
+  escribir("Reservadas: "+contarPorEstado(ESTADOS[0])+
+           "   Ocupadas: "+contarPorEstado(ESTADOS[1])+
+           "   Finalizadas: "+contarPorEstado(ESTADOS[2])+
+           "   Canceladas: "+contarPorEstado(ESTADOS[3]));
+  escribir("Ingreso total (sin canceladas): Q"+dosDecimales(ingresoTotal()));
+  escribir("Promedio de noches: "+dosDecimales(promedioNoches()));
+}
+
+/* ====================================================================
+   El programa como corrutina: cada yield espera una linea del usuario,
+   igual que un getline en la consola.
+   ==================================================================== */
+
+function* leerTexto(etiqueta,largoMaximo,mensajeVacio){
+  for(;;){
+    var d = (yield etiqueta).trim();
+    if(d === ""){ escribir(mensajeVacio,"l-error"); continue; }
+    if(d.indexOf("|") !== -1){ escribir("El texto no puede contener el caracter |.","l-error"); continue; }
+    if(d.length > largoMaximo){ escribir("El texto no puede pasar de "+largoMaximo+" caracteres.","l-error"); continue; }
+    return d;
+  }
+}
+function* leerEntero(etiqueta,minimo,maximo,mensajeRango){
+  for(;;){
+    var d = (yield etiqueta).trim();
+    var v = aEntero(d);
+    if(v === null){ escribir("Dato invalido. Ingrese un numero.","l-error"); continue; }
+    if(v < minimo || v > maximo){ escribir(mensajeRango,"l-error"); continue; }
+    return v;
+  }
+}
+function* leerReal(etiqueta,minimo,maximo,mensajeRango){
+  for(;;){
+    var d = (yield etiqueta).trim();
+    var v = aReal(d);
+    if(v === null){ escribir("Dato invalido. Ingrese un numero.","l-error"); continue; }
+    if(v < minimo || v > maximo){ escribir(mensajeRango,"l-error"); continue; }
+    return v;
+  }
+}
+function* leerFecha(etiqueta){
+  for(;;){
+    var d = (yield etiqueta).trim();
+    if(esFechaValida(d)) return d;
+    escribir("Fecha invalida. Use el formato dd/mm/aaaa.","l-error");
+  }
+}
+function* leerOpcion(){
+  for(;;){
+    var d = (yield "Seleccione una opcion: ").trim();
+    var v = aEntero(d);
+    if(v === null){ escribir("Dato invalido. Ingrese un numero.","l-error"); continue; }
+    if(v < 1 || v > 7){ escribir("Opcion invalida. Elija una opcion del 1 al 7.","l-error"); continue; }
+    return v;
+  }
+}
+function* leerCodigo(){
+  return yield* leerEntero("Codigo de la reserva: ",1,99999,
+    "El codigo debe ser un numero entre 1 y 99999.");
+}
+function* leerEstado(){
+  escribir("");
+  escribir("ESTADOS DISPONIBLES","l-menu");
+  for(var i=0;i<ESTADOS.length;i++) escribir(" "+(i+1)+". "+ESTADOS[i]);
+  var op = yield* leerEntero("Nuevo estado: ",1,4,"Opcion invalida. Elija del 1 al 4.");
+  return ESTADOS[op-1];
+}
+function* leerDatosReserva(){
+  var d = {};
+  d.cliente = yield* leerTexto("Nombre del cliente: ",LARGO_CLIENTE,
+                               "El nombre del cliente no puede quedar vacio.");
+  d.cabania = yield* leerTexto("Cabana: ",LARGO_CABANIA,"Debe indicar la cabana.");
+  d.fecha   = yield* leerFecha("Fecha de entrada (dd/mm/aaaa): ");
+  d.noches  = yield* leerEntero("Numero de noches: ",1,365,
+                                "Las noches deben estar entre 1 y 365.");
+  d.precio  = yield* leerReal("Precio por noche (Q): ",0.01,100000.00,
+                              "El precio por noche debe estar entre 0.01 y 100000.00.");
+  return d;
+}
+function* confirmar(pregunta){
+  var d = (yield pregunta).trim();
+  return d === "S" || d === "s";
+}
+function* pausar(){
+  escribir("");
+  yield "Presione ENTER para continuar...";
+  escribir("");
+}
+
+var MSJ_NO_ENCONTRADA = "No se encontro ninguna reserva con ese codigo.";
+var MSJ_HISTORICA = "No se puede modificar una reserva Finalizada o Cancelada.";
+var MSJ_NO_SE_GUARDO = "ADVERTENCIA: el cambio quedo en memoria pero no se pudo escribir reservas.txt.";
+
+function* opcionRegistrar(){
+  var codigo = yield* leerCodigo();
+  if(buscarPorCodigo(codigo) !== -1){
+    mostrarMensaje("Ya existe una reserva con ese codigo.","l-error"); return;
+  }
+  var d = yield* leerDatosReserva();
+  if(reservas.length >= MAX_RESERVAS){
+    mostrarMensaje("No hay espacio para mas reservas.","l-error"); return;
+  }
+  reservas.push({codigo:codigo,cliente:d.cliente,cabania:d.cabania,fecha:d.fecha,
+                 noches:d.noches,precio:d.precio,estado:ESTADOS[0]});
+  if(!guardarReservas()){ mostrarMensaje(MSJ_NO_SE_GUARDO,"l-aviso"); return; }
+  mostrarMensaje("Reserva registrada correctamente.","l-ok");
+}
+function* opcionConsultar(){
+  var codigo = yield* leerCodigo();
+  var i = buscarPorCodigo(codigo);
+  if(i === -1){ mostrarMensaje(MSJ_NO_ENCONTRADA,"l-error"); return; }
+  mostrarReserva(reservas[i]);
+}
+function* opcionModificar(){
+  var codigo = yield* leerCodigo();
+  var i = buscarPorCodigo(codigo);
+  if(i === -1){ mostrarMensaje(MSJ_NO_ENCONTRADA,"l-error"); return; }
+  if(esHistorica(i)){ mostrarMensaje(MSJ_HISTORICA,"l-error"); return; }
+  mostrarReserva(reservas[i]);
+  mostrarMensaje("Ingrese los datos nuevos de la reserva:");
+  var d = yield* leerDatosReserva();
+  reservas[i].cliente = d.cliente; reservas[i].cabania = d.cabania;
+  reservas[i].fecha = d.fecha; reservas[i].noches = d.noches; reservas[i].precio = d.precio;
+  if(!guardarReservas()){ mostrarMensaje(MSJ_NO_SE_GUARDO,"l-aviso"); return; }
+  mostrarMensaje("Reserva modificada correctamente.","l-ok");
+}
+function* opcionEliminar(){
+  var codigo = yield* leerCodigo();
+  var i = buscarPorCodigo(codigo);
+  if(i === -1){ mostrarMensaje(MSJ_NO_ENCONTRADA,"l-error"); return; }
+  mostrarReserva(reservas[i]);
+  var si = yield* confirmar("Confirma eliminar esta reserva? (S/N): ");
+  if(!si){ mostrarMensaje("Operacion cancelada. La reserva no se elimino.","l-aviso"); return; }
+  reservas.splice(i,1);
+  if(!guardarReservas()){ mostrarMensaje(MSJ_NO_SE_GUARDO,"l-aviso"); return; }
+  mostrarMensaje("Reserva eliminada correctamente.","l-ok");
+}
+function* opcionListar(){
+  if(reservas.length === 0){ mostrarMensaje("No hay reservas registradas.","l-aviso"); return; }
+  mostrarEncabezadoTabla();
+  for(var i=0;i<reservas.length;i++) mostrarFilaReserva(reservas[i]);
+  mostrarEstadisticas();
+}
+function* opcionCambiarEstado(){
+  var codigo = yield* leerCodigo();
+  var i = buscarPorCodigo(codigo);
+  if(i === -1){ mostrarMensaje(MSJ_NO_ENCONTRADA,"l-error"); return; }
+  if(esHistorica(i)){ mostrarMensaje(MSJ_HISTORICA,"l-error"); return; }
+  mostrarMensaje("Estado actual: "+reservas[i].estado);
+  var nuevo = yield* leerEstado();
+  reservas[i].estado = nuevo;
+  if(!guardarReservas()){ mostrarMensaje(MSJ_NO_SE_GUARDO,"l-aviso"); return; }
+  mostrarMensaje("Estado actualizado correctamente.","l-ok");
+}
+
+function* iniciarSistema(){
+  cargarReservas();
+  var opcion;
+  do{
+    mostrarMenu();
+    opcion = yield* leerOpcion();
+    if(opcion===1) yield* opcionRegistrar();
+    else if(opcion===2) yield* opcionConsultar();
+    else if(opcion===3) yield* opcionModificar();
+    else if(opcion===4) yield* opcionEliminar();
+    else if(opcion===5) yield* opcionListar();
+    else if(opcion===6) yield* opcionCambiarEstado();
+    else if(opcion===7) mostrarMensaje("Gracias por usar el sistema de reservas. Hasta pronto.","l-ok");
+    if(opcion!==7) yield* pausar();
+  }while(opcion!==7);
+
+  escribir("");
+  escribir("[ el programa termino · pulse Reiniciar para volver a empezar ]","l-tenue");
+  fila.style.display = "none";
+}
+
+/* ---- Enlace entre la corrutina y el campo de texto ---- */
+var proceso = null;
+
+function avanzar(entrada){
+  var r = proceso.next(entrada);
+  if(r.done){ return; }
+  indicador.textContent = r.value;
+  campo.value = "";
+  abajo();
+}
+function arrancar(){
+  salida.textContent = "";
+  fila.style.display = "";
+  proceso = iniciarSistema();
+  avanzar(undefined);
+}
+
+campo.addEventListener("keydown",function(e){
+  if(e.key !== "Enter") return;
+  e.preventDefault();
+  var v = campo.value;
+  escribir(indicador.textContent + v,"l-eco");
+  avanzar(v);
+});
+
+terminal.addEventListener("mousedown",function(e){
+  if(window.getSelection && String(window.getSelection())) return;
+  if(e.target === campo) return;
+  setTimeout(function(){ campo.focus(); },0);
+});
+
+document.getElementById("btn-reiniciar").addEventListener("click",function(){
+  try{ localStorage.removeItem(LLAVE); }catch(e){}
+  arrancar(); campo.focus();
+});
+
+Array.prototype.forEach.call(document.querySelectorAll("[data-mete]"),function(b){
+  b.addEventListener("click",function(){
+    if(fila.style.display === "none") return;
+    campo.value = b.getAttribute("data-mete");
+    campo.focus();
+    campo.dispatchEvent(new KeyboardEvent("keydown",{key:"Enter",bubbles:true}));
+  });
+});
+
+arrancar();
+
+/* ====================================================================
+   Visor del codigo fuente
+   ==================================================================== */
+var ARCHIVOS = ["modelo.h","modelo.cpp","vista.h","vista.cpp",
+                "controlador.h","controlador.cpp","main.cpp"];
+var pestanas = document.getElementById("pestanas");
+var visorCodigo = document.getElementById("visor-codigo");
+var visorNombre = document.getElementById("visor-nombre");
+var actual = ARCHIVOS[0];
+
+function escapar(t){
+  return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+function pintar(t){
+  var marcas = [];
+  function guarda(html){ marcas.push(html); return "\u0000"+(marcas.length-1)+"\u0000"; }
+  t = escapar(t);
+  t = t.replace(/\/\/[^\n]*/g, function(m){ return guarda('<span class="c-com">'+m+'</span>'); });
+  /* Sin cuantificadores anidados: la version con alternancia dentro de un
+     grupo repetido provocaba retroceso catastrofico y colgaba la pagina */
+  t = t.replace(/&quot;[\s\S]*?&quot;/g,
+        function(m){ return guarda('<span class="c-str">'+m+'</span>'); });
+  t = t.replace(/'(?:\\.|[^'\\])'/g,
+        function(m){ return guarda('<span class="c-str">'+m+'</span>'); });
+  t = t.replace(/^[ \t]*#[a-z]+/gm, function(m){ return guarda('<span class="c-pre">'+m+'</span>'); });
+  t = t.replace(/\b(if|else|for|while|do|switch|case|break|continue|return|struct|const|void|bool|true|false|using|namespace|new|delete)\b/g,
+        function(m){ return '<span class="c-pal">'+m+'</span>'; });
+  t = t.replace(/\b(int|double|string|char|float|long|unsigned|size_t|ifstream|ofstream|istringstream|ostringstream|Reserva)\b/g,
+        function(m){ return '<span class="c-tip">'+m+'</span>'; });
+  t = t.replace(/\b\d+(\.\d+)?\b/g, function(m){ return '<span class="c-num">'+m+'</span>'; });
+  t = t.replace(/\u0000(\d+)\u0000/g, function(_,i){ return marcas[+i]; });
+  return t;
+}
+function mostrarArchivo(nombre){
+  var nodo = document.getElementById("fuente-"+nombre.replace(".","-"));
+  if(!nodo) return;
+  visorCodigo.classList.add("cambiando");
+  setTimeout(function(){
+    visorCodigo.innerHTML = pintar(nodo.textContent.replace(/^\n/,""));
+    visorCodigo.scrollTop = 0;
+    visorNombre.textContent = nombre;
+    visorCodigo.classList.remove("cambiando");
+  },140);
+  actual = nombre;
+  Array.prototype.forEach.call(pestanas.children,function(p){
+    p.setAttribute("aria-selected", p.textContent===nombre ? "true":"false");
+  });
+}
+ARCHIVOS.forEach(function(n){
+  var b = document.createElement("button");
+  b.className = "pestana"; b.type = "button"; b.setAttribute("role","tab");
+  b.textContent = n;
+  b.setAttribute("aria-selected", n===actual ? "true":"false");
+  b.addEventListener("click",function(){ mostrarArchivo(n); });
+  pestanas.appendChild(b);
+});
+(function(){
+  var nodo = document.getElementById("fuente-modelo-h");
+  if(nodo){ visorCodigo.innerHTML = pintar(nodo.textContent.replace(/^\n/,"")); }
+})();
+
+document.getElementById("btn-copiar").addEventListener("click",function(){
+  var nodo = document.getElementById("fuente-"+actual.replace(".","-"));
+  if(!nodo) return;
+  var b = this;
+  var texto = nodo.textContent.replace(/^\n/,"");
+  function listo(){ b.textContent = "Copiado"; setTimeout(function(){ b.textContent = "Copiar"; },1400); }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(texto).then(listo,function(){});
+  }else{
+    var ta = document.createElement("textarea");
+    ta.value = texto; document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); listo(); }catch(e){}
+    document.body.removeChild(ta);
+  }
+});
+
+/* ====================================================================
+   Aparicion escalonada y barra pegada
+   ==================================================================== */
+var barra = document.getElementById("barra");
+
+/* Red de seguridad: si algo falla aqui, el contenido se queda visible */
+function todoVisible(){
+  Array.prototype.forEach.call(document.querySelectorAll(".aparece"),function(n){
+    n.classList.add("visible");
+  });
+}
+if(!("IntersectionObserver" in window)){ todoVisible(); return; }
+setTimeout(todoVisible, 2500);   // por si el observador nunca dispara
+
+var alObservar = new IntersectionObserver(function(entradas){
+  entradas.forEach(function(e){
+    if(!e.isIntersecting) return;
+    var hermanos = Array.prototype.filter.call(
+      e.target.parentNode.children, function(n){ return n.classList.contains("aparece"); });
+    var i = hermanos.indexOf(e.target);
+    e.target.style.transitionDelay = Math.min(i,5)*55 + "ms";
+    e.target.classList.add("visible");
+    alObservar.unobserve(e.target);
+  });
+},{rootMargin:"0px 0px -8% 0px",threshold:.08});
+Array.prototype.forEach.call(document.querySelectorAll(".aparece"),function(n){
+  alObservar.observe(n);
+});
+
+var ultimo = 0;
+window.addEventListener("scroll",function(){
+  var y = window.scrollY;
+  if((y > 8) !== (ultimo > 8)) barra.classList.toggle("pegada", y > 8);
+  ultimo = y;
+},{passive:true});
+
+})();
+</script>
+</body>
+</html>
