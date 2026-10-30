@@ -3784,9 +3784,9 @@
         templateNotify: "template_4zjftvd",  // Notificación (Contact Us)
         templateAutoReply: "template_edfex4i"   // Respuesta automática al cliente
       };
-      if (window.emailjs && typeof emailjs.init === "function") {
-        emailjs.init({ publicKey: EMAILJS.publicKey });
-      }
+      // El SDK carga con defer y todavia no existe aqui, asi que en vez de
+      // emailjs.init() la clave publica se pasa en cada emailjs.send().
+      var EMAILJS_OPTS = { publicKey: EMAILJS.publicKey };
 
       /* ---- reCAPTCHA v2 ---- */
       var RECAPTCHA_SITE_KEY = "6LeeN6otAAAAAJ46rjbLmttXBfwO3zBo2Zr_Gmfa";
@@ -3962,10 +3962,10 @@
         window.fxEnviando && window.fxEnviando(true);
 
         // 1) Notificación interna (Contact Us)
-        emailjs.send(EMAILJS.serviceId, EMAILJS.templateNotify, params)
+        emailjs.send(EMAILJS.serviceId, EMAILJS.templateNotify, params, EMAILJS_OPTS)
           .then(function () {
             // 2) Respuesta automática al cliente
-            return emailjs.send(EMAILJS.serviceId, EMAILJS.templateAutoReply, params);
+            return emailjs.send(EMAILJS.serviceId, EMAILJS.templateAutoReply, params, EMAILJS_OPTS);
           })
           .then(function () {
             err.classList.remove("show");
