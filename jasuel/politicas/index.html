@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es-GT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Políticas · JASUEL</title>
+<meta name="description" content="Política de Privacidad y Términos y Condiciones de compra de Jasuel Luxe.">
+<meta name="theme-color" content="#071F43">
+<!-- QUITAR esta línea cuando las dos secciones tengan su texto definitivo -->
+<meta name="robots" content="noindex">
+<link rel="canonical" href="https://programasgt.art/jasuel/politicas/">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body>
+
+<header class="nav" data-fijo>
+  <a class="nav-logo" href="../" aria-label="Jasuel, volver al inicio">
+    <span class="nav-logo-texto">JASUEL</span>
+  </a>
+  <div class="nav-acciones">
+    <a class="nav-pedido" href="../">&larr; Volver a la tienda</a>
+    <a class="boton boton-oro nav-wa" data-wa="Hola Jasuel, tengo una consulta sobre sus políticas.">WhatsApp</a>
+  </div>
+</header>
+
+<main class="politicas">
+  <header class="politicas-cabeza">
+    <p class="rotulo">Jasuel Luxe</p>
+    <h1 class="titulo">Políticas</h1>
+    <nav class="politicas-indice" aria-label="Secciones">
+      <a href="#privacidad">Política de Privacidad</a>
+      <a href="#terminos">Términos y Condiciones</a>
+    </nav>
+  </header>
+
+  <!-- PENDIENTE: pegar aquí el texto de la Política de Privacidad -->
+  <section class="politica" id="privacidad" aria-labelledby="tituloPrivacidad">
+    <h2 class="politica-titulo" id="tituloPrivacidad">Política de Privacidad</h2>
+    <p class="politica-fecha">Última actualización: próximamente</p>
+    <p class="politica-vacia">Estamos preparando esta sección.</p>
+  </section>
+
+  <!-- PENDIENTE: pegar aquí el texto de los Términos y Condiciones -->
+  <section class="politica" id="terminos" aria-labelledby="tituloTerminos">
+    <h2 class="politica-titulo" id="tituloTerminos">Términos y Condiciones de compra</h2>
+    <p class="politica-fecha">Última actualización: próximamente</p>
+    <p class="politica-vacia">Estamos preparando esta sección.</p>
+  </section>
+
+  <aside class="politica-contacto">
+    <p>¿Tienes una consulta sobre tus datos, tu pedido o una garantía?</p>
+    <p>
+      Escríbenos por WhatsApp al
+      <a data-wa="Hola Jasuel, tengo una consulta sobre sus políticas.">+502 4224-9306</a>
+    </p>
+  </aside>
+</main>
+
+<footer class="pie">
+  <div class="pie-marca">
+    <span class="pie-logo">JASUEL</span>
+    <p>Joyas &bull; Accesorios &mdash; Guatemala</p>
+  </div>
+  <p class="pie-legal">&copy; <span id="anio"></span> Jasuel Luxe. Todos los derechos reservados.</p>
+</footer>
+
+<script src="../js/datos.js"></script>
+<script>
+  // Enlaces de WhatsApp con el número de datos.js, y el año del pie
+  document.querySelectorAll("[data-wa]").forEach(function (el) {
+    el.href = "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(el.dataset.wa);
+    el.target = "_blank";
+    el.rel = "noopener";
+  });
+  document.getElementById("anio").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>

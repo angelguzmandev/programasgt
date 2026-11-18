@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es-GT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mi pedido · JASUEL</title>
+<meta name="description" content="Tu carrito de compras en Jasuel. Revisa tus piezas y confirma el pedido por WhatsApp. Pago contra entrega.">
+<meta name="theme-color" content="#071F43">
+<!-- El carrito no tiene contenido propio: no se indexa -->
+<meta name="robots" content="noindex">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/estilos.css">
+</head>
+<body class="pagina-carrito">
+
+<header class="nav" data-fijo>
+  <a class="nav-logo" href="../" aria-label="Jasuel, volver al inicio">
+    <span class="nav-logo-texto">JASUEL</span>
+  </a>
+  <div class="nav-acciones">
+    <a class="nav-pedido" href="../#catalogo">&larr; Seguir comprando</a>
+    <a class="boton boton-oro nav-wa" data-wa="Hola Jasuel, vengo de la página web y quiero más información.">WhatsApp</a>
+  </div>
+</header>
+
+<main class="carrito">
+  <header class="carrito-cabeza">
+    <p class="rotulo">Tu pedido</p>
+    <h1 class="titulo">Ya casi es tuyo</h1>
+    <p class="parrafo">Te escribimos para confirmar disponibilidad y envío. No pagas nada ahora: pagas al recibir.</p>
+  </header>
+
+  <!-- Vacío -->
+  <div class="carrito-vacio" id="carritoVacio" hidden>
+    <svg viewBox="0 0 24 24" width="48" height="48" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.5a1.6 1.6 0 0 0 1.6-1.2L21 7.5H6.1"/>
+    </svg>
+    <p id="carritoVacioTexto">Todavía no elegiste tu joya.</p>
+    <a class="boton boton-oro" href="../#catalogo">Ver las piezas</a>
+  </div>
+
+  <!-- Con piezas -->
+  <div class="carrito-rejilla" id="carritoLleno" hidden>
+    <section aria-labelledby="tituloPiezas">
+      <div class="carrito-barra">
+        <h2 class="carrito-sub" id="tituloPiezas" tabindex="-1"><span id="carritoCuenta">0 piezas</span></h2>
+        <button class="carrito-vaciar" id="carritoVaciar" type="button">Vaciar pedido</button>
+      </div>
+      <ul class="carrito-lista" id="carritoLista" aria-live="polite"></ul>
+    </section>
+
+    <aside class="carrito-resumen" aria-labelledby="tituloResumen">
+      <h2 class="carrito-sub" id="tituloResumen">Resumen</h2>
+      <dl class="carrito-cuentas">
+        <div><dt>Subtotal</dt><dd id="carritoSubtotal"></dd></div>
+        <div><dt>Envío</dt><dd class="carrito-pendiente">Según tu ubicación*</dd></div>
+        <div><dt>Pago</dt><dd>Contra entrega</dd></div>
+        <div class="carrito-total"><dt>Total aproximado</dt><dd id="carritoTotal"></dd></div>
+      </dl>
+      <p class="carrito-nota">* Enviamos a toda Guatemala con Cargo Expresso. El costo del envío se calcula según tu ubicación exacta y te lo confirmamos por WhatsApp.</p>
+
+      <form class="formulario carrito-form" id="carritoForm" novalidate>
+        <div class="campo campo-ancho">
+          <label for="nombre">Tu nombre</label>
+          <input id="nombre" name="nombre" type="text" autocomplete="name" placeholder="María López">
+        </div>
+        <div class="campo campo-ancho">
+          <label for="zona">Zona o municipio</label>
+          <input id="zona" name="zona" type="text" autocomplete="address-level2" placeholder="Zona 10, Guatemala">
+        </div>
+        <div class="campo campo-ancho">
+          <label for="nota">Algo más que debamos saber <span>(opcional)</span></label>
+          <textarea id="nota" name="nota" rows="3" placeholder="Es un regalo, lo necesito para el viernes..."></textarea>
+        </div>
+        <button class="boton boton-oro boton-ancho" type="submit">Confirmar mi pedido por WhatsApp</button>
+      </form>
+      <p class="carrito-garantia">
+        Revisa tus piezas al recibirlas: la garantía cubre defectos de fábrica al momento
+        de la entrega. No hacemos cambios ni devoluciones por otros motivos.
+        <a href="../#preguntas">Ver preguntas frecuentes</a>
+      </p>
+    </aside>
+  </div>
+</main>
+
+<!-- Confirmación propia en lugar del confirm() del navegador.
+     Hereda de .ficha la entrada, la salida y el fondo difuminado. -->
+<dialog class="ficha alerta" id="alertaVaciar" role="alertdialog" aria-labelledby="alertaTitulo" aria-describedby="alertaTexto">
+  <form method="dialog" class="alerta-cuerpo">
+    <svg class="alerta-icono" viewBox="0 0 24 24" width="30" height="30" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.5a1.6 1.6 0 0 0 1.6-1.2L21 7.5H6.1"/>
+    </svg>
+    <!-- Título y texto se completan en carrito.js con la cantidad y el total -->
+    <h2 class="alerta-titulo" id="alertaTitulo">¿Seguro que quieres quitar todo?</h2>
+    <p class="alerta-texto" id="alertaTexto">Vas a perder la selección que armaste. Recuerda que no pagas nada ahora: pagas al recibir.</p>
+    <!-- La acción segura va en dorado y con el foco; la destructiva, sin protagonismo.
+         En el DOM va segunda para quedar a la derecha (y arriba en celular). -->
+    <div class="alerta-botones">
+      <button class="boton boton-linea" value="vaciar">Sí, quitar todo</button>
+      <button class="boton boton-oro" value="cancelar" autofocus>Conservar mi pedido</button>
+    </div>
+    <a class="alerta-ayuda" id="alertaWa">¿Tienes una duda de precio o envío? Escríbenos por WhatsApp</a>
+  </form>
+</dialog>
+
+<!-- "Deshacer" tras vaciar o quitar una pieza -->
+<div class="deshacer" id="deshacer" hidden>
+  <span id="deshacerTexto"></span>
+  <button type="button" id="deshacerBoton">Deshacer</button>
+</div>
+
+<!-- Anuncios para lectores de pantalla; siempre presente para que se lean -->
+<p class="solo-lector" id="anuncio" role="status" aria-live="polite"></p>
+
+<script src="../js/datos.js"></script>
+<script src="../js/carrito.js"></script>
+</body>
+</html>

@@ -16,8 +16,15 @@
   const enlaceWa = (texto) =>
     "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(texto);
 
+  // Mientras el numero sea el de ejemplo, ningun pedido llega a nadie:
+  // se avisa en la pagina, no solo en la consola, para no publicarlo asi.
   if (CONFIG.whatsapp === "50200000000") {
     console.warn("JASUEL: falta poner el numero real de WhatsApp en js/datos.js");
+    const aviso = document.createElement("p");
+    aviso.className = "aviso-config";
+    aviso.textContent =
+      "Aviso interno: falta configurar el número de WhatsApp en js/datos.js. Los pedidos todavía no llegan.";
+    document.body.prepend(aviso);
   }
 
   /* ─────────────── Enlaces de WhatsApp sueltos ─────────────── */
@@ -54,27 +61,44 @@
 
   let pedido = leerPedido();
 
+  // La cantidad se guarda repitiendo el id: ["a","a","b"] = 2 de "a" y 1 de "b".
+  // Asi los pedidos guardados antes de existir las cantidades siguen sirviendo.
+  const MAX_POR_PIEZA = 20;
+  const cantidadDe = (id) => pedido.filter((x) => x === id).length;
+
+  // Una entrada por pieza distinta, en el orden en que se agregaron
   const piezasDelPedido = () =>
-    pedido.map((id) => PRODUCTOS.find((p) => p.id === id)).filter(Boolean);
+    [...new Set(pedido)]
+      .map((id) => PRODUCTOS.find((p) => p.id === id))
+      .filter(Boolean)
+      .map((p) => ({ ...p, cantidad: cantidadDe(p.id) }));
 
   const totalDelPedido = () =>
-    piezasDelPedido().reduce((suma, p) => suma + p.precio, 0);
+    piezasDelPedido().reduce((suma, p) => suma + p.precio * p.cantidad, 0);
 
-  function alternarEnPedido(id) {
-    const i = pedido.indexOf(id);
-    if (i === -1) pedido.push(id);
-    else pedido.splice(i, 1);
+  function agregarAlPedido(id) {
+    if (cantidadDe(id) >= MAX_POR_PIEZA) return;
+    pedido.push(id);
     guardarPedido();
     refrescarPedido();
   }
 
-  function quitarDelPedido(id) {
-    pedido = pedido.filter((x) => x !== id);
+  function cambiarCantidad(id, paso) {
+    if (paso > 0) {
+      if (cantidadDe(id) >= MAX_POR_PIEZA) return;
+      pedido.push(id);
+    } else {
+      // En 1, restar la saca del pedido
+      pedido.splice(pedido.lastIndexOf(id), 1);
+    }
     guardarPedido();
     refrescarPedido();
   }
 
   /* ─────────────── Catálogo ─────────────── */
+
+  $("#desdePrecio").textContent =
+    "Desde " + enQuetzales(Math.min(...PRODUCTOS.map((p) => p.precio)));
 
   const rejilla = $("#rejilla");
   const rejillaVacia = $("#rejillaVacia");
@@ -137,6 +161,51 @@
     return el;
   }
 
+  // Selector − 1 + para la cantidad de una pieza
+  function crearContador(p, cantidad = 1) {
+    const caja = document.createElement("div");
+    caja.className = "contador";
+    caja.setAttribute("role", "group");
+    caja.setAttribute("aria-label", "Cantidad de " + p.nombre);
+
+    const menos = document.createElement("button");
+    menos.type = "button";
+    menos.className = "contador-menos";
+    menos.innerHTML = "&minus;";
+    menos.setAttribute("aria-label", "Quitar uno");
+    menos.addEventListener("click", () => cambiarCantidad(p.id, -1));
+
+    const num = crearTexto("span", "contador-num", String(cantidad));
+    num.setAttribute("aria-live", "polite");
+
+    const mas = document.createElement("button");
+    mas.type = "button";
+    mas.className = "contador-mas";
+    mas.textContent = "+";
+    mas.setAttribute("aria-label", "Agregar otro");
+    mas.addEventListener("click", () => cambiarCantidad(p.id, 1));
+
+    caja.append(menos, num, mas);
+    return caja;
+  }
+
+  function pintarContador(caja, cantidad) {
+    const num = $(".contador-num", caja);
+    if (num.textContent !== String(cantidad)) {
+      num.textContent = cantidad;
+      if (!menosMovimiento.matches) {
+        num.animate(
+          [{ transform: "scale(1.35)", color: "var(--oro-claro)" }, { transform: "none" }],
+          { duration: 260, easing: "cubic-bezier(.23,1,.32,1)" }
+        );
+      }
+    }
+    $(".contador-menos", caja).setAttribute(
+      "aria-label", cantidad === 1 ? "Quitar del pedido" : "Quitar uno"
+    );
+    $(".contador-mas", caja).disabled = cantidad >= MAX_POR_PIEZA;
+  }
+
   function crearTarjeta(p, i) {
     const el = document.createElement("article");
     el.className = "tarjeta";
@@ -149,6 +218,9 @@
     const img = crearImagen(p.img, p.alt);
     if (i < 3) img.loading = "eager";
     foto.append(img, crearTexto("figcaption", "tarjeta-ver", "Ver detalle"));
+    if (p.categoria === "Sets") {
+      foto.append(crearTexto("span", "tarjeta-sello", "Lista para regalar"));
+    }
 
     const abrir = document.createElement("button");
     abrir.className = "tarjeta-abrir";
@@ -170,8 +242,14 @@
     const agregar = document.createElement("button");
     agregar.className = "boton boton-linea tarjeta-agregar";
     agregar.type = "button";
-    agregar.addEventListener("click", () => alternarEnPedido(p.id));
-    acciones.append(agregar);
+    // Una vez adentro, tocarlo de nuevo no hace nada: la cantidad se cambia
+    // con el contador de al lado
+    agregar.addEventListener("click", () => {
+      if (!pedido.includes(p.id)) agregarAlPedido(p.id);
+    });
+    const contador = crearContador(p, cantidadDe(p.id) || 1);
+    contador.hidden = true;
+    acciones.append(agregar, contador);
     cuerpo.append(acciones);
 
     el.append(foto, cuerpo);
@@ -195,8 +273,11 @@
       const dentro = pedido.includes(el.dataset.id);
       el.toggleAttribute("data-en-pedido", dentro);
       const boton = $(".tarjeta-agregar", el);
-      boton.textContent = dentro ? "Agregado" : "Agregar";
-      boton.setAttribute("aria-pressed", String(dentro));
+      boton.textContent = dentro ? "✓ En tu pedido" : "Agregar al pedido";
+      boton.setAttribute("aria-disabled", String(dentro));
+      const contador = $(".contador", el);
+      contador.hidden = !dentro;
+      if (dentro) pintarContador(contador, cantidadDe(el.dataset.id));
     });
   }
 
@@ -244,14 +325,15 @@
 
   function actualizarBotonFicha() {
     if (!piezaAbierta) return;
-    const dentro = pedido.includes(piezaAbierta.id);
-    fichaAgregar.textContent = dentro ? "Quitar del pedido" : "Agregar al pedido";
-    fichaAgregar.classList.toggle("boton-oro", !dentro);
-    fichaAgregar.classList.toggle("boton-linea", dentro);
+    const cantidad = cantidadDe(piezaAbierta.id);
+    fichaAgregar.textContent = cantidad
+      ? "Agregar otra (llevas " + cantidad + ")"
+      : "Agregar al pedido";
+    fichaAgregar.disabled = cantidad >= MAX_POR_PIEZA;
   }
 
   fichaAgregar.addEventListener("click", () => {
-    if (piezaAbierta) alternarEnPedido(piezaAbierta.id);
+    if (piezaAbierta) agregarAlPedido(piezaAbierta.id);
   });
 
   $("#fichaCerrar").addEventListener("click", () => ficha.close());
@@ -264,46 +346,24 @@
   /* ─────────────── Barra y lista del pedido ─────────────── */
 
   const barra = $("#barraPedido");
-  const pedidoLista = $("#pedidoLista");
-  const pedidoVacio = $("#pedidoVacio");
   const fab = $("#fabWa");
   let salidaBarra;
 
   function refrescarPedido() {
-    const piezas = piezasDelPedido();
     const total = totalDelPedido();
+    const unidades = pedido.length;
 
-    $("#numPedido").textContent = piezas.length;
-    $("#numPedidoNav").textContent = piezas.length;
-    $("#barraTotal").textContent = piezas.length ? enQuetzales(total) : "";
-    $("#pedidoTotal").textContent = piezas.length ? "· " + enQuetzales(total) : "";
-    $("#abrirPedido").hidden = piezas.length === 0;
-
-    mostrarBarra(piezas.length > 0);
-    fab.toggleAttribute("data-subido", piezas.length > 0);
-
-    pedidoVacio.hidden = piezas.length > 0;
-    pedidoLista.replaceChildren(
-      ...piezas.map((p) => {
-        const li = document.createElement("li");
-        const miniatura = crearImagen(p.img, "");
-        miniatura.width = 52;
-        miniatura.height = 64;
-        li.append(
-          miniatura,
-          crearTexto("span", "pl-nombre", p.nombre),
-          crearTexto("span", "pl-precio", enQuetzales(p.precio))
-        );
-        const quitar = document.createElement("button");
-        quitar.className = "pedido-quitar";
-        quitar.type = "button";
-        quitar.innerHTML = "&times;";
-        quitar.setAttribute("aria-label", "Quitar " + p.nombre);
-        quitar.addEventListener("click", () => quitarDelPedido(p.id));
-        li.append(quitar);
-        return li;
-      })
+    $("#numPedido").textContent = unidades;
+    $("#numPedidoNav").textContent = unidades;
+    $("#barraTotal").textContent = unidades ? enQuetzales(total) : "";
+    $("#numPedidoNav").hidden = unidades === 0;
+    $(".nav-pedido").setAttribute(
+      "aria-label",
+      unidades ? "Mi pedido, " + unidades + (unidades === 1 ? " pieza" : " piezas") : "Mi pedido"
     );
+
+    mostrarBarra(unidades > 0);
+    fab.toggleAttribute("data-subido", unidades > 0);
 
     sincronizarTarjetas();
     actualizarBotonFicha();
@@ -323,61 +383,13 @@
     }
   }
 
-  const irAContacto = () =>
-    $("#contacto").scrollIntoView({
-      behavior: menosMovimiento.matches ? "auto" : "smooth",
-      block: "start",
-    });
-
-  $("#barraInfo").addEventListener("click", irAContacto);
-  $("#abrirPedido").addEventListener("click", irAContacto);
-
   refrescarPedido();
 
-  /* ─────────────── Formulario: arma el mensaje ─────────────── */
-
-  $("#formulario").addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    const nombre = $("#nombre").value.trim();
-    const zona = $("#zona").value.trim();
-    const nota = $("#nota").value.trim();
-    const piezas = piezasDelPedido();
-
-    const lineas = [];
-    lineas.push(
-      nombre
-        ? "Hola Jasuel, soy " + nombre + (zona ? " (" + zona + ")" : "") + "."
-        : "Hola Jasuel, vengo de la página web."
-    );
-
-    if (piezas.length) {
-      lineas.push("", "Quiero pedir:");
-      piezas.forEach((p) => lineas.push("• " + p.nombre + " — " + enQuetzales(p.precio)));
-      lineas.push("", "Total aproximado: " + enQuetzales(totalDelPedido()));
-    } else {
-      lineas.push("", "Quiero información sobre sus joyas.");
-    }
-
-    if (zona && !nombre) lineas.push("", "Estoy en " + zona + ".");
-    if (nota) lineas.push("", "Nota: " + nota);
-
-    window.open(enlaceWa(lineas.join("\n")), "_blank", "noopener");
-  });
-
-  /* ─────────────── Instagram ─────────────── */
-
-  $("#instaRejilla").replaceChildren(
-    ...PRODUCTOS.slice(0, 6).map((p) => {
-      const a = document.createElement("a");
-      a.href = "https://instagram.com/" + CONFIG.instagram;
-      a.target = "_blank";
-      a.rel = "noopener";
-      a.setAttribute("aria-label", "Ver " + p.nombre + " en Instagram");
-      a.append(crearImagen(p.img, p.alt));
-      return a;
-    })
-  );
+  // Al volver desde la página del carrito (Atrás o en otra pestaña), el
+  // pedido pudo cambiar: se relee de localStorage.
+  const releerPedido = () => { pedido = leerPedido(); refrescarPedido(); };
+  addEventListener("pageshow", (e) => { if (e.persisted) releerPedido(); });
+  addEventListener("storage", (e) => { if (e.key === CLAVE) releerPedido(); });
 
   /* ─────────────── Revelado al bajar ─────────────── */
 
@@ -474,7 +486,6 @@
       pendiente = true;
       requestAnimationFrame(() => {
         nav.toggleAttribute("data-fijo", scrollY > 40);
-        fab.toggleAttribute("data-visible", scrollY > innerHeight * 0.55);
         pendiente = false;
       });
     },

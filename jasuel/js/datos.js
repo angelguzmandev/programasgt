@@ -4,14 +4,13 @@
    ESTE ES EL UNICO ARCHIVO QUE HAY QUE EDITAR PARA EL DIA A DIA:
    el numero de WhatsApp, los productos, los precios y las fotos.
 
-   Para agregar una joya: copiá un bloque { ... } completo,
-   pegalo al final de la lista y cambiale los datos.
+   Para agregar una joya: copia un bloque { ... } completo,
+   pégalo al final de la lista y cámbiale los datos.
    ============================================================ */
 
 const CONFIG = {
   // Numero de WhatsApp con codigo de pais, solo digitos. Guatemala = 502.
-  // >>> PENDIENTE: cambiar por el numero real de la clienta <<<
-  whatsapp: "50200000000",
+  whatsapp: "50242249306",
 
   instagram: "jasuel.gt",
   moneda: "Q",

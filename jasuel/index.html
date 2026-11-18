@@ -3,20 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>JASUEL · Joyas y Accesorios en oro 18k · Guatemala</title>
-<meta name="description" content="Jasuel Luxe. Joyas bañadas en oro 18k de alta calidad, diseños elegantes y acabado brillante. Mira el catálogo y pide por WhatsApp desde Guatemala.">
+<title>Joyería en Guatemala · Joyas bañadas en oro 18k | Jasuel</title>
+<meta name="description" content="Jasuel Luxe. Joyas bañadas en oro 18k para usar todos los días. Listas para regalar, envíos a toda Guatemala y pago contra entrega. Pide por WhatsApp.">
 <meta name="theme-color" content="#071F43">
-
-<!-- BORRAR ESTA LINEA cuando los precios y el WhatsApp sean los reales.
-     Mientras este aqui, Google no indexa la pagina: cualquiera que tenga
-     el link la abre, pero no aparece en las busquedas con datos de ejemplo. -->
-<meta name="robots" content="noindex">
+<link rel="canonical" href="https://programasgt.art/jasuel/">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 
 <meta property="og:type" content="website">
 <meta property="og:title" content="JASUEL · Joyas y Accesorios">
-<meta property="og:description" content="Joyas bañadas en oro 18k. Diseños elegantes, acabado brillante. Guatemala.">
-<meta property="og:image" content="assets/productos/set-perla.webp">
+<meta property="og:description" content="Joyas bañadas en oro 18k para usar todos los días. Listas para regalar, envíos a toda Guatemala y pago contra entrega.">
+<meta property="og:url" content="https://programasgt.art/jasuel/">
+<!-- WhatsApp, Facebook e Instagram solo leen la imagen con la URL completa -->
+<meta property="og:image" content="https://programasgt.art/jasuel/assets/productos/set-perla.webp">
+<meta property="og:image:alt" content="Aretes de perla, anillo y brazalete dorado de Jasuel sobre seda azul">
 <meta property="og:locale" content="es_GT">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,13 +38,18 @@
     <a href="#catalogo">Catálogo</a>
     <a href="#marca">La marca</a>
     <a href="#pedir">Cómo pedir</a>
-    <a href="#contacto">Contacto</a>
+    <a href="#preguntas">Preguntas</a>
   </nav>
 
   <div class="nav-acciones">
-    <button class="nav-pedido" id="abrirPedido" hidden>
-      Mi pedido <span class="nav-pedido-num" id="numPedidoNav">0</span>
-    </button>
+    <!-- Un solo botón para el pedido: ícono + texto + cantidad, siempre visible -->
+    <a class="nav-pedido" href="carrito/" aria-label="Mi pedido">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.5a1.6 1.6 0 0 0 1.6-1.2L21 7.5H6.1"/>
+      </svg>
+      <span class="nav-pedido-texto">Mi pedido</span>
+      <span class="nav-pedido-num" id="numPedidoNav" hidden>0</span>
+    </a>
     <a class="boton boton-oro nav-wa" data-wa="Hola Jasuel, vengo de la página web y quiero más información.">WhatsApp</a>
     <button class="nav-menu" id="abrirMenu" aria-label="Abrir menú" aria-expanded="false" aria-controls="menuMovil">
       <span></span><span></span>
@@ -60,7 +64,9 @@
     <a href="#marca">La marca</a>
     <a href="#detalle">El detalle</a>
     <a href="#pedir">Cómo pedir</a>
+    <a href="#preguntas">Preguntas frecuentes</a>
     <a href="#contacto">Contacto</a>
+    <a href="carrito/">Mi pedido</a>
   </nav>
   <a class="boton boton-oro" data-wa="Hola Jasuel, vengo de la página web y quiero más información.">Escribir por WhatsApp</a>
 </div>
@@ -80,38 +86,74 @@
         <path d="M6 1h12l5 6-11 12L1 7z" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linejoin="round"/>
         <path d="M1 7h22M6 1l3 6 3-6M18 1l-3 6-3 0M9 7l3 12 3-12" fill="none" stroke="currentColor" stroke-width=".7" stroke-linejoin="round"/>
       </svg>
-      <h1 class="marca-nombre"><span class="brillo">JASUEL</span></h1>
+      <p class="marca-nombre"><span class="brillo">JASUEL</span></p>
       <p class="marca-bajada">Joyas <span>&bull;</span> Accesorios</p>
     </div>
 
+    <h1 class="hero-titulo anim" style="--i:2">Joyas bañadas en <em>oro 18k</em> que puedes usar todos los días</h1>
     <p class="hero-frase anim" style="--i:2">
-      Joyas bañadas en <em>oro 18k</em> de alta calidad.<br>
-      Diseños elegantes, acabado brillante.
+      Pídelas en un minuto por WhatsApp. Envíos a toda Guatemala.
     </p>
 
     <div class="hero-botones anim" style="--i:3">
-      <a class="boton boton-oro" href="#catalogo">Ver catálogo</a>
-      <a class="boton boton-linea" data-wa="Hola Jasuel, vi la página y me interesan sus joyas.">Pedir por WhatsApp</a>
+      <a class="boton boton-oro" href="#catalogo">Elegir mi joya</a>
+      <a class="boton boton-linea" data-wa="Hola Jasuel, estoy buscando un regalo y quiero que me ayuden a elegir.">Ayuda para elegir un regalo</a>
     </div>
+
+    <ul class="hero-apoyo anim" style="--i:3">
+      <li id="desdePrecio">Desde Q180</li>
+      <li>Lista para regalar</li>
+      <li>Pago contra entrega</li>
+    </ul>
   </div>
 
   <a class="hero-scroll anim" style="--i:4" href="#marca" aria-label="Bajar">
     <span class="hero-scroll-linea"></span>
-    Deslizá
+    Desliza
   </a>
 </section>
 
 <!-- ───────────────────────── MARQUESINA ───────────────────────── -->
 <div class="marquesina" aria-hidden="true">
+  <!-- Grupos repetidos para que la cinta llene pantallas anchas; sin
+       animacion solo se ve el primero, centrado. -->
   <div class="marquesina-pista">
-    <span>Baño de oro 18k</span><i>&#9671;</i>
-    <span>Piezas para uso diario</span><i>&#9671;</i>
-    <span>Envíos dentro de Guatemala</span><i>&#9671;</i>
-    <span>Empaque de regalo</span><i>&#9671;</i>
-    <span>Baño de oro 18k</span><i>&#9671;</i>
-    <span>Piezas para uso diario</span><i>&#9671;</i>
-    <span>Envíos dentro de Guatemala</span><i>&#9671;</i>
-    <span>Empaque de regalo</span><i>&#9671;</i>
+    <div class="marquesina-grupo">
+      <span>Baño de oro 18k</span><i>&#9671;</i>
+      <span>Lista para regalar</span><i>&#9671;</i>
+      <span>Envíos a toda Guatemala</span><i>&#9671;</i>
+      <span>Pago contra entrega</span><i>&#9671;</i>
+    </div>
+    <div class="marquesina-grupo">
+      <span>Baño de oro 18k</span><i>&#9671;</i>
+      <span>Lista para regalar</span><i>&#9671;</i>
+      <span>Envíos a toda Guatemala</span><i>&#9671;</i>
+      <span>Pago contra entrega</span><i>&#9671;</i>
+    </div>
+    <div class="marquesina-grupo">
+      <span>Baño de oro 18k</span><i>&#9671;</i>
+      <span>Lista para regalar</span><i>&#9671;</i>
+      <span>Envíos a toda Guatemala</span><i>&#9671;</i>
+      <span>Pago contra entrega</span><i>&#9671;</i>
+    </div>
+    <div class="marquesina-grupo">
+      <span>Baño de oro 18k</span><i>&#9671;</i>
+      <span>Lista para regalar</span><i>&#9671;</i>
+      <span>Envíos a toda Guatemala</span><i>&#9671;</i>
+      <span>Pago contra entrega</span><i>&#9671;</i>
+    </div>
+    <div class="marquesina-grupo">
+      <span>Baño de oro 18k</span><i>&#9671;</i>
+      <span>Lista para regalar</span><i>&#9671;</i>
+      <span>Envíos a toda Guatemala</span><i>&#9671;</i>
+      <span>Pago contra entrega</span><i>&#9671;</i>
+    </div>
+    <div class="marquesina-grupo">
+      <span>Baño de oro 18k</span><i>&#9671;</i>
+      <span>Lista para regalar</span><i>&#9671;</i>
+      <span>Envíos a toda Guatemala</span><i>&#9671;</i>
+      <span>Pago contra entrega</span><i>&#9671;</i>
+    </div>
   </div>
 </div>
 
@@ -132,7 +174,7 @@
     <p class="parrafo revelar">
       Jasuel nace en Guatemala con una idea simple: que una joya bonita no tiene
       que guardarse para una ocasión especial. Cada pieza lleva baño de oro 18k
-      sobre una base resistente, así que aguanta el uso diario sin perder el brillo.
+      sobre una base resistente y, con un cuidado básico, conserva su brillo en el uso diario.
     </p>
     <p class="parrafo revelar">
       Trabajamos con colecciones pequeñas. Elegimos pocos diseños, los cuidamos
@@ -141,8 +183,8 @@
 
     <ul class="marca-puntos revelar">
       <li><strong>18k</strong><span>Baño de oro de alta calidad</span></li>
-      <li><strong>Uso diario</strong><span>Acabado que no se opaca rápido</span></li>
-      <li><strong>Guatemala</strong><span>Atención directa por WhatsApp</span></li>
+      <li><strong>Uso diario</strong><span>Pensadas para el día a día</span></li>
+      <li><strong>Contra entrega</strong><span>Pagas cuando recibes tu pedido</span></li>
     </ul>
   </div>
 </section>
@@ -151,10 +193,10 @@
 <section class="catalogo" id="catalogo">
   <header class="seccion-cabeza">
     <p class="rotulo revelar">Catálogo</p>
-    <h2 class="titulo revelar">Elegí tus piezas</h2>
+    <h2 class="titulo revelar">Elige tus piezas</h2>
     <p class="parrafo centrado revelar">
-      Tocá una joya para ver el detalle. Agregá las que te gusten y mandá
-      todo junto en un solo mensaje de WhatsApp.
+      Toca una joya para ver el detalle. Agrega las que te gusten y confirma
+      todo junto en un solo mensaje de WhatsApp. No pagas nada hasta recibir.
     </p>
   </header>
 
@@ -177,9 +219,11 @@
     <article class="detalle-paso" data-img="assets/productos/collar-pantera.webp">
       <p class="rotulo">01 &mdash; El material</p>
       <h3>Base resistente,<br>baño de oro 18k</h3>
+      <!-- PENDIENTE: cuando la clienta confirme el material base de cada pieza,
+           nombrarlo aquí y en los datos de cada producto (js/datos.js). -->
       <p class="parrafo">
-        El baño va sobre acero o latón tratado, no sobre fantasía liviana.
-        Por eso el color aguanta el roce, el agua y el día a día.
+        El baño de oro 18k va sobre una base resistente, pensada para
+        el uso diario. Con un cuidado básico mantiene su brillo por mucho tiempo.
       </p>
     </article>
 
@@ -196,7 +240,7 @@
       <p class="rotulo">03 &mdash; La entrega</p>
       <h3>Lista para<br>regalar</h3>
       <p class="parrafo">
-        Cada pedido sale en caja con listón. Si es un regalo, decinos para quién
+        Cada pedido sale en caja con listón. Si es un regalo, dinos para quién
         y le ponemos tarjeta.
       </p>
     </article>
@@ -213,61 +257,82 @@
   <ol class="pasos">
     <li class="paso revelar">
       <span class="paso-num">1</span>
-      <h3>Armá tu pedido</h3>
-      <p>Agregá del catálogo todas las piezas que te gusten.</p>
+      <h3>Arma tu pedido</h3>
+      <p>Agrega del catálogo todas las piezas que te gusten.</p>
     </li>
     <li class="paso revelar">
       <span class="paso-num">2</span>
-      <h3>Mandalo por WhatsApp</h3>
-      <p>El mensaje se escribe solo con lo que elegiste. Vos solo lo enviás.</p>
+      <h3>Confírmalo por WhatsApp</h3>
+      <p>El mensaje se escribe solo con lo que elegiste. Tú solo lo envías.</p>
     </li>
     <li class="paso revelar">
       <span class="paso-num">3</span>
-      <h3>Coordinamos entrega</h3>
-      <p>Te confirmamos disponibilidad, total y forma de envío.</p>
+      <h3>Pagas al recibir</h3>
+      <p>Te lo llevamos con Cargo Expresso y pagas en la puerta de tu casa u oficina.</p>
     </li>
   </ol>
 </section>
 
-<!-- ───────────────────────── INSTAGRAM ───────────────────────── -->
-<section class="insta">
+<!-- ───────────────────────── PREGUNTAS FRECUENTES ───────────────────────── -->
+<section class="preguntas" id="preguntas">
   <header class="seccion-cabeza">
-    <p class="rotulo revelar">En Instagram</p>
-    <h2 class="titulo revelar">&#64;jasuel.gt</h2>
+    <p class="rotulo revelar">Preguntas frecuentes</p>
+    <h2 class="titulo revelar">Antes de pedir</h2>
   </header>
-  <div class="insta-rejilla" id="instaRejilla"></div>
-  <a class="boton boton-linea revelar" href="https://instagram.com/jasuel.gt" target="_blank" rel="noopener">Seguir la cuenta</a>
+
+  <div class="preguntas-lista">
+    <details class="pregunta revelar">
+      <summary>¿El baño de oro se cae o se pone negro?</summary>
+      <p>
+        Nuestras piezas están diseñadas para durar. Con un cuidado básico (evitar el
+        contacto directo con perfumes, cloro y cremas), el baño de oro de 18k mantiene
+        su brillo por mucho tiempo.
+      </p>
+    </details>
+    <!-- PENDIENTE: "¿Dan alergia o irritan la piel?" vuelve cuando la clienta
+         confirme que todas las piezas son libres de níquel. Texto propuesto:
+         ¡Para nada! Seleccionamos materiales seguros y libres de níquel para que puedas
+         usarlas todos los días con total tranquilidad, incluso si tienes piel sensible. -->
+    <details class="pregunta revelar">
+      <summary>¿Cómo funcionan los envíos y cuánto cuestan?</summary>
+      <p>
+        Realizamos envíos seguros a toda Guatemala a través de Cargo Expresso. El costo
+        del envío se calcula según tu ubicación exacta al confirmar el pedido.
+      </p>
+    </details>
+    <details class="pregunta revelar">
+      <summary>¿Cómo se paga el pedido?</summary>
+      <p>
+        ¡Es 100% seguro! Solo pagas al recibir (Pago Contra Entrega). Haz tu pedido por
+        WhatsApp, te confirmamos los detalles de envío y pagas en la puerta de tu casa u
+        oficina cuando Cargo Expresso te entregue tu paquete.
+      </p>
+    </details>
+    <details class="pregunta revelar">
+      <summary>¿Tienen cambios, devoluciones o reembolsos?</summary>
+      <p>
+        Por razones de higiene y cuidado de nuestras piezas, no realizamos cambios,
+        devoluciones ni reembolsos una vez entregado el pedido. Únicamente aplicamos
+        garantía de cambio si la joya presenta algún defecto de fábrica comprobable al
+        momento de recibirla (no aplica por mal uso, golpes o negligencia en su cuidado).
+      </p>
+    </details>
+  </div>
 </section>
 
-<!-- ───────────────────────── CONTACTO / PEDIDO ───────────────────────── -->
+<!-- ───────────────────────── CONTACTO ───────────────────────── -->
 <section class="contacto" id="contacto">
-  <div class="contacto-caja">
-    <p class="rotulo revelar">Tu pedido</p>
-    <h2 class="titulo revelar">Lo enviamos por WhatsApp</h2>
-
-    <ul class="pedido-lista" id="pedidoLista" aria-live="polite"></ul>
-    <p class="pedido-vacio" id="pedidoVacio">
-      Todavía no agregaste piezas. Volvé al <a href="#catalogo">catálogo</a> y elegí las que te gusten.
+  <div class="contacto-caja contacto-simple">
+    <p class="rotulo revelar">Contacto</p>
+    <h2 class="titulo revelar">¿Te ayudamos a elegir?</h2>
+    <p class="parrafo centrado revelar">
+      Escríbenos por WhatsApp y te asesoramos para encontrar la pieza ideal o el regalo
+      perfecto. Te responde una persona, no un robot.
     </p>
-
-    <form class="formulario" id="formulario" novalidate>
-      <div class="campo">
-        <label for="nombre">Tu nombre</label>
-        <input id="nombre" name="nombre" type="text" autocomplete="name" placeholder="María López">
-      </div>
-      <div class="campo">
-        <label for="zona">Zona o municipio</label>
-        <input id="zona" name="zona" type="text" autocomplete="address-level2" placeholder="Zona 10, Guatemala">
-      </div>
-      <div class="campo campo-ancho">
-        <label for="nota">Algo más que debamos saber <span>(opcional)</span></label>
-        <textarea id="nota" name="nota" rows="3" placeholder="Es un regalo, lo necesito para el viernes..."></textarea>
-      </div>
-      <button class="boton boton-oro boton-ancho" type="submit">
-        Enviar pedido por WhatsApp
-        <span class="pedido-total" id="pedidoTotal"></span>
-      </button>
-    </form>
+    <div class="contacto-botones revelar">
+      <a class="boton boton-oro" data-wa="Hola Jasuel, quiero que me ayuden a elegir una joya.">Escribir por WhatsApp</a>
+      <a class="boton boton-linea" href="carrito/">Ver mi pedido</a>
+    </div>
   </div>
 </section>
 
@@ -282,9 +347,15 @@
     <a href="#catalogo">Catálogo</a>
     <a href="#marca">La marca</a>
     <a href="#pedir">Cómo pedir</a>
+    <a href="#preguntas">Preguntas frecuentes</a>
     <a href="https://instagram.com/jasuel.gt" target="_blank" rel="noopener">Instagram</a>
-    <a data-wa="Hola Jasuel, vengo de la página web.">WhatsApp</a>
+    <a data-wa="Hola Jasuel, vengo de la página web.">WhatsApp +502 4224-9306</a>
   </nav>
+  <p class="pie-politicas">
+    <a href="politicas/#privacidad">Política de Privacidad</a> &middot;
+    <a href="politicas/#terminos">Términos y Condiciones</a>
+    <span>Estamos trabajando en ellas</span>
+  </p>
   <p class="pie-legal">&copy; <span id="anio"></span> Jasuel Luxe. Todos los derechos reservados.</p>
 </footer>
 
@@ -303,7 +374,7 @@
       <ul class="ficha-datos" id="fichaDatos"></ul>
       <div class="ficha-botones">
         <button class="boton boton-oro" id="fichaAgregar">Agregar al pedido</button>
-        <a class="boton boton-linea" id="fichaWa">Preguntar por esta pieza</a>
+        <a class="boton boton-linea" id="fichaWa">¿Está disponible? Preguntar</a>
       </div>
     </div>
   </div>
@@ -311,12 +382,12 @@
 
 <!-- Barra flotante del pedido -->
 <div class="barra-pedido" id="barraPedido" hidden>
-  <button class="barra-info" id="barraInfo">
+  <a class="barra-info" href="carrito/">
     <span class="barra-num" id="numPedido">0</span>
-    <span class="barra-texto">piezas en tu pedido</span>
+    <span class="barra-texto">en tu pedido</span>
     <span class="barra-total" id="barraTotal"></span>
-  </button>
-  <a class="boton boton-oro" href="#contacto" id="barraEnviar">Enviar</a>
+  </a>
+  <a class="boton boton-oro" href="carrito/">Terminar pedido</a>
 </div>
 
 <!-- Botón flotante de WhatsApp -->
