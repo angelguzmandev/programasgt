@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/estilos.css?v=20261118b">
+<link rel="stylesheet" href="../css/estilos.css?v=20261122m">
 </head>
 <body class="pagina-carrito">
 
@@ -40,6 +40,9 @@
       <circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.3 11.2a1.6 1.6 0 0 0 1.6 1.3h8.5a1.6 1.6 0 0 0 1.6-1.2L21 7.5H6.1"/>
     </svg>
     <p id="carritoVacioTexto">Todavía no elegiste tu joya.</p>
+    <!-- Aparece después de registrar un pedido, por si WhatsApp no se abrió -->
+    <a class="boton boton-linea" id="carritoReenviar" target="_blank" rel="noopener" hidden>Abrir WhatsApp de nuevo</a>
+    <a class="boton boton-linea" id="carritoRastrear" hidden>Ver el estado de mi pedido</a>
     <a class="boton boton-oro" href="../#catalogo">Ver las piezas</a>
   </div>
 
@@ -65,18 +68,23 @@
 
       <form class="formulario carrito-form" id="carritoForm" novalidate>
         <div class="campo campo-ancho">
-          <label for="nombre">Tu nombre</label>
-          <input id="nombre" name="nombre" type="text" autocomplete="name" placeholder="María López">
+          <label for="nombre">Tu nombre <b class="req" aria-hidden="true">*</b></label>
+          <input id="nombre" name="nombre" type="text" autocomplete="name" placeholder="María López" maxlength="80" required>
         </div>
         <div class="campo campo-ancho">
-          <label for="zona">Zona o municipio</label>
-          <input id="zona" name="zona" type="text" autocomplete="address-level2" placeholder="Zona 10, Guatemala">
+          <label for="telefono">Tu número de teléfono <b class="req" aria-hidden="true">*</b></label>
+          <input id="telefono" name="telefono" type="tel" autocomplete="tel" inputmode="tel" placeholder="5555 5555" maxlength="20" required>
+        </div>
+        <div class="campo campo-ancho">
+          <label for="zona">Zona o municipio <b class="req" aria-hidden="true">*</b></label>
+          <input id="zona" name="zona" type="text" autocomplete="address-level2" placeholder="Zona 10, Guatemala" maxlength="120" required>
         </div>
         <div class="campo campo-ancho">
           <label for="nota">Algo más que debamos saber <span>(opcional)</span></label>
-          <textarea id="nota" name="nota" rows="3" placeholder="Es un regalo, lo necesito para el viernes..."></textarea>
+          <textarea id="nota" name="nota" rows="3" placeholder="Es un regalo, lo necesito para el viernes..." maxlength="500"></textarea>
         </div>
-        <button class="boton boton-oro boton-ancho" type="submit">Confirmar mi pedido por WhatsApp</button>
+        <p class="carrito-error" id="carritoError" role="alert" hidden></p>
+        <button class="boton boton-oro boton-ancho" type="submit" id="carritoConfirmar">Confirmar mi pedido por WhatsApp</button>
       </form>
       <p class="carrito-garantia">
         Revisa tus piezas al recibirlas: la garantía cubre defectos de fábrica al momento
@@ -116,7 +124,7 @@
 <!-- Anuncios para lectores de pantalla; siempre presente para que se lean -->
 <p class="solo-lector" id="anuncio" role="status" aria-live="polite"></p>
 
-<script src="../js/datos.js?v=20261118b"></script>
-<script src="../js/carrito.js?v=20261118b"></script>
+<script src="../js/datos.js?v=20261122m"></script>
+<script src="../js/catalogo.js?v=20261122m" data-app="../js/carrito.js?v=20261122m"></script>
 </body>
 </html>

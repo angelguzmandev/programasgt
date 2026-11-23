@@ -38,14 +38,14 @@
   /* ─────────────── El pedido ─────────────── */
 
   const CLAVE = "jasuel-pedido";
+  // Antes de leerPedido(): leerlo usa este tope al ajustar a existencias
+  const MAX_POR_PIEZA = 10; // igual que crear_pedido en la base
 
   function leerPedido() {
     try {
       const guardado = JSON.parse(localStorage.getItem(CLAVE));
-      // Solo sobreviven los ids que todavia existen en el catalogo
-      return Array.isArray(guardado)
-        ? guardado.filter((id) => PRODUCTOS.some((p) => p.id === id))
-        : [];
+      // Solo sobreviven los ids que todavia existen y hay en existencia
+      return Array.isArray(guardado) ? ajustarAExistencias(guardado) : [];
     } catch {
       return [];
     }
@@ -63,8 +63,37 @@
 
   // La cantidad se guarda repitiendo el id: ["a","a","b"] = 2 de "a" y 1 de "b".
   // Asi los pedidos guardados antes de existir las cantidades siguen sirviendo.
-  const MAX_POR_PIEZA = 20;
   const cantidadDe = (id) => pedido.filter((x) => x === id).length;
+
+  // Tope por pieza: lo que hay en existencia (si la tienda la controla), máximo 20
+  function maximoDe(id) {
+    const p = PRODUCTOS.find((x) => x.id === id);
+    if (!p) return 0;
+    return Number.isInteger(p.existencia) ? Math.min(MAX_POR_PIEZA, p.existencia) : MAX_POR_PIEZA;
+  }
+
+  function ajustarAExistencias(ids) {
+    const cuenta = {};
+    return ids.filter((id) => {
+      cuenta[id] = (cuenta[id] || 0) + 1;
+      return cuenta[id] <= maximoDe(id);
+    });
+  }
+
+  // Con pocas disponibles se avisa en la tarjeta y en la ficha (dato real,
+  // ya descontado lo apartado por otros pedidos)
+  const POCAS = 3;
+  function textoPocas(p) {
+    const n = p.existencia;
+    if (!Number.isInteger(n) || n <= 0 || n > POCAS) return "";
+    return n === 1 ? "¡Última pieza!" : "Solo quedan " + n;
+  }
+
+  // "Set Perla Clásica (SET0006)": con el SKU la tienda sabe exacto de qué pieza le hablan
+
+  const mensajeAgotado = (p) =>
+    "Hola Jasuel 👋\nMe interesa *" + p.nombre + "*" + (p.sku ? " (" + p.sku + ")" : "") +
+    " pero aparece agotado.\n¿Me avisan cuando vuelva?";
 
   // Una entrada por pieza distinta, en el orden en que se agregaron
   const piezasDelPedido = () =>
@@ -77,7 +106,7 @@
     piezasDelPedido().reduce((suma, p) => suma + p.precio * p.cantidad, 0);
 
   function agregarAlPedido(id) {
-    if (cantidadDe(id) >= MAX_POR_PIEZA) return;
+    if (cantidadDe(id) >= maximoDe(id)) return;
     pedido.push(id);
     guardarPedido();
     refrescarPedido();
@@ -85,7 +114,7 @@
 
   function cambiarCantidad(id, paso) {
     if (paso > 0) {
-      if (cantidadDe(id) >= MAX_POR_PIEZA) return;
+      if (cantidadDe(id) >= maximoDe(id)) return;
       pedido.push(id);
     } else {
       // En 1, restar la saca del pedido
@@ -165,6 +194,7 @@
   function crearContador(p, cantidad = 1) {
     const caja = document.createElement("div");
     caja.className = "contador";
+    caja.dataset.id = p.id;
     caja.setAttribute("role", "group");
     caja.setAttribute("aria-label", "Cantidad de " + p.nombre);
 
@@ -203,7 +233,7 @@
     $(".contador-menos", caja).setAttribute(
       "aria-label", cantidad === 1 ? "Quitar del pedido" : "Quitar uno"
     );
-    $(".contador-mas", caja).disabled = cantidad >= MAX_POR_PIEZA;
+    $(".contador-mas", caja).disabled = cantidad >= maximoDe(caja.dataset.id);
   }
 
   function crearTarjeta(p, i) {
@@ -218,8 +248,16 @@
     const img = crearImagen(p.img, p.alt);
     if (i < 3) img.loading = "eager";
     foto.append(img, crearTexto("figcaption", "tarjeta-ver", "Ver detalle"));
-    if (p.categoria === "Sets") {
-      foto.append(crearTexto("span", "tarjeta-sello", "Lista para regalar"));
+    if (p.agotado) {
+      el.dataset.agotado = "";
+      foto.append(crearTexto("span", "tarjeta-sello tarjeta-sello-agotado", "Agotado"));
+    } else {
+      // La etiqueta la pone la dueña en el panel. Sin catálogo en vivo
+      // (respaldo datos.js) se conserva el sello de siempre en los Sets.
+      const etiqueta = p.etiqueta !== undefined
+        ? p.etiqueta
+        : p.categoria === "Sets" ? "Lista para regalar" : "";
+      if (etiqueta) foto.append(crearTexto("span", "tarjeta-sello", etiqueta));
     }
 
     const abrir = document.createElement("button");
@@ -234,8 +272,11 @@
     cuerpo.append(
       crearTexto("p", "tarjeta-cat", p.categoria),
       crearTexto("h3", "tarjeta-nombre", p.nombre),
+      ...(p.sku ? [crearTexto("p", "tarjeta-sku", p.sku)] : []),
       crearTexto("p", "tarjeta-precio", enQuetzales(p.precio))
     );
+    const pocas = textoPocas(p);
+    if (pocas) cuerpo.append(crearTexto("p", "tarjeta-pocas", pocas));
 
     const acciones = document.createElement("div");
     acciones.className = "tarjeta-acciones";
@@ -245,6 +286,7 @@
     // Una vez adentro, tocarlo de nuevo no hace nada: la cantidad se cambia
     // con el contador de al lado
     agregar.addEventListener("click", () => {
+      if (p.agotado) return window.open(enlaceWa(mensajeAgotado(p)), "_blank", "noopener");
       if (!pedido.includes(p.id)) agregarAlPedido(p.id);
     });
     const contador = crearContador(p, cantidadDe(p.id) || 1);
@@ -270,6 +312,10 @@
   // Deja las tarjetas al dia con lo que hay en el pedido
   function sincronizarTarjetas() {
     $$(".tarjeta", rejilla).forEach((el) => {
+      if (el.hasAttribute("data-agotado")) {
+        $(".tarjeta-agregar", el).textContent = "Agotado · Avísame";
+        return;
+      }
       const dentro = pedido.includes(el.dataset.id);
       el.toggleAttribute("data-en-pedido", dentro);
       const boton = $(".tarjeta-agregar", el);
@@ -302,7 +348,12 @@
     fichaImg.alt = p.alt;
     $("#fichaCat").textContent = p.categoria;
     $("#fichaNombre").textContent = p.nombre;
+    $("#fichaSku").textContent = p.sku ? "Código " + p.sku : "";
+    $("#fichaSku").hidden = !p.sku;
     $("#fichaPrecio").textContent = enQuetzales(p.precio);
+    const pocas = textoPocas(p);
+    $("#fichaPocas").textContent = pocas;
+    $("#fichaPocas").hidden = !pocas;
     $("#fichaDesc").textContent = p.descripcion;
     $("#fichaDatos").replaceChildren(
       ...p.datos.map((d) => {
@@ -313,9 +364,12 @@
     );
 
     fichaWa.href = enlaceWa(
-      "Hola Jasuel, me interesa esta pieza: " + p.nombre +
-        " (" + enQuetzales(p.precio) + "). ¿Está disponible?"
+      p.agotado
+        ? mensajeAgotado(p)
+        : "Hola Jasuel 👋\nMe interesa esta pieza:\n*" + p.nombre + "*" + (p.sku ? " (" + p.sku + ")" : "") +
+          " — " + enQuetzales(p.precio) + "\n\n¿Está disponible?"
     );
+    fichaWa.textContent = p.agotado ? "Avísame cuando vuelva" : "¿Está disponible? Preguntar";
     fichaWa.target = "_blank";
     fichaWa.rel = "noopener";
 
@@ -326,10 +380,15 @@
   function actualizarBotonFicha() {
     if (!piezaAbierta) return;
     const cantidad = cantidadDe(piezaAbierta.id);
-    fichaAgregar.textContent = cantidad
-      ? "Agregar otra (llevas " + cantidad + ")"
-      : "Agregar al pedido";
-    fichaAgregar.disabled = cantidad >= MAX_POR_PIEZA;
+    const maximo = maximoDe(piezaAbierta.id);
+    fichaAgregar.textContent = piezaAbierta.agotado
+      ? "Agotado"
+      : cantidad && cantidad >= maximo
+        ? "Ya llevas todas las disponibles (" + cantidad + ")"
+        : cantidad
+          ? "Agregar otra (llevas " + cantidad + ")"
+          : "Agregar al pedido";
+    fichaAgregar.disabled = Boolean(piezaAbierta.agotado) || cantidad >= maximo;
   }
 
   fichaAgregar.addEventListener("click", () => {

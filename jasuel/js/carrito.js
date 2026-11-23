@@ -13,7 +13,8 @@
   const enlaceWa = (texto) =>
     "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(texto);
   // Las rutas de datos.js son relativas a /jasuel/; esta página vive un nivel abajo
-  const ruta = (src) => "../" + src;
+  // Las fotos subidas desde el panel ya son URLs completas
+  const ruta = (src) => (/^https?:\/\//.test(src) ? src : "../" + src);
 
   if (CONFIG.whatsapp === "50200000000") {
     const aviso = document.createElement("p");
@@ -32,13 +33,36 @@
   /* ─────────────── El pedido (misma clave que app.js) ─────────────── */
 
   const CLAVE = "jasuel-pedido";
+  const MAX_POR_PIEZA = 10; // igual que crear_pedido en la base
+
+  // Tope por pieza: lo que hay en existencia (si la tienda la controla), máximo 20
+  function maximoDe(id) {
+    const p = PRODUCTOS.find((x) => x.id === id);
+    if (!p) return 0;
+    return Number.isInteger(p.existencia) ? Math.min(MAX_POR_PIEZA, p.existencia) : MAX_POR_PIEZA;
+  }
+
+  // Piezas que se quitaron o recortaron al leer (agotadas o con menos existencia)
+  let ajustadas = [];
 
   function leerPedido() {
     try {
       const guardado = JSON.parse(localStorage.getItem(CLAVE));
-      return Array.isArray(guardado)
-        ? guardado.filter((id) => PRODUCTOS.some((p) => p.id === id))
-        : [];
+      if (!Array.isArray(guardado)) return [];
+      const pedidas = {};
+      guardado.forEach((id) => { pedidas[id] = (pedidas[id] || 0) + 1; });
+
+      // Productos que siguen en el catálogo pero ya no alcanzan (agotados o con menos)
+      ajustadas = Object.keys(pedidas)
+        .map((id) => PRODUCTOS.find((p) => p.id === id))
+        .filter((p) => p && maximoDe(p.id) < pedidas[p.id])
+        .map((p) => p.nombre);
+
+      const cuenta = {};
+      return guardado.filter((id) => {
+        cuenta[id] = (cuenta[id] || 0) + 1;
+        return cuenta[id] <= maximoDe(id);
+      });
     } catch {
       return [];
     }
@@ -55,7 +79,6 @@
   let pedido = leerPedido();
 
   // La cantidad va repetida en la lista, igual que en app.js
-  const MAX_POR_PIEZA = 20;
   const cantidadDe = (id) => pedido.filter((x) => x === id).length;
   const piezas = () =>
     [...new Set(pedido)]
@@ -69,7 +92,7 @@
 
   function cambiarCantidad(id, paso) {
     if (paso > 0) {
-      if (cantidadDe(id) >= MAX_POR_PIEZA) return;
+      if (cantidadDe(id) >= maximoDe(id)) return;
       pedido.push(id);
     } else if (cantidadDe(id) === 1) {
       // Restar la última unidad la saca del pedido: se puede deshacer
@@ -156,7 +179,7 @@
     mas.type = "button";
     mas.textContent = "+";
     mas.setAttribute("aria-label", "Agregar otro");
-    mas.disabled = p.cantidad >= MAX_POR_PIEZA;
+    mas.disabled = p.cantidad >= maximoDe(p.id);
     mas.addEventListener("click", () => cambiarCantidad(p.id, 1));
 
     caja.append(menos, num, mas);
@@ -195,6 +218,12 @@
         nombre.className = "cl-nombre";
         nombre.textContent = p.nombre;
         info.append(cat, nombre);
+        if (p.sku) {
+          const sku = document.createElement("span");
+          sku.className = "cl-sku";
+          sku.textContent = p.sku;
+          info.append(sku);
+        }
 
         const precio = document.createElement("span");
         precio.className = "cl-precio";
@@ -224,11 +253,15 @@
 
   const alertaWa = $("#alertaWa");
 
+  // "Set Perla Clásica (SET0006)": con el SKU la tienda sabe exacto qué pieza es
+  const skuDe = (id) => (PRODUCTOS.find((p) => p.id === id) || {}).sku || "";
+  const conSku = (nombre, id) => nombre + (skuDe(id) ? " (" + skuDe(id) + ")" : "");
+
   // Lista de piezas en texto, para el mensaje de WhatsApp
   const lineasDePiezas = () =>
     piezas().map(
       (p) =>
-        "• " + p.nombre + (p.cantidad > 1 ? " ×" + p.cantidad : "") +
+        "• " + conSku(p.nombre, p.id) + (p.cantidad > 1 ? " ×" + p.cantidad : "") +
         " — " + enQuetzales(p.precio * p.cantidad)
     );
 
@@ -243,7 +276,7 @@
 
     // Salida para quien duda: WhatsApp con el pedido ya escrito
     alertaWa.href = enlaceWa(
-      ["Hola Jasuel, estaba por hacer un pedido y tengo una duda antes de confirmar:", "",
+      ["Hola Jasuel 👋", "Estaba por hacer un pedido y tengo una duda antes de confirmar:", "",
        ...lineasDePiezas()].join("\n")
     );
     alertaWa.target = "_blank";
@@ -270,30 +303,148 @@
     if (e.target === alertaVaciar) alertaVaciar.close("cancelar");
   });
 
-  /* ─────────────── Enviar por WhatsApp ─────────────── */
+  /* ─────────────── Confirmar: registrar el pedido y abrir WhatsApp ───────────────
+     El pedido se guarda en la base (función crear_pedido), que recalcula
+     los precios y devuelve un número como JAS0042. Ese número viaja en
+     el mensaje para que la tienda lo encuentre en su panel. Si la base
+     no responde, WhatsApp se abre igual: la venta nunca se pierde. */
 
-  $("#carritoForm").addEventListener("submit", (e) => {
-    e.preventDefault();
+  const API = window.JASUEL_API;
+  const errorForm = $("#carritoError");
+  const botonConfirmar = $("#carritoConfirmar");
 
-    const nombre = $("#nombre").value.trim();
-    const zona = $("#zona").value.trim();
-    const nota = $("#nota").value.trim();
+  function mostrarError(texto, campo) {
+    errorForm.textContent = texto;
+    errorForm.hidden = false;
+    if (campo) $(campo).focus();
+  }
 
+  // Traduce los errores de la base a algo que la clienta entienda
+  function errorDeLaBase(mensaje) {
+    if (/^agotado:/.test(mensaje)) {
+      return "Lo sentimos, " + mensaje.slice(8) + " ya no está disponible en esa cantidad. Ajusta tu pedido.";
+    }
+    if (/^no_disponible:/.test(mensaje)) {
+      return "Una pieza de tu pedido ya no está disponible. Recarga la página para ver el catálogo actualizado.";
+    }
+    const textos = {
+      telefono_invalido: "Revisa tu número de teléfono: deben ser 8 dígitos.",
+      nombre_invalido: "Escribe tu nombre.",
+      zona_invalida: "Escribe tu zona o municipio.",
+      nota_muy_larga: "La nota es muy larga. Acórtala un poco.",
+      demasiados_pedidos: "Ya recibimos varios pedidos tuyos hace poco. Escríbenos por WhatsApp y te ayudamos.",
+      pedido_muy_grande: "Tu pedido es muy grande para hacerlo en línea. Escríbenos por WhatsApp y te ayudamos.",
+    };
+    return textos[mensaje] || null; // null = error técnico: se sigue sin registrar
+  }
+
+  async function registrarPedido(datos) {
+    const control = new AbortController();
+    const reloj = setTimeout(() => control.abort(), 8000);
+    try {
+      const r = await fetch(API.base + "rpc/crear_pedido", {
+        method: "POST",
+        headers: { apikey: API.clave, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          p_tienda: API.tienda,
+          p_items: piezas().map((p) => ({ id: p.id, cantidad: p.cantidad })),
+          p_nombre: datos.nombre,
+          p_telefono: datos.telefono,
+          p_zona: datos.zona,
+          p_nota: datos.nota,
+        }),
+        signal: control.signal,
+      });
+      const cuerpo = await r.json().catch(() => ({}));
+      if (r.ok) return { ok: true, pedido: cuerpo };
+      return { ok: false, mensaje: errorDeLaBase(cuerpo.message || "") };
+    } catch (err) {
+      console.warn("JASUEL: no se pudo registrar el pedido", err);
+      return { ok: false, mensaje: null };
+    } finally {
+      clearTimeout(reloj);
+    }
+  }
+
+  function mensajeWhatsApp(datos, registrado) {
+    const items = registrado
+      ? registrado.items.map((i) => ({ id: i.id, nombre: i.nombre, cantidad: i.cantidad, precio: Number(i.precio) }))
+      : piezas();
+    const suma = registrado ? Number(registrado.subtotal) : total();
+
+    // WhatsApp pone en negrita lo que va entre *asteriscos*
     const lineas = [
-      nombre
-        ? "Hola Jasuel, soy " + nombre + (zona ? " (" + zona + ")" : "") + "."
-        : "Hola Jasuel, vengo de la página web.",
+      "Hola Jasuel 👋",
+      "Soy *" + datos.nombre + "* (" + datos.zona + ").",
       "",
-      "Quiero pedir:",
-      ...lineasDePiezas(),
+      "🛍️ " + (registrado ? "*Pedido " + registrado.codigo + "*" : "*Pedido desde la página web*"),
+      ...items.map((p) =>
+        "• " + conSku(p.nombre, p.id) + (p.cantidad > 1 ? " ×" + p.cantidad : "") + " — " + enQuetzales(p.precio * p.cantidad)
+      ),
+      "",
+      "*Total aproximado:* " + enQuetzales(suma),
+      "*Envío:* por confirmar según mi ubicación (Cargo Expresso)",
+      "*Pago:* contra entrega",
     ];
-    lineas.push("", "Total aproximado: " + enQuetzales(total()));
-    lineas.push("Envío: por confirmar según mi ubicación (Cargo Expresso)");
-    lineas.push("Pago: contra entrega");
-    if (zona && !nombre) lineas.push("", "Estoy en " + zona + ".");
-    if (nota) lineas.push("", "Nota: " + nota);
+    if (datos.nota) lineas.push("", "📝 *Nota:* " + datos.nota);
+    return enlaceWa(lineas.join("\n"));
+  }
 
-    window.open(enlaceWa(lineas.join("\n")), "_blank", "noopener");
+  $("#carritoForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorForm.hidden = true;
+
+    const datos = {
+      nombre: $("#nombre").value.trim(),
+      telefono: $("#telefono").value.trim(),
+      zona: $("#zona").value.trim(),
+      nota: $("#nota").value.trim(),
+    };
+    const digitos = datos.telefono.replace(/\D/g, "");
+
+    if (!datos.nombre) return mostrarError("Escribe tu nombre.", "#nombre");
+    if (!(digitos.length === 8 || (digitos.length >= 10 && digitos.length <= 15))) {
+      return mostrarError("Revisa tu número de teléfono: deben ser 8 dígitos.", "#telefono");
+    }
+    if (!datos.zona) return mostrarError("Escribe tu zona o municipio.", "#zona");
+    if (!piezas().length) return;
+
+    // Se abre ya, dentro del clic: después de esperar, el navegador la bloquearía
+    const ventana = window.open("", "_blank");
+    if (ventana) ventana.opener = null;
+
+    botonConfirmar.disabled = true;
+    botonConfirmar.textContent = "Registrando tu pedido…";
+    const resultado = API ? await registrarPedido(datos) : { ok: false, mensaje: null };
+    botonConfirmar.disabled = false;
+    botonConfirmar.textContent = "Confirmar mi pedido por WhatsApp";
+
+    // Problema con el pedido (pieza agotada, teléfono, etc.): se avisa y no se envía
+    if (!resultado.ok && resultado.mensaje) {
+      if (ventana) ventana.close();
+      return mostrarError(resultado.mensaje);
+    }
+
+    const url = mensajeWhatsApp(datos, resultado.ok ? resultado.pedido : null);
+    if (ventana) ventana.location.href = url;
+    else location.href = url;
+
+    // Registrado: se vacía el carrito y queda el botón por si WhatsApp no se abrió
+    if (resultado.ok) {
+      pedido = [];
+      guardarPedido();
+      $("#carritoVacioTexto").textContent =
+        "¡Listo! Registramos tu pedido " + resultado.pedido.codigo +
+        ". Envíanos el mensaje de WhatsApp para confirmarlo.";
+      const reenviar = $("#carritoReenviar");
+      reenviar.href = url;
+      reenviar.hidden = false;
+      const rastrear = $("#carritoRastrear");
+      rastrear.href = "../pedido/?n=" + encodeURIComponent(resultado.pedido.codigo);
+      rastrear.hidden = false;
+      pintar();
+      anunciar("Registramos tu pedido " + resultado.pedido.codigo + ".");
+    }
   });
 
   // Si cambian el pedido en otra pestaña, o vuelven con el botón Atrás
@@ -305,4 +456,15 @@
   });
 
   pintar();
+
+  // Si algo de lo elegido se agotó o ya no alcanza, se avisa (no se quita en silencio)
+  if (ajustadas.length) {
+    guardarPedido();
+    const texto = "Ajustamos tu pedido: " + ajustadas.join(", ") +
+      (ajustadas.length === 1 ? " ya no está disponible" : " ya no están disponibles") +
+      " en la cantidad que elegiste.";
+    if (pedido.length) mostrarError(texto);
+    else $("#carritoVacioTexto").textContent = texto;
+    anunciar(texto);
+  }
 })();

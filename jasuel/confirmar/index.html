@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es-GT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Confirma tu pedido · JASUEL</title>
+<meta name="description" content="Revisa tu pedido de Jasuel y confirma tus datos de entrega.">
+<meta name="theme-color" content="#071F43">
+<!-- Página privada de cada pedido: no se indexa ni se comparte el link -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/estilos.css?v=20261122m">
+</head>
+<body class="pagina-carrito">
+
+<header class="nav" data-fijo>
+  <a class="nav-logo" href="../" aria-label="Jasuel, volver al inicio">
+    <span class="nav-logo-texto">JASUEL</span>
+  </a>
+  <div class="nav-acciones">
+    <a class="boton boton-oro nav-wa" data-wa="Hola Jasuel, tengo una duda con mi pedido.">WhatsApp</a>
+  </div>
+</header>
+
+<main class="carrito confirmar-pagina">
+
+  <!-- Cargando -->
+  <div class="carrito-vacio" id="vCargando">
+    <p>Cargando tu pedido…</p>
+  </div>
+
+  <!-- Link inválido, vencido o pedido cerrado -->
+  <div class="carrito-vacio" id="vError" hidden>
+    <p id="errorTexto"></p>
+    <a class="boton boton-oro" data-wa="Hola Jasuel, el link de mi pedido no funciona. ¿Me ayudan?">Escríbenos por WhatsApp</a>
+  </div>
+
+  <!-- Pedido -->
+  <div id="vPedido" hidden>
+    <header class="carrito-cabeza">
+      <p class="rotulo" id="codigo"></p>
+      <h1 class="titulo" id="tituloPedido">Confirma tu pedido</h1>
+      <p class="parrafo" id="subtitulo">Revisa tus piezas y el total, completa tus datos de entrega y listo.</p>
+    </header>
+
+    <div class="carrito-rejilla">
+      <section aria-labelledby="tituloPiezas">
+        <div class="carrito-barra">
+          <h2 class="carrito-sub" id="tituloPiezas">Tus piezas</h2>
+        </div>
+        <ul class="confirmar-piezas" id="piezas"></ul>
+        <dl class="carrito-cuentas confirmar-cuentas">
+          <div><dt>Subtotal</dt><dd id="subtotal"></dd></div>
+          <div><dt>Envío con <span id="mensajeria">Cargo Expresso</span></dt><dd id="envio"></dd></div>
+          <div id="filaDescuento" hidden><dt>Descuento</dt><dd id="descuento"></dd></div>
+          <div class="carrito-total"><dt>Total a pagar al recibir</dt><dd id="total"></dd></div>
+        </dl>
+        <p class="carrito-nota">Pagas en efectivo cuando Cargo Expresso te entregue el paquete. No pagas nada ahora.</p>
+      </section>
+
+      <aside class="carrito-resumen" aria-labelledby="tituloDatos">
+        <!-- Formulario (pedido por confirmar) -->
+        <div id="bloqueFormulario">
+          <h2 class="carrito-sub" id="tituloDatos">Tus datos de entrega</h2>
+          <form class="formulario carrito-form" id="formConfirmar" novalidate>
+            <div class="campo campo-ancho">
+              <label for="cNombre">Nombre de quien recibe <b class="req" aria-hidden="true">*</b></label>
+              <input id="cNombre" type="text" autocomplete="name" maxlength="80" required>
+            </div>
+            <div class="campo campo-ancho">
+              <label for="cDepartamento">Departamento <b class="req" aria-hidden="true">*</b></label>
+              <select id="cDepartamento" required>
+                <option value="">Elige tu departamento…</option>
+                <option>Guatemala</option>
+                <option>Alta Verapaz</option>
+                <option>Baja Verapaz</option>
+                <option>Chimaltenango</option>
+                <option>Chiquimula</option>
+                <option>El Progreso</option>
+                <option>Escuintla</option>
+                <option>Huehuetenango</option>
+                <option>Izabal</option>
+                <option>Jalapa</option>
+                <option>Jutiapa</option>
+                <option>Petén</option>
+                <option>Quetzaltenango</option>
+                <option>Quiché</option>
+                <option>Retalhuleu</option>
+                <option>Sacatepéquez</option>
+                <option>San Marcos</option>
+                <option>Santa Rosa</option>
+                <option>Sololá</option>
+                <option>Suchitepéquez</option>
+                <option>Totonicapán</option>
+                <option>Zacapa</option>
+              </select>
+            </div>
+            <div class="campo campo-ancho">
+              <label for="cZona">Municipio y zona <b class="req" aria-hidden="true">*</b></label>
+              <input id="cZona" type="text" autocomplete="address-level2" placeholder="Mixco, zona 4" maxlength="120" required>
+            </div>
+            <div class="campo campo-ancho">
+              <label for="cDireccion">Dirección exacta <b class="req" aria-hidden="true">*</b></label>
+              <input id="cDireccion" type="text" autocomplete="street-address" placeholder="5a avenida 10-20, colonia…" maxlength="300" required>
+            </div>
+            <div class="campo campo-ancho">
+              <label for="cReferencias">Referencias <span>(opcional)</span></label>
+              <input id="cReferencias" type="text" placeholder="Casa blanca, portón negro…" maxlength="300">
+            </div>
+            <div class="campo campo-ancho">
+              <label for="cCorreo">Correo <span>(opcional)</span></label>
+              <input id="cCorreo" type="email" autocomplete="email" inputmode="email" maxlength="120">
+            </div>
+            <p class="carrito-error" id="error" role="alert" hidden></p>
+            <button class="boton boton-oro boton-ancho" type="submit" id="confirmar">Confirmar mi pedido</button>
+          </form>
+          <p class="carrito-garantia">
+            Revisa tus piezas al recibirlas: la garantía cubre defectos de fábrica al momento
+            de la entrega. <a href="../#preguntas">Ver preguntas frecuentes</a>
+          </p>
+        </div>
+
+        <!-- Ya confirmado -->
+        <div class="confirmar-listo" id="bloqueListo" hidden>
+          <p class="confirmar-check" aria-hidden="true">✓</p>
+          <h2 class="carrito-sub" id="listoTitulo">¡Pedido confirmado!</h2>
+          <p class="parrafo" id="listoTexto"></p>
+          <a class="boton boton-oro boton-ancho" id="verEstado" href="../pedido/">Ver el estado de mi pedido</a>
+          <a class="boton boton-linea boton-ancho" data-wa="Hola Jasuel, tengo una duda con mi pedido confirmado.">¿Dudas? Escríbenos</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<p class="solo-lector" id="anuncio" role="status" aria-live="polite"></p>
+
+<script src="../js/datos.js?v=20261122m"></script>
+<script src="../js/confirmar.js?v=20261122m"></script>
+</body>
+</html>

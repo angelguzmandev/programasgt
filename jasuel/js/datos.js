@@ -14,6 +14,12 @@ const CONFIG = {
 
   instagram: "jasuel.gt",
   moneda: "Q",
+
+  // Base de datos (Supabase). La clave es PÚBLICA por diseño: solo deja
+  // leer lo visible y usar las funciones públicas (crear y confirmar pedidos).
+  api: "https://ofsxybmioxyezjnzvvwj.supabase.co/rest/v1/",
+  apiClave: "sb_publishable_2nrl2cwnzr1JNRAXgZ0Uzg_EXFKtlff",
+  tienda: "jasuel",
 };
 
 /* Las categorias salen solas de los productos, pero este orden manda. */

@@ -559,6 +559,12 @@ a.nav-pedido{color:var(--crema);text-decoration:none}
   pointer-events:none;
 }
 
+/* Agotado: la pieza sigue a la vista (y con su enlace), pero apagada */
+.tarjeta-sello-agotado{background:rgb(4 18 43 / .92);color:var(--crema);border-color:rgb(244 240 230 / .35)}
+.tarjeta[data-agotado] .tarjeta-foto img{filter:grayscale(.65) brightness(.75)}
+.tarjeta[data-agotado] .tarjeta-precio{opacity:.6}
+.tarjeta[data-agotado] .tarjeta-agregar{color:var(--tenue);border-style:dashed}
+
 .tarjeta-cuerpo{
   position:relative;z-index:3; /* por encima del botón que cubre la foto */
   display:flex;flex-direction:column;gap:4px;
@@ -852,6 +858,13 @@ a.nav-pedido{color:var(--crema);text-decoration:none}
 .carrito-total dd{font-family:var(--display);font-size:1.35rem;color:var(--oro-claro) !important}
 .carrito-nota{margin:14px 0 22px;font-size:.84rem;color:var(--tenue)}
 .carrito-form{grid-template-columns:1fr}
+.carrito-error{
+  grid-column:1/-1;margin:0;padding:10px 14px;
+  border:1px solid rgb(232 120 110 / .45);border-radius:var(--radio);
+  background:rgb(120 30 30 / .25);color:#f3c4bd;font-size:.88rem;
+}
+.carrito-error[hidden]{display:none}
+#carritoReenviar[hidden],#carritoRastrear[hidden]{display:none}
 .carrito-garantia{margin:16px 0 0;font-size:.8rem;line-height:1.55;color:var(--apenas)}
 .carrito-garantia a{color:var(--oro-claro)}
 
@@ -890,6 +903,110 @@ a.nav-pedido{color:var(--crema);text-decoration:none}
   .carrito-lista .cl-precio{grid-area:precio;align-self:center}
   .carrito-lista .pedido-quitar{grid-area:quitar}
   .pagina-carrito .nav-pedido{padding-inline:12px}
+}
+
+/* ─────────────────────────── Confirmar pedido (link de la tienda) ─────────────────────────── */
+
+.confirmar-piezas{list-style:none;margin:0 0 6px;padding:0;display:grid;gap:10px}
+.confirmar-piezas li{
+  display:flex;justify-content:space-between;gap:16px;
+  padding:14px 16px;
+  border:1px solid rgb(201 168 106 / .14);border-radius:var(--radio);
+  background:var(--azul-850);
+  font-family:var(--display);font-size:1.15rem;color:var(--crema);
+}
+.confirmar-piezas li span:last-child{font-family:var(--sans);font-size:.95rem;color:var(--oro-claro);white-space:nowrap}
+.confirmar-cuentas{margin-top:18px}
+.confirmar-pagina .carrito-nota{margin-top:14px}
+.confirmar-pagina select{
+  width:100%;padding:13px 15px;
+  border:1px solid var(--linea);border-radius:var(--radio);
+  background:var(--azul-900);color:var(--texto);
+  font-size:16px;font-weight:300;
+}
+.confirmar-pagina select:focus{outline:0;border-color:var(--oro)}
+.confirmar-listo{display:grid;gap:14px;justify-items:start}
+.confirmar-listo[hidden]{display:none}
+.confirmar-check{
+  display:grid;place-items:center;width:54px;height:54px;margin:0;
+  border:1px solid var(--oro);border-radius:999px;
+  color:var(--oro);font-size:1.5rem;
+}
+.confirmar-listo .parrafo{margin:0}
+
+/* ─────────────────────────── Estado de mi pedido ─────────────────────────── */
+
+.estado-pagina{
+  max-width:720px;margin-inline:auto;min-height:100vh;
+  padding:calc(var(--nav-alto) + clamp(40px,6vw,80px)) clamp(16px,5vw,48px) clamp(70px,10vw,120px);
+}
+.estado-pagina .carrito-cabeza .titulo{font-size:clamp(2.2rem,1.5rem + 2.6vw,3.4rem)}
+.estado-form{
+  grid-template-columns:1fr 1fr;
+  padding:clamp(22px,3vw,32px);
+  border:1px solid var(--linea);border-radius:var(--radio);
+  background:rgb(6 26 55 / .6);
+}
+.estado-form[hidden]{display:none}
+.estado-ayuda{grid-column:1/-1;margin:0;font-size:.84rem;color:var(--tenue)}
+.estado-ayuda a{color:var(--oro-claro)}
+
+.estado-resultado{
+  display:grid;gap:26px;
+  padding:clamp(22px,3vw,34px);
+  border:1px solid var(--linea);border-radius:var(--radio);
+  background:rgb(6 26 55 / .6);
+}
+.estado-resultado[hidden]{display:none}
+.estado-titulo{
+  margin:0 0 6px;font-family:var(--display);font-weight:400;
+  font-size:clamp(1.8rem,1.4rem + 1.4vw,2.4rem);color:var(--crema);
+}
+.estado-sub{margin:0;color:var(--tenue)}
+
+/* Línea de tiempo: Recibido → Confirmado → En camino → Entregado */
+.linea-tiempo{
+  list-style:none;margin:0;padding:0;
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+  counter-reset:paso;
+}
+.linea-tiempo li{
+  position:relative;display:grid;gap:4px;
+  padding-top:22px;font-size:.84rem;
+}
+.linea-tiempo li::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;border-radius:2px;
+  background:rgb(201 168 106 / .2);
+}
+.linea-tiempo .paso-hecho::before{background:var(--oro)}
+.linea-tiempo li::after{
+  content:"";position:absolute;top:-5px;left:0;width:13px;height:13px;border-radius:50%;
+  background:var(--azul-900);border:2px solid rgb(201 168 106 / .35);
+}
+.linea-tiempo .paso-hecho::after{background:var(--oro);border-color:var(--oro)}
+.linea-tiempo li[aria-current="step"]::after{box-shadow:0 0 0 5px rgb(201 168 106 / .25)}
+.linea-tiempo strong{font-weight:500;color:var(--crema)}
+.linea-tiempo span{color:var(--tenue);font-size:.78rem}
+.linea-tiempo .paso-pendiente strong{color:var(--tenue)}
+.linea-cerrada{opacity:.45}
+
+.estado-guia{
+  padding:12px 16px;border-radius:var(--radio);
+  border:1px solid var(--oro);color:var(--oro-claro);
+  font-size:.95rem;letter-spacing:.02em;
+}
+.estado-guia[hidden]{display:none}
+.estado-detalle .carrito-sub{margin-bottom:12px}
+.estado-acciones{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.boton-texto{border:0;background:none;color:var(--tenue);text-decoration:underline;text-underline-offset:4px;padding-inline:8px}
+
+@media (max-width:560px){
+  .estado-form{grid-template-columns:1fr}
+  .linea-tiempo{grid-template-columns:1fr;gap:16px;padding-left:22px}
+  .linea-tiempo li{padding-top:0}
+  .linea-tiempo li::before{top:6px;bottom:-16px;left:-17px;right:auto;width:3px;height:auto}
+  .linea-tiempo li:last-child::before{display:none}
+  .linea-tiempo li::after{top:0;left:-22px}
 }
 
 /* ─────────────────────────── Página de políticas ─────────────────────────── */
@@ -1274,3 +1391,64 @@ a.nav-pedido{color:var(--crema);text-decoration:none}
   .ficha:not([open]){transform:none}
   ::view-transition-old(*),::view-transition-new(*){animation:none}
 }
+
+/* "Solo quedan 2" / "¡Última pieza!" (dato real de lo disponible) */
+.tarjeta-pocas{
+  display:inline-flex;align-items:center;gap:8px;margin:2px 0 6px;
+  font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--oro-claro);
+}
+.tarjeta-pocas::before{
+  content:"";width:7px;height:7px;border-radius:50%;flex:none;
+  background:var(--oro);box-shadow:0 0 0 0 rgb(201 168 106 / .6);
+  animation:latido 1.8s ease-out infinite;
+}
+.tarjeta-pocas[hidden]{display:none}
+.ficha-pocas{margin:-6px 0 14px}
+@keyframes latido{
+  0%{box-shadow:0 0 0 0 rgb(201 168 106 / .55)}
+  70%,100%{box-shadow:0 0 0 8px rgb(201 168 106 / 0)}
+}
+@media (prefers-reduced-motion:reduce){.tarjeta-pocas::before{animation:none}}
+
+/* SKU: código del producto, discreto */
+.tarjeta-sku,.ficha-sku,.cl-sku{
+  margin:0;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--apenas);
+}
+.ficha-sku{margin:-12px 0 12px}
+.ficha-sku[hidden]{display:none}
+
+/* ─────────── Estado de mi pedido: código, guía y desglose ─────────── */
+
+.estado-codigo{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.estado-codigo .rotulo{margin:0}
+.copiar{
+  padding:5px 12px;border:1px solid var(--linea);border-radius:999px;
+  background:transparent;color:var(--oro-claro);cursor:pointer;
+  font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  transition:border-color 200ms ease,background-color 200ms ease,color 200ms ease;
+}
+.copiar:hover{border-color:var(--oro)}
+.copiar.copiado{background:var(--oro);border-color:var(--oro);color:var(--azul-900)}
+
+.estado-guia{display:flex !important;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.estado-guia[hidden]{display:none !important}
+.estado-guia > div{display:grid;gap:2px}
+.estado-guia-rotulo{font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--tenue)}
+.estado-guia strong{font-family:var(--display);font-size:1.35rem;font-weight:500;letter-spacing:.04em;color:var(--crema)}
+
+.estado-piezas{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.estado-piezas li{
+  display:flex;align-items:center;gap:14px;padding:10px;
+  border:1px solid rgb(201 168 106 / .14);border-radius:var(--radio);background:var(--azul-850);
+}
+.estado-piezas img{width:56px;height:70px;object-fit:cover;flex:none;border-radius:1px;background:var(--azul-800)}
+.estado-pieza-texto{flex:1;min-width:0;display:grid;gap:3px}
+.estado-pieza-texto strong{font-family:var(--display);font-weight:400;font-size:1.15rem;color:var(--crema)}
+.estado-pieza-texto span{font-size:.78rem;letter-spacing:.06em;color:var(--tenue)}
+.estado-pieza-total{color:var(--oro-claro);white-space:nowrap}
+.estado-cuentas{margin-top:16px}
+.estado-pago{margin:12px 0 0;font-size:.84rem;color:var(--tenue)}
+.estado-pago[hidden]{display:none}
+
+/* Campo obligatorio: rojo suave que combina con el azul y el dorado */
+.campo label .req{color:#f0a39a;font-weight:500;opacity:1;margin-left:2px}

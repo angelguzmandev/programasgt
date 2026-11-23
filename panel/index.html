@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="es-GT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel · ProgramasGT</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f6f5f2">
+<!-- Política de contenido: solo se ejecuta código propio y las librerías
+     exactas de jsDelivr (no "todo jsDelivr": ahí cualquiera publica). Si se
+     actualiza supabase-js o write-excel-file, revisar sus dependencias +esm.
+     Los datos solo viajan a nuestro proyecto de Supabase. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' https://cdn.jsdelivr.net/npm/@supabase/ https://cdn.jsdelivr.net/npm/tslib@2.8.1/ https://cdn.jsdelivr.net/npm/iceberg-js@0.8.1/ https://cdn.jsdelivr.net/npm/fflate@0.8.3/ https://cdn.jsdelivr.net/npm/write-excel-file@4.1.1/;
+  connect-src 'self' https://ofsxybmioxyezjnzvvwj.supabase.co wss://ofsxybmioxyezjnzvvwj.supabase.co;
+  img-src 'self' data: blob: https://ofsxybmioxyezjnzvvwj.supabase.co;
+  style-src 'self' https://fonts.googleapis.com;
+  font-src https://fonts.gstatic.com;
+  base-uri 'none';
+  form-action 'self';
+  object-src 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="panel.css?v=15">
+</head>
+<body>
+
+<!-- ─────────────── Cargando ─────────────── -->
+<div class="pantalla cargando" id="vistaCargando">
+  <div class="spinner" aria-hidden="true"></div>
+  <p>Cargando…</p>
+</div>
+
+<!-- ─────────────── Inicio de sesión ─────────────── -->
+<main class="pantalla login" id="vistaLogin" hidden>
+  <div class="login-caja">
+    <img class="login-logo" src="/logo.webp" alt="ProgramasGT" width="120" height="77">
+    <h1>Administra tu tienda</h1>
+    <p class="login-sub">Entra con el correo y la contraseña que te dimos.</p>
+
+    <form id="formLogin" novalidate>
+      <label class="campo">
+        <span>Correo <b class="req" aria-hidden="true">*</b></span>
+        <input id="loginCorreo" type="email" autocomplete="username" required>
+      </label>
+      <label class="campo">
+        <span>Contraseña <b class="req" aria-hidden="true">*</b></span>
+        <input id="loginClave" type="password" autocomplete="current-password" required>
+      </label>
+      <p class="error" id="loginError" role="alert" hidden></p>
+      <button class="btn btn-primario btn-ancho" type="submit" id="loginBoton">Entrar a mi tienda</button>
+    </form>
+
+    <p class="login-ayuda">¿No puedes entrar? <a class="js-ayuda">Escríbenos por WhatsApp</a> y te ayudamos.</p>
+  </div>
+</main>
+
+<!-- ─────────────── Sin tiendas asignadas ─────────────── -->
+<main class="pantalla login" id="vistaSinTienda" hidden>
+  <div class="login-caja">
+    <img class="login-logo" src="/logo.webp" alt="ProgramasGT" width="120" height="77">
+    <h1>Tu cuenta no tiene una tienda asignada</h1>
+    <p class="login-sub">Escríbenos y la activamos.</p>
+    <a class="btn btn-primario btn-ancho js-ayuda">Ayuda por WhatsApp</a>
+    <button class="btn btn-texto btn-ancho js-salir" type="button">Cerrar sesión</button>
+  </div>
+</main>
+
+<!-- ─────────────── Panel ─────────────── -->
+<div class="app" id="vistaPanel" hidden>
+  <!-- ─────────────── Menú lateral (en celular: arriba la marca, abajo el menú) ─────────────── -->
+  <aside class="lateral">
+    <div class="lateral-marca">
+      <img class="barra-logo" id="tiendaLogo" alt="" width="40" height="40" hidden>
+      <div class="lateral-tienda">
+        <p class="barra-nombre" id="tiendaNombre"></p>
+        <select class="barra-selector" id="tiendaSelector" aria-label="Cambiar de tienda" hidden></select>
+      </div>
+    </div>
+
+    <nav class="menu" aria-label="Secciones del panel">
+      <button type="button" class="pestana" data-vista="inicio" aria-current="page"><svg class="menu-icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15v2"/><path d="M11 11v6"/><path d="M15 13v4"/><path d="M19 7v10"/></svg><span>Inicio</span></button>
+      <button type="button" class="pestana" data-vista="pedidos">
+        <svg class="menu-icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span>Pedidos</span><span class="pestana-num" id="numNuevos" hidden></span>
+      </button>
+      <button type="button" class="pestana" data-vista="clientes"><svg class="menu-icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg><span>Clientes</span></button>
+      <button type="button" class="pestana" data-vista="productos"><svg class="menu-icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 13.42 20.6a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82Z"/><circle cx="7" cy="7" r="1.5"/></svg><span>Productos</span></button>
+      <button type="button" class="pestana" data-vista="tienda"><svg class="menu-icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9 4.5 3h15L21 9"/><path d="M3 9h18v2a3 3 0 0 1-6 0 3 3 0 0 1-6 0 3 3 0 0 1-6 0V9Z"/><path d="M5 13v8h14v-8"/><path d="M10 21v-5h4v5"/></svg><span>Mi tienda</span></button>
+    </nav>
+
+    <div class="lateral-pie">
+      <a class="lateral-enlace" id="verTienda" target="_blank" rel="noopener"><svg class="menu-icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg><span>Ver mi tienda</span></a>
+      <a class="lateral-enlace js-ayuda"><svg class="menu-icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/></svg><span>Ayuda por WhatsApp</span></a>
+      <button class="lateral-enlace js-salir" type="button"><svg class="menu-icono" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg><span>Salir</span></button>
+      <p class="lateral-credito">Tu tienda funciona con <strong>ProgramasGT</strong></p>
+    </div>
+  </aside>
+
+  <div class="principal">
+  <!-- ─────────────── Inicio (dashboard) ─────────────── -->
+  <main class="contenido" id="seccionInicio">
+    <div class="contenido-cabeza">
+      <div>
+        <h1>Inicio</h1>
+        <p class="sub">Cómo va tu tienda y qué atender hoy.</p>
+      </div>
+      <div class="cabeza-botones">
+        <button class="btn btn-borde" type="button" id="abrirExportar">Descargar Excel</button>
+      </div>
+    </div>
+
+    <section class="panel-caja hoy">
+      <h2 class="caja-titulo">Para hoy</h2>
+      <ul class="hoy-lista" id="hoyLista"></ul>
+      <p class="vacio-chico" id="hoyVacio" hidden>Todo al día. No hay pedidos ni productos esperando.</p>
+    </section>
+
+    <div class="periodo-barra">
+      <h2 class="periodo-nombre" id="periodoNombre"></h2>
+      <div class="chips" id="periodos" role="group" aria-label="Período del resumen"></div>
+    </div>
+
+    <div class="tarjetas kpis" id="kpis"></div>
+
+    <section class="panel-caja">
+      <h2 class="caja-titulo">Vendido</h2>
+      <div class="grafica-caja">
+        <div class="grafica" id="grafica"></div>
+        <div class="grafica-tip" id="graficaTip" role="status" hidden></div>
+      </div>
+      <p class="vacio-chico" id="graficaVacia" hidden>Todavía no hay pedidos entregados en este período.</p>
+    </section>
+
+    <div class="rejilla-2">
+      <section class="panel-caja">
+        <h2 class="caja-titulo">Cómo terminaron los pedidos</h2>
+        <p class="ayuda" id="resultadosTotal"></p>
+        <ul class="barras" id="resultados"></ul>
+        <details class="motivos" id="motivos" hidden>
+          <summary>Ver motivos de cancelación y rechazo</summary>
+          <ul id="motivosLista"></ul>
+        </details>
+      </section>
+      <section class="panel-caja">
+        <h2 class="caja-titulo">Por dónde llegaron</h2>
+        <ul class="barras" id="canales"></ul>
+      </section>
+    </div>
+
+    <div class="rejilla-2">
+      <section class="panel-caja">
+        <h2 class="caja-titulo">Lo más vendido</h2>
+        <ol class="top" id="top"></ol>
+      </section>
+      <section class="panel-caja">
+        <h2 class="caja-titulo">Inventario</h2>
+        <ul class="inv" id="inventario"></ul>
+        <p class="ayuda inv-pie" id="inventarioPie"></p>
+      </section>
+    </div>
+  </main>
+
+  <!-- ─────────────── Pedidos ─────────────── -->
+  <main class="contenido" id="seccionPedidos" hidden>
+    <div class="contenido-cabeza">
+      <div>
+        <h1>Pedidos</h1>
+        <p class="sub">Los pedidos de la tienda en línea llegan aquí solos.</p>
+      </div>
+      <div class="cabeza-botones">
+        <button class="btn btn-borde" type="button" id="recargarPedidos">Actualizar</button>
+        <button class="btn btn-primario" type="button" id="nuevoPedidoManual">+ Pedido manual</button>
+      </div>
+    </div>
+
+    <div class="tarjetas">
+      <div class="tarjeta">
+        <p class="tarjeta-titulo">Nuevos por confirmar</p>
+        <p class="tarjeta-valor" id="mNuevos">0</p>
+      </div>
+      <div class="tarjeta">
+        <p class="tarjeta-titulo">Confirmados por enviar</p>
+        <p class="tarjeta-valor" id="mPorEnviar">0</p>
+      </div>
+      <div class="tarjeta">
+        <p class="tarjeta-titulo">Dinero en la calle</p>
+        <p class="tarjeta-valor" id="mCalle">Q0</p>
+        <p class="tarjeta-nota">Entregado, falta que Cargo Expresso te pague</p>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <input class="buscador" id="buscadorPedidos" type="search" inputmode="search" autocomplete="off" spellcheck="false"
+             placeholder="Buscar por número de pedido, nombre o teléfono…" aria-label="Buscar pedido">
+    </div>
+
+    <div class="chips" id="filtroEstados" role="group" aria-label="Filtrar pedidos por estado"></div>
+
+    <ul class="lista" id="listaPedidos" aria-live="polite"></ul>
+    <p class="vacio" id="pedidosVacio" hidden>No hay pedidos aquí.</p>
+  </main>
+
+  <!-- ─────────────── Clientes ─────────────── -->
+  <main class="contenido" id="seccionClientes" hidden>
+    <div class="contenido-cabeza">
+      <div>
+        <h1>Clientes</h1>
+        <p class="sub" id="clientesResumen"></p>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <input class="buscador" id="buscadorClientes" type="search"
+             placeholder="Buscar por nombre, teléfono, correo o dirección…" aria-label="Buscar cliente">
+    </div>
+
+    <ul class="lista" id="listaClientes" aria-live="polite"></ul>
+    <p class="vacio" id="clientesVacio" hidden>No encontramos clientes con esa búsqueda.</p>
+  </main>
+
+  <!-- ─────────────── Productos ─────────────── -->
+  <main class="contenido" id="seccionProductos" hidden>
+    <div class="contenido-cabeza">
+      <div>
+        <h1>Productos</h1>
+        <p class="sub" id="productosResumen"></p>
+      </div>
+      <button class="btn btn-primario" type="button" id="nuevoProducto">+ Nuevo producto</button>
+    </div>
+
+    <div class="filtros">
+      <input class="buscador" id="buscador" type="search" placeholder="Buscar por nombre…" aria-label="Buscar producto">
+      <select id="filtroSeccion" aria-label="Filtrar por sección"></select>
+    </div>
+
+    <div class="herramientas">
+      <div class="chips" id="filtroStock" role="group" aria-label="Filtrar por existencias"></div>
+      <span class="separador"></span>
+      <button class="btn btn-borde btn-chico" type="button" id="modoStock">Ajustar existencias</button>
+      <button class="btn btn-borde btn-chico" type="button" id="modoOrden">Ordenar</button>
+    </div>
+    <p class="ayuda modo-ayuda" id="modoAyuda" hidden></p>
+
+    <ul class="lista" id="listaProductos" aria-live="polite"></ul>
+    <p class="vacio" id="listaVacia" hidden>No hay productos que coincidan.</p>
+  </main>
+
+  <!-- ─────────────── Tienda: datos y secciones ─────────────── -->
+  <main class="contenido" id="seccionTienda" hidden>
+    <div class="contenido-cabeza">
+      <div>
+        <h1>Mi tienda</h1>
+        <p class="sub">Datos de contacto, logo y secciones del catálogo.</p>
+      </div>
+    </div>
+
+    <section class="panel-caja" id="cajaDatosTienda">
+      <h2 class="caja-titulo">Datos de la tienda</h2>
+      <form id="formTienda" novalidate>
+        <div class="tienda-logo">
+          <img id="tLogoVista" alt="Logo de la tienda" width="72" height="72" hidden>
+          <div class="tienda-logo-vacio" id="tLogoVacio">Sin logo</div>
+          <div class="tienda-logo-acciones">
+            <label class="btn btn-borde btn-chico">
+              <input type="file" id="tLogoArchivo" accept="image/png,image/jpeg,image/webp" hidden>
+              <span id="tLogoTexto">Cambiar logo</span>
+            </label>
+            <p class="ayuda">PNG, JPG o WebP. Se ve en el encabezado de este panel.</p>
+          </div>
+        </div>
+        <div class="fila-2">
+          <label class="campo">
+            <span>Nombre de la tienda <b class="req" aria-hidden="true">*</b></span>
+            <input id="tNombre" maxlength="80" required>
+          </label>
+          <label class="campo">
+            <span>WhatsApp de la tienda <em>(8 dígitos)</em></span>
+            <input id="tWhatsapp" type="tel" inputmode="tel" maxlength="20" placeholder="5555 5555">
+          </label>
+        </div>
+        <div class="fila-2">
+          <label class="campo">
+            <span>Instagram <em>(sin @)</em></span>
+            <input id="tInstagram" maxlength="31" autocomplete="off" spellcheck="false" placeholder="mitienda.gt">
+          </label>
+          <label class="campo">
+            <span>Horas que un pedido nuevo aparta las piezas <b class="req" aria-hidden="true">*</b></span>
+            <input id="tHoras" required type="number" min="1" max="720" step="1" inputmode="numeric">
+          </label>
+        </div>
+        <p class="ayuda">Aplica a los pedidos que cargas a mano. Los pedidos de la tienda en línea apartan 2 horas mientras no los atiendas (así nadie puede dejar tu tienda "agotada" con pedidos falsos); cuando le mandas el link de confirmación, apartan hasta que el link venza.</p>
+        <p class="error" id="tError" role="alert" hidden></p>
+        <button class="btn btn-primario" type="submit" id="tGuardar">Guardar datos</button>
+      </form>
+    </section>
+
+    <section class="panel-caja">
+      <div class="caja-cabeza">
+        <h2 class="caja-titulo">Secciones del catálogo</h2>
+        <p class="ayuda">El orden aquí es el orden de los filtros en tu tienda. Oculta una sección y sus productos dejan de verse.</p>
+      </div>
+      <ul class="lista" id="listaSecciones"></ul>
+      <form class="nueva-seccion" id="formSeccion" novalidate>
+        <input id="nuevaSeccion" maxlength="60" placeholder="Nombre de la sección nueva, ej. Tobilleras" aria-label="Nombre de la sección nueva">
+        <button class="btn btn-primario" type="submit">+ Agregar sección</button>
+      </form>
+    </section>
+  </main>
+
+  <!-- Aparece en el modo "Ajustar existencias" cuando hay cambios -->
+  <div class="barra-cambios" id="barraCambios" hidden>
+    <span id="barraCambiosTexto"></span>
+    <span class="separador"></span>
+    <button class="btn btn-borde" type="button" id="descartarCambios">Descartar</button>
+    <button class="btn btn-primario" type="button" id="guardarCambios">Guardar cambios</button>
+  </div>
+
+  </div><!-- /principal -->
+</div>
+
+<!-- ─────────────── Editor de producto ─────────────── -->
+<dialog class="editor" id="editor" aria-labelledby="editorTitulo">
+  <form id="formProducto" novalidate>
+    <header class="editor-cabeza">
+      <h2 id="editorTitulo">Nuevo producto</h2>
+      <button class="btn-icono" type="button" id="editorCerrar" aria-label="Cerrar">&times;</button>
+    </header>
+
+    <div class="editor-cuerpo">
+      <div class="foto-zona">
+        <img class="foto-vista" id="fotoVista" alt="" hidden>
+        <div class="foto-vacia" id="fotoVacia">Sin foto</div>
+        <label class="btn btn-borde btn-ancho foto-boton">
+          <input type="file" id="fotoArchivo" accept="image/jpeg,image/png,image/webp" hidden>
+          <span id="fotoTexto">Subir foto</span>
+        </label>
+        <p class="ayuda">JPG, PNG o WebP. La ajustamos de tamaño automáticamente.</p>
+      </div>
+
+      <div class="editor-campos">
+        <label class="campo">
+          <span>Nombre <b class="req" aria-hidden="true">*</b></span>
+          <input id="pNombre" maxlength="120" required>
+        </label>
+        <div class="fila-2">
+          <label class="campo">
+            <span>Precio (<span id="pMoneda">Q</span>) <b class="req" aria-hidden="true">*</b></span>
+            <input id="pPrecio" type="number" min="0" step="0.01" inputmode="decimal" required>
+          </label>
+          <label class="campo">
+            <span>Sección</span>
+            <select id="pSeccion"></select>
+          </label>
+        </div>
+        <div class="fila-2">
+          <label class="campo">
+            <span>Existencias <em>(vacío = sin control)</em></span>
+            <input id="pExistencia" type="number" min="0" step="1" inputmode="numeric" placeholder="Sin control">
+          </label>
+          <label class="campo">
+            <span>SKU <em>(código interno)</em></span>
+            <input id="pSku" maxlength="30" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="Se asigna al guardar">
+          </label>
+        </div>
+        <p class="ayuda ayuda-campo">Con 0 existencias la pieza aparece como "Agotado" y se descuentan solas al confirmar pedidos. El SKU se crea solo (ej. COL0004); cámbialo solo si ya usas tus propios códigos.</p>
+        <label class="campo">
+          <span>Etiqueta <em>(sello sobre la foto en tu tienda; opcional)</em></span>
+          <input id="pEtiqueta" maxlength="24" list="etiquetasSugeridas" autocomplete="off" placeholder="Ej. Perfecto para regalo">
+          <datalist id="etiquetasSugeridas">
+            <option value="Perfecto para regalo">
+            <option value="Lista para regalar">
+            <option value="Nuevo">
+            <option value="Más vendido">
+            <option value="Edición limitada">
+            <option value="Favorito de clientas">
+          </datalist>
+        </label>
+        <label class="campo">
+          <span>Descripción</span>
+          <textarea id="pDescripcion" rows="4" maxlength="2000"></textarea>
+        </label>
+        <label class="campo">
+          <span>Características <em>(una por línea)</em></span>
+          <textarea id="pDatos" rows="3" placeholder="Baño de oro 18k&#10;Largo 45 cm"></textarea>
+        </label>
+        <label class="campo">
+          <span>Descripción de la foto <em>(para Google y lectores de pantalla)</em></span>
+          <input id="pAlt" maxlength="300">
+        </label>
+        <label class="check">
+          <input id="pVisible" type="checkbox" checked>
+          <span>Mostrar en la tienda</span>
+        </label>
+        <p class="error" id="editorError" role="alert" hidden></p>
+      </div>
+    </div>
+
+    <footer class="editor-pie">
+      <button class="btn btn-peligro-texto" type="button" id="editorBorrar" hidden>Borrar producto</button>
+      <span class="separador"></span>
+      <button class="btn btn-borde" type="button" id="editorCancelar">Cancelar</button>
+      <button class="btn btn-primario" type="submit" id="editorGuardar">Guardar</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- ─────────────── Ficha del cliente ─────────────── -->
+<dialog class="editor" id="detalleCliente" aria-labelledby="cliTitulo">
+  <div class="detalle-caja">
+    <header class="editor-cabeza">
+      <div>
+        <h2 id="cliTitulo"></h2>
+        <p class="sub" id="cliResumen"></p>
+      </div>
+      <button class="btn-icono" type="button" id="cliCerrar" aria-label="Cerrar">&times;</button>
+    </header>
+
+    <div class="detalle-cuerpo">
+      <section class="bloque">
+        <h3>Datos</h3>
+        <form id="formCliente" class="cliente-form" novalidate>
+          <label class="campo"><span>Nombre <b class="req" aria-hidden="true">*</b></span><input id="cNombreCli" maxlength="80" required></label>
+          <label class="campo"><span>Teléfono</span><input id="cTelefonoCli" disabled></label>
+          <label class="campo"><span>Correo</span><input id="cCorreoCli" type="email" maxlength="120"></label>
+          <div class="fila-2">
+            <label class="campo"><span>Departamento</span><input id="cDepartamentoCli" maxlength="40"></label>
+            <label class="campo"><span>Municipio y zona</span><input id="cZonaCli" maxlength="120"></label>
+          </div>
+          <label class="campo"><span>Dirección</span><input id="cDireccionCli" maxlength="300"></label>
+          <label class="campo"><span>Notas internas <em>(solo las ves tú)</em></span>
+            <textarea id="cNotasCli" rows="2" maxlength="1000" placeholder="Prefiere entregas en la tarde, talla 7…"></textarea>
+          </label>
+          <p class="error" id="cliError" role="alert" hidden></p>
+          <div class="cliente-botones">
+            <button class="btn btn-borde" type="submit" id="cliGuardar">Guardar datos</button>
+            <a class="btn btn-whatsapp" id="cliWhatsapp" target="_blank" rel="noopener">Escribirle por WhatsApp</a>
+          </div>
+        </form>
+      </section>
+
+      <section class="bloque">
+        <h3>Sus pedidos</h3>
+        <ul class="lista lista-chica" id="cliPedidos"></ul>
+        <p class="ayuda" id="cliSinPedidos" hidden>Todavía no tiene pedidos.</p>
+      </section>
+    </div>
+  </div>
+</dialog>
+
+<!-- ─────────────── Pedido manual ─────────────── -->
+<dialog class="editor" id="pedidoManual" aria-labelledby="manualTitulo">
+  <form id="formManual" novalidate>
+    <header class="editor-cabeza">
+      <h2 id="manualTitulo">Nuevo pedido manual</h2>
+      <button class="btn-icono" type="button" id="manualCerrar" aria-label="Cerrar">&times;</button>
+    </header>
+    <div class="manual-aviso" id="mAviso" role="status" hidden></div>
+
+    <div class="detalle-cuerpo">
+      <section class="bloque">
+        <h3>Cliente</h3>
+        <label class="campo">
+          <span>¿Por dónde llegó?</span>
+          <select id="mOrigen">
+            <option value="whatsapp">WhatsApp</option>
+            <option value="instagram">Instagram</option>
+            <option value="presencial">En persona</option>
+          </select>
+        </label>
+        <label class="campo"><span>Nombre <b class="req" aria-hidden="true">*</b></span><input id="mNombre" maxlength="80" required></label>
+        <label class="campo"><span>Teléfono <b class="req" aria-hidden="true">*</b> <em>(8 dígitos)</em></span><input id="mTelefono" type="tel" inputmode="tel" maxlength="20" required></label>
+        <label class="campo"><span>Departamento</span><select id="mDepartamento"><option value="">Sin especificar</option><option>Guatemala</option><option>Alta Verapaz</option><option>Baja Verapaz</option><option>Chimaltenango</option><option>Chiquimula</option><option>El Progreso</option><option>Escuintla</option><option>Huehuetenango</option><option>Izabal</option><option>Jalapa</option><option>Jutiapa</option><option>Petén</option><option>Quetzaltenango</option><option>Quiché</option><option>Retalhuleu</option><option>Sacatepéquez</option><option>San Marcos</option><option>Santa Rosa</option><option>Sololá</option><option>Suchitepéquez</option><option>Totonicapán</option><option>Zacapa</option></select></label>
+        <label class="campo"><span>Municipio y zona <b class="req" aria-hidden="true">*</b></span><input id="mZona" maxlength="120" required></label>
+        <label class="campo"><span>Dirección exacta <b class="req" id="mDireccionReq" aria-hidden="true">*</b><em id="mDireccionNota" hidden>(no hace falta si es en persona)</em></span><input id="mDireccion" maxlength="300" required placeholder="5a avenida 10-20, colonia…"></label>
+        <label class="campo"><span>Nota <em>(opcional)</em></span><input id="mNota" maxlength="500" placeholder="Es regalo, entregar el viernes…"></label>
+      </section>
+
+      <section class="bloque">
+        <h3>Piezas <b class="req" aria-hidden="true">*</b></h3>
+        <div class="manual-agregar">
+          <select id="mProducto" aria-label="Producto"></select>
+          <input id="mCantidad" type="number" min="1" max="50" value="1" inputmode="numeric" aria-label="Cantidad">
+          <button class="btn btn-borde" type="button" id="mAgregar">Agregar</button>
+        </div>
+        <ul class="piezas" id="mPiezas"></ul>
+        <p class="ayuda" id="mVacio">Agrega las piezas del pedido.</p>
+        <label class="campo">
+          <span>Costo de envío (<span class="js-moneda">Q</span>)</span>
+          <input id="mEnvio" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0">
+        </label>
+        <dl class="cuentas">
+          <div><dt>Subtotal</dt><dd id="mSubtotal">Q0</dd></div>
+          <div class="cuentas-total"><dt>Total a cobrar</dt><dd id="mTotal">Q0</dd></div>
+        </dl>
+        <label class="check">
+          <input id="mConfirmar" type="checkbox">
+          <span>Ya está acordado con la clienta: crearlo confirmado y descontar del stock</span>
+        </label>
+        <p class="ayuda">Si no lo marcas, queda como nuevo y las piezas quedan apartadas hasta que lo confirmes.</p>
+      </section>
+    </div>
+    <p class="error manual-error" id="mError" role="alert" hidden></p>
+
+    <footer class="editor-pie">
+      <span class="separador"></span>
+      <button class="btn btn-borde" type="button" id="manualCancelar">Cancelar</button>
+      <button class="btn btn-primario" type="submit" id="manualGuardar">Crear pedido</button>
+    </footer>
+  </form>
+</dialog>
+
+<!-- ─────────────── Ajuste rápido de existencias ─────────────── -->
+<dialog class="confirmar" id="ajusteRapido" aria-labelledby="ajusteTitulo">
+  <form method="dialog" id="formAjuste" novalidate>
+    <h2 id="ajusteTitulo"></h2>
+    <div class="paso-stock">
+      <button class="btn-icono btn-grande" type="button" id="ajusteMenos" aria-label="Quitar una">&minus;</button>
+      <input id="ajusteValor" type="number" min="0" step="1" inputmode="numeric" aria-label="Existencias" placeholder="Sin control">
+      <button class="btn-icono btn-grande" type="button" id="ajusteMas" aria-label="Agregar una">+</button>
+    </div>
+    <div class="atajos">
+      <button class="btn btn-texto" type="button" id="ajusteAgotado">Marcar agotado</button>
+      <button class="btn btn-texto" type="button" id="ajusteSinControl">Dejar de controlar</button>
+    </div>
+    <p class="ayuda">Con 0 la pieza se muestra como Agotado en tu tienda.</p>
+    <p class="ayuda ajuste-info" id="ajusteInfo"></p>
+    <p class="error" id="ajusteError" role="alert" hidden></p>
+    <div class="confirmar-botones">
+      <button class="btn btn-borde" value="no" formnovalidate>Cancelar</button>
+      <button class="btn btn-primario" value="si" id="ajusteGuardar">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ─────────────── Detalle de pedido ─────────────── -->
+<dialog class="editor" id="detallePedido" aria-labelledby="pedTitulo">
+  <div class="detalle-caja">
+    <header class="editor-cabeza">
+      <div>
+        <h2 id="pedTitulo"></h2>
+        <p class="sub" id="pedFecha"></p>
+      </div>
+      <div class="cabeza-derecha">
+        <span class="estado" id="pedEstado"></span>
+        <button class="btn-icono" type="button" id="pedCerrar" aria-label="Cerrar">&times;</button>
+      </div>
+    </header>
+
+    <div class="detalle-cuerpo">
+      <section class="bloque">
+        <h3>Cliente</h3>
+        <p class="dato-fuerte" id="pedCliente"></p>
+        <p class="dato" id="pedTelefono"></p>
+        <p class="dato" id="pedZona"></p>
+        <p class="dato" id="pedEntrega" hidden></p>
+        <p class="dato" id="pedCorreo" hidden></p>
+        <p class="dato nota" id="pedNota" hidden></p>
+        <p class="dato confirmado-cliente" id="pedConfirmadoCliente" hidden>✓ La clienta confirmó sus datos desde el link</p>
+        <a class="btn btn-whatsapp" id="pedWhatsapp" target="_blank" rel="noopener">Escribirle por WhatsApp</a>
+        <p class="ayuda" id="pedWhatsappAyuda"></p>
+        <div class="link-confirmacion" id="pedLinkCaja" hidden>
+          <button class="btn btn-borde" type="button" id="pedLink">Enviar link de confirmación</button>
+          <p class="ayuda" id="pedLinkInfo">Cuando ya acordaron envío y disponibilidad, mándale este link: revisa su pedido, llena su dirección y confirma. El pedido se confirma solo.</p>
+        </div>
+      </section>
+
+      <section class="bloque">
+        <h3>Piezas</h3>
+        <p class="ayuda reserva" id="pedReserva" hidden></p>
+        <ul class="piezas" id="pedPiezas"></ul>
+        <dl class="cuentas">
+          <div><dt>Subtotal</dt><dd id="pedSubtotal"></dd></div>
+          <div><dt>Envío</dt><dd id="pedEnvio"></dd></div>
+          <div class="cuentas-total"><dt>Total a cobrar</dt><dd id="pedTotal"></dd></div>
+        </dl>
+      </section>
+
+      <section class="bloque" id="pedEditables">
+        <h3>Datos de entrega</h3>
+        <div class="fila-2">
+          <label class="campo">
+            <span>Costo de envío (<span class="js-moneda">Q</span>)</span>
+            <input id="pedCostoEnvio" type="number" min="0" step="0.01" inputmode="decimal">
+          </label>
+          <label class="campo">
+            <span>Guía de Cargo Expresso</span>
+            <input id="pedGuia" maxlength="60">
+          </label>
+        </div>
+        <label class="campo">
+          <span>Dirección exacta</span>
+          <input id="pedDireccion" maxlength="300" placeholder="La que te dio la clienta por WhatsApp">
+        </label>
+        <button class="btn btn-borde" type="button" id="pedGuardar">Guardar datos</button>
+      </section>
+
+      <section class="bloque" id="pedCierre" hidden>
+        <h3>Motivo</h3>
+        <p class="dato" id="pedMotivo"></p>
+      </section>
+
+      <section class="bloque">
+        <h3>Historial</h3>
+        <ol class="historial" id="pedHistorial"></ol>
+      </section>
+    </div>
+
+    <footer class="editor-pie" id="pedAcciones"></footer>
+  </div>
+</dialog>
+
+<!-- ─────────────── Cambio de estado con datos (motivo o guía) ─────────────── -->
+<dialog class="confirmar" id="pasoEstado" aria-labelledby="pasoTitulo">
+  <form method="dialog" id="formPaso">
+    <h2 id="pasoTitulo"></h2>
+    <p id="pasoTexto"></p>
+    <label class="campo" id="pasoCampo">
+      <span id="pasoEtiqueta"></span>
+      <textarea id="pasoValor" rows="3" maxlength="300"></textarea>
+    </label>
+    <p class="error" id="pasoError" role="alert" hidden></p>
+    <div class="confirmar-botones">
+      <button class="btn btn-borde" value="no" formnovalidate>Volver</button>
+      <button class="btn btn-primario" value="si" id="pasoSi"></button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ─────────────── Última confirmación (escribiendo una palabra) ─────────────── -->
+<dialog class="confirmar confirmar-doble" id="dobleConfirmar" role="alertdialog" aria-labelledby="dobleTitulo" aria-describedby="dobleTexto">
+  <form method="dialog" id="formDoble" novalidate>
+    <p class="doble-aviso">Última confirmación</p>
+    <h2 id="dobleTitulo"></h2>
+    <p id="dobleTexto"></p>
+    <label class="campo">
+      <span id="dobleEtiqueta"></span>
+      <input id="dobleValor" autocomplete="off" autocapitalize="characters" spellcheck="false">
+    </label>
+    <div class="confirmar-botones">
+      <button class="btn btn-borde" value="no" formnovalidate autofocus>Volver</button>
+      <button class="btn btn-peligro" value="si" id="dobleSi" disabled></button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ─────────────── Confirmación ─────────────── -->
+<dialog class="confirmar" id="exportar" aria-labelledby="exportarTitulo">
+  <form method="dialog" id="formExportar" novalidate>
+    <h2 id="exportarTitulo">Descargar en Excel</h2>
+    <p class="ayuda">Un archivo con 6 hojas: resumen, pedidos, cobros, piezas vendidas, productos y clientes.</p>
+    <label class="campo">
+      <span>Período</span>
+      <select id="exPeriodo">
+        <option value="mes">Este mes</option>
+        <option value="mespasado">Mes pasado</option>
+        <option value="elegir">Elegir un mes…</option>
+        <option value="todo">Todo el historial</option>
+      </select>
+    </label>
+    <label class="campo" id="exMesCampo" hidden>
+      <span>Mes</span>
+      <input type="month" id="exMes">
+    </label>
+    <label class="check">
+      <input type="checkbox" id="exNotas">
+      <span>Incluir mis notas internas de cada cliente</span>
+    </label>
+    <p class="aviso-privacidad">El archivo trae nombres, teléfonos y direcciones de tus clientes. Guárdalo en un lugar seguro y no lo compartas.</p>
+    <div class="confirmar-botones">
+      <button class="btn btn-borde" type="button" id="exCancelar">No, volver</button>
+      <button class="btn btn-primario" type="submit" id="exDescargar">Descargar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog class="confirmar" id="confirmar" role="alertdialog" aria-labelledby="confirmarTitulo" aria-describedby="confirmarTexto">
+  <form method="dialog">
+    <h2 id="confirmarTitulo"></h2>
+    <p id="confirmarTexto"></p>
+    <div class="confirmar-botones">
+      <button class="btn btn-borde" value="no" autofocus id="confirmarNo">Cancelar</button>
+      <button class="btn btn-peligro" value="si" id="confirmarSi">Borrar</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Aviso corto (guardado, errores) -->
+<div class="aviso" id="aviso" role="status" aria-live="polite" hidden></div>
+
+<script type="module" src="js/panel.js?v=27"></script>
+</body>
+</html>

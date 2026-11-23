@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es-GT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estado de mi pedido · JASUEL</title>
+<meta name="description" content="Consulta en qué va tu pedido de Jasuel con tu número de pedido y tu número de teléfono.">
+<meta name="theme-color" content="#071F43">
+<meta name="robots" content="noindex">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/estilos.css?v=20261122m">
+</head>
+<body class="pagina-carrito">
+
+<header class="nav" data-fijo>
+  <a class="nav-logo" href="../" aria-label="Jasuel, volver al inicio">
+    <span class="nav-logo-texto">JASUEL</span>
+  </a>
+  <div class="nav-acciones">
+    <a class="nav-pedido" href="../#catalogo">&larr; Volver a la tienda</a>
+    <a class="boton boton-oro nav-wa" data-wa="Hola Jasuel, tengo una pregunta sobre mi pedido.">WhatsApp</a>
+  </div>
+</header>
+
+<main class="estado-pagina">
+  <header class="carrito-cabeza">
+    <p class="rotulo">Tu pedido</p>
+    <h1 class="titulo">Estado de mi pedido</h1>
+    <p class="parrafo">Escribe tu número de pedido y el número de teléfono que diste al hacerlo.</p>
+  </header>
+
+  <form class="formulario estado-form" id="formEstado" novalidate>
+    <div class="campo">
+      <label for="eCodigo">Número de pedido <b class="req" aria-hidden="true">*</b></label>
+      <input id="eCodigo" type="text" placeholder="JAS0042" maxlength="20" autocomplete="off" autocapitalize="characters" required>
+    </div>
+    <div class="campo">
+      <label for="eTelefono">Tu número de teléfono <b class="req" aria-hidden="true">*</b></label>
+      <input id="eTelefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="5555 5555" maxlength="20" required>
+    </div>
+    <p class="carrito-error" id="eError" role="alert" hidden></p>
+    <button class="boton boton-oro boton-ancho" type="submit" id="eBuscar">Ver estado</button>
+    <p class="estado-ayuda">Tu número de pedido es el que te dimos al hacer tu pedido (ej. JAS0042). ¿No lo encuentras? <a data-wa="Hola Jasuel, no encuentro mi número de pedido.">Escríbenos</a>.</p>
+  </form>
+
+  <!-- Resultado -->
+  <section class="estado-resultado" id="resultado" hidden aria-live="polite">
+    <div class="estado-cabeza">
+      <div>
+        <div class="estado-codigo">
+          <p class="rotulo" id="rCodigo"></p>
+          <button class="copiar" type="button" id="rCopiarCodigo" aria-label="Copiar número de pedido">Copiar</button>
+        </div>
+        <h2 class="estado-titulo" id="rTitulo"></h2>
+        <p class="estado-sub" id="rSub"></p>
+      </div>
+    </div>
+
+    <ol class="linea-tiempo" id="rPasos"></ol>
+
+    <div class="estado-guia" id="rGuia" hidden>
+      <div>
+        <span class="estado-guia-rotulo" id="rGuiaRotulo"></span>
+        <strong id="rGuiaNumero"></strong>
+      </div>
+      <button class="copiar" type="button" id="rCopiarGuia" aria-label="Copiar número de guía">Copiar guía</button>
+    </div>
+
+    <div class="estado-detalle">
+      <h3 class="carrito-sub">Tu pedido</h3>
+      <ul class="estado-piezas" id="rPiezas"></ul>
+      <dl class="carrito-cuentas estado-cuentas">
+        <div><dt>Subtotal</dt><dd id="rSubtotal"></dd></div>
+        <div><dt>Envío</dt><dd id="rEnvio"></dd></div>
+        <div id="rFilaDescuento" hidden><dt>Descuento</dt><dd id="rDescuento"></dd></div>
+        <div class="carrito-total"><dt id="rTotalTexto">Total</dt><dd id="rTotal"></dd></div>
+      </dl>
+      <p class="estado-pago" id="rPago"></p>
+    </div>
+
+    <div class="estado-acciones">
+      <a class="boton boton-linea" id="rWhatsapp">¿Dudas? Escríbenos</a>
+      <button class="boton boton-texto" type="button" id="rOtro">Consultar otro pedido</button>
+    </div>
+  </section>
+</main>
+
+<script src="../js/datos.js?v=20261122m"></script>
+<script src="../js/estado.js?v=20261122m"></script>
+</body>
+</html>
