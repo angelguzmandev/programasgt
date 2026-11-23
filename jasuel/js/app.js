@@ -92,7 +92,7 @@
   // "Set Perla Clásica (SET0006)": con el SKU la tienda sabe exacto de qué pieza le hablan
 
   const mensajeAgotado = (p) =>
-    "Hola Jasuel 👋\nMe interesa *" + p.nombre + "*" + (p.sku ? " (" + p.sku + ")" : "") +
+    "Hola Jasuel\nMe interesa *" + p.nombre + "*" + (p.sku ? " (" + p.sku + ")" : "") +
     " pero aparece agotado.\n¿Me avisan cuando vuelva?";
 
   // Una entrada por pieza distinta, en el orden en que se agregaron
@@ -366,7 +366,7 @@
     fichaWa.href = enlaceWa(
       p.agotado
         ? mensajeAgotado(p)
-        : "Hola Jasuel 👋\nMe interesa esta pieza:\n*" + p.nombre + "*" + (p.sku ? " (" + p.sku + ")" : "") +
+        : "Hola Jasuel\nMe interesa esta pieza:\n*" + p.nombre + "*" + (p.sku ? " (" + p.sku + ")" : "") +
           " — " + enQuetzales(p.precio) + "\n\n¿Está disponible?"
     );
     fichaWa.textContent = p.agotado ? "Avísame cuando vuelva" : "¿Está disponible? Preguntar";

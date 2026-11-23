@@ -276,7 +276,7 @@
 
     // Salida para quien duda: WhatsApp con el pedido ya escrito
     alertaWa.href = enlaceWa(
-      ["Hola Jasuel 👋", "Estaba por hacer un pedido y tengo una duda antes de confirmar:", "",
+      ["Hola Jasuel", "Estaba por hacer un pedido y tengo una duda antes de confirmar:", "",
        ...lineasDePiezas()].join("\n")
     );
     alertaWa.target = "_blank";
@@ -374,10 +374,10 @@
 
     // WhatsApp pone en negrita lo que va entre *asteriscos*
     const lineas = [
-      "Hola Jasuel 👋",
+      "Hola Jasuel",
       "Soy *" + datos.nombre + "* (" + datos.zona + ").",
       "",
-      "🛍️ " + (registrado ? "*Pedido " + registrado.codigo + "*" : "*Pedido desde la página web*"),
+      (registrado ? "*Pedido " + registrado.codigo + "*" : "*Pedido desde la página web*"),
       ...items.map((p) =>
         "• " + conSku(p.nombre, p.id) + (p.cantidad > 1 ? " ×" + p.cantidad : "") + " — " + enQuetzales(p.precio * p.cantidad)
       ),
@@ -386,7 +386,7 @@
       "*Envío:* por confirmar según mi ubicación (Cargo Expresso)",
       "*Pago:* contra entrega",
     ];
-    if (datos.nota) lineas.push("", "📝 *Nota:* " + datos.nota);
+    if (datos.nota) lineas.push("", "*Nota:* " + datos.nota);
     return enlaceWa(lineas.join("\n"));
   }
 

@@ -202,7 +202,7 @@
       : "";
     $("#rPago").hidden = !porPagar;
 
-    $("#rWhatsapp").href = enlaceWa("Hola Jasuel 👋\nTengo una pregunta sobre mi pedido *" + p.codigo + "*.");
+    $("#rWhatsapp").href = enlaceWa("Hola Jasuel\nTengo una pregunta sobre mi pedido *" + p.codigo + "*.");
     $("#rWhatsapp").target = "_blank";
     $("#rWhatsapp").rel = "noopener";
 

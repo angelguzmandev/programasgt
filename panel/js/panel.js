@@ -1517,27 +1517,27 @@ function mensajeCliente(p) {
   const codigo = "*" + codigoDe(p) + "*";
   const seguir = [
     "",
-    "📦 *Sigue tu pedido aquí:*",
+    "*Sigue tu pedido aquí:*",
     location.origin + "/" + estado.tienda.slug + "/pedido/?n=" + codigoDe(p),
     "_(con tu número de pedido y tu teléfono)_",
   ];
   const lineas = {
     nuevo: [
-      "Hola " + nombre + " 👋",
+      "Hola " + nombre + "",
       "Gracias por tu pedido " + codigo + " en " + tienda + ".",
       "",
       "Lo estamos revisando y te confirmamos en un momento.",
     ],
     confirmado: [
-      "Hola " + nombre + " 👋",
-      "Tu pedido " + codigo + " está *confirmado* ✅",
+      "Hola " + nombre + "",
+      "Tu pedido " + codigo + " está *confirmado*.",
       "",
       "*Total a pagar al recibir:* " + enDinero(p.total),
       "Te avisamos en cuanto salga.",
       ...seguir,
     ],
     enviado: [
-      "Hola " + nombre + " 🚚",
+      "Hola " + nombre + "",
       "Tu pedido " + codigo + " ya va *en camino* con " + p.mensajeria + ".",
       "",
       ...(p.guia ? ["*Guía:* " + p.guia] : []),
@@ -1545,10 +1545,10 @@ function mensajeCliente(p) {
       ...seguir,
     ],
     entregado: [
-      "Hola " + nombre + " 💛",
+      "Hola " + nombre + "",
       "¡Gracias por tu compra en " + tienda + "!",
       "",
-      "Esperamos que disfrutes tus piezas. Si quieres, compártenos una foto usándolas ✨",
+      "Esperamos que disfrutes tus piezas. Si quieres, compártenos una foto usándolas.",
     ],
   };
   lineas.liquidado = lineas.entregado;
@@ -1800,12 +1800,12 @@ $("#pedLink").addEventListener("click", async () => {
 
   const link = location.origin + "/" + estado.tienda.slug + "/confirmar/?t=" + data.token;
   const texto = [
-    "Hola " + p.nombre.split(" ")[0] + " 👋",
+    "Hola " + p.nombre.split(" ")[0] + ",",
     "Tu pedido *" + codigoDe(p) + "* está listo.",
     "",
     "*Total a pagar al recibir:* " + enDinero(p.total),
     "",
-    "✍️ *Confirma tus datos de entrega aquí* y lo preparamos:",
+    "*Confirma tus datos de entrega aquí* y lo preparamos:",
     link,
   ].join("\n");
   const url = "https://api.whatsapp.com/send?phone=" + p.telefono + "&text=" + encodeURIComponent(texto);
@@ -2434,7 +2434,7 @@ async function abrirCliente(c) {
   $("#cNotasCli").value = c.notas || "";
   $("#cliError").hidden = true;
   $("#cliWhatsapp").href = "https://api.whatsapp.com/send?phone=" + c.telefono + "&text=" +
-    encodeURIComponent("Hola " + (c.nombre || "").split(" ")[0] + " 👋\nTe escribimos de *" + estado.tienda.nombre + "*.");
+    encodeURIComponent("Hola " + (c.nombre || "").split(" ")[0] + "\nTe escribimos de *" + estado.tienda.nombre + "*.");
 
   $("#cliPedidos").replaceChildren();
   $("#cliSinPedidos").hidden = true;
