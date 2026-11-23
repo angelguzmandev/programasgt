@@ -825,3 +825,11 @@ dialog::backdrop{background:rgb(20 20 22 / .45);backdrop-filter:blur(3px)}
   .kpis .tarjeta:last-child{grid-column:auto}
   .menu .pestana{font-size:.66rem}
 }
+
+/* ─────────────── Verificación en dos pasos ─────────────── */
+.mfa-pasos{margin:0 0 18px;padding-left:20px;text-align:left;font-size:.9rem;line-height:1.5;display:grid;gap:10px}
+.mfa-qr{display:block;margin:10px auto 6px;width:180px;height:180px;padding:8px;background:#fff;border:1px solid var(--linea);border-radius:10px}
+.mfa-manual{display:block;font-size:.78rem;color:var(--tenue)}
+.mfa-manual code{display:block;margin-top:4px;padding:6px 8px;border-radius:6px;background:#f0eee9;color:var(--texto);
+  font-size:.8rem;letter-spacing:.06em;overflow-wrap:anywhere;user-select:all}
+.mfa-codigo{font-size:1.4rem;letter-spacing:.4em;text-align:center;font-variant-numeric:tabular-nums}

@@ -26,8 +26,17 @@ if (window.top !== window.self) {
   throw new Error("El panel no se puede abrir dentro de otra página.");
 }
 
+// La sesión vive solo en esta pestaña (sessionStorage): al cerrar la pestaña
+// o el navegador, la próxima vez pide contraseña y código otra vez.
+// Se borran las sesiones viejas que quedaron guardadas para siempre.
+try {
+  Object.keys(localStorage)
+    .filter((k) => /^sb-.+-auth-token/.test(k))
+    .forEach((k) => localStorage.removeItem(k));
+} catch { /* sin almacenamiento */ }
+
 const sb = createClient(SUPABASE_URL, SUPABASE_CLAVE_PUBLICA, {
-  auth: { persistSession: true, autoRefreshToken: true },
+  auth: { persistSession: true, autoRefreshToken: true, storage: window.sessionStorage },
 });
 
 const $ = (sel) => document.querySelector(sel);
@@ -49,7 +58,7 @@ const estado = {
 /* ─────────────── Utilidades ─────────────── */
 
 function mostrarVista(id) {
-  ["vistaCargando", "vistaLogin", "vistaSinTienda", "vistaPanel"].forEach((v) => {
+  ["vistaCargando", "vistaLogin", "vistaVerificar", "vistaSinTienda", "vistaPanel"].forEach((v) => {
     $("#" + v).hidden = v !== id;
   });
 }
@@ -205,6 +214,90 @@ $("#formLogin").addEventListener("submit", async (e) => {
   }
 
   $("#loginClave").value = "";
+  await verificar();
+});
+
+/* ─────────────── Verificación en dos pasos (obligatoria) ─────────────── */
+// La base solo entrega datos a sesiones que pasaron el código (nivel "aal2"),
+// así que esto no se puede saltar llamando directo a la API.
+
+let factorMfa = null; // id del factor (app) que se está activando o verificando
+
+async function verificar() {
+  mostrarVista("vistaCargando");
+  try {
+    const { data: nivel, error: e1 } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (e1) throw e1;
+    if (nivel.currentLevel === "aal2") return entrar();
+
+    const { data: factores, error: e2 } = await sb.auth.mfa.listFactors();
+    if (e2) throw e2;
+    const activa = factores.totp.find((f) => f.status === "verified");
+
+    $("#mfaCodigo").value = "";
+    $("#mfaError").hidden = true;
+
+    if (activa) {
+      // Ya la activó: solo pide el código
+      factorMfa = activa.id;
+      $("#mfaTitulo").textContent = "Verificación en dos pasos";
+      $("#mfaSub").textContent = "Abre tu app de verificación y escribe el código de 6 dígitos.";
+      $("#mfaActivar").hidden = true;
+    } else {
+      // Primera vez (o cuenta nueva): tiene que activarla para poder entrar.
+      // Se descartan activaciones que quedaron a medias.
+      for (const f of factores.all.filter((x) => x.status !== "verified")) {
+        await sb.auth.mfa.unenroll({ factorId: f.id });
+      }
+      const { data: nueva, error: e3 } = await sb.auth.mfa.enroll({
+        factorType: "totp", issuer: "ProgramasGT", friendlyName: "App de verificación",
+      });
+      if (e3) throw e3;
+      factorMfa = nueva.id;
+      $("#mfaTitulo").textContent = "Protege tu cuenta";
+      $("#mfaSub").textContent = "Por seguridad, tu panel pide un código de tu celular cada vez que entras. Actívalo una sola vez:";
+      $("#mfaQr").src = nueva.totp.qr_code;
+      $("#mfaSecreto").textContent = nueva.totp.secret.replace(/(.{4})/g, "$1 ").trim();
+      $("#mfaActivar").hidden = false;
+    }
+    mostrarVista("vistaVerificar");
+    $("#mfaCodigo").focus();
+  } catch (e) {
+    console.error(e);
+    await sb.auth.signOut();
+    mostrarVista("vistaLogin");
+    $("#loginError").textContent = "No se pudo iniciar la verificación. " + mensajeError(e);
+    $("#loginError").hidden = false;
+  }
+}
+
+$("#mfaCodigo").addEventListener("input", (e) => {
+  e.target.value = e.target.value.replace(/\D/g, "").slice(0, 6);
+});
+
+$("#formVerificar").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const codigo = $("#mfaCodigo").value;
+  const error = $("#mfaError");
+  if (!/^\d{6}$/.test(codigo)) {
+    error.textContent = "Escribe los 6 dígitos que te muestra la app.";
+    error.hidden = false;
+    return;
+  }
+  const boton = $("#mfaBoton");
+  boton.disabled = true;
+  boton.textContent = "Verificando…";
+  const { error: fallo } = await sb.auth.mfa.challengeAndVerify({ factorId: factorMfa, code: codigo });
+  boton.disabled = false;
+  boton.textContent = "Verificar";
+  if (fallo) {
+    error.textContent = /rate|too many/i.test(fallo.message)
+      ? "Demasiados intentos. Espera unos minutos y vuelve a probar."
+      : "Código incorrecto o vencido. Revisa que la hora de tu celular esté bien y escribe el código nuevo.";
+    error.hidden = false;
+    $("#mfaCodigo").select();
+    return;
+  }
   await entrar();
 });
 
@@ -228,6 +321,10 @@ sb.auth.onAuthStateChange((evento) => {
 
 async function entrar() {
   mostrarVista("vistaCargando");
+
+  // Sin el código no se entra (la base tampoco entregaría nada)
+  const { data: nivel } = await sb.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (!nivel || nivel.currentLevel !== "aal2") return verificar();
 
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return salir();
@@ -2420,7 +2517,7 @@ $("#formCliente").addEventListener("submit", async (e) => {
 /* ─────────────── Arranque ─────────────── */
 
 const { data: { session } } = await sb.auth.getSession();
-if (session) await entrar();
+if (session) await verificar();
 else mostrarVista("vistaLogin");
 
 /* ─────────────── Descargar en Excel ─────────────── */

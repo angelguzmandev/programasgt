@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="panel.css?v=15">
+<link rel="stylesheet" href="panel.css?v=16">
 </head>
 <body>
 
@@ -56,6 +56,40 @@
     </form>
 
     <p class="login-ayuda">¿No puedes entrar? <a class="js-ayuda">Escríbenos por WhatsApp</a> y te ayudamos.</p>
+  </div>
+</main>
+
+<!-- ─────────────── Verificación en dos pasos ─────────────── -->
+<main class="pantalla login" id="vistaVerificar" hidden>
+  <div class="login-caja">
+    <img class="login-logo" src="/logo.webp" alt="ProgramasGT" width="120" height="77">
+    <h1 id="mfaTitulo">Verificación en dos pasos</h1>
+    <p class="login-sub" id="mfaSub">Abre tu app de verificación y escribe el código de 6 dígitos.</p>
+
+    <!-- Solo la primera vez: activar la app -->
+    <ol class="mfa-pasos" id="mfaActivar" hidden>
+      <li>Instala <strong>Google Authenticator</strong> o <strong>Microsoft Authenticator</strong> en tu celular.</li>
+      <li>En la app toca <strong>+</strong> y escanea este código:
+        <img class="mfa-qr" id="mfaQr" alt="Código QR para tu app de verificación" width="180" height="180">
+        <span class="mfa-manual">¿No puedes escanear? Escribe esta clave en la app:
+          <code id="mfaSecreto"></code>
+        </span>
+      </li>
+      <li>Escribe abajo el código de 6 dígitos que te muestra la app.</li>
+    </ol>
+
+    <form id="formVerificar" novalidate>
+      <label class="campo">
+        <span>Código de 6 dígitos <b class="req" aria-hidden="true">*</b></span>
+        <input class="mfa-codigo" id="mfaCodigo" inputmode="numeric" autocomplete="one-time-code"
+               maxlength="6" pattern="[0-9]{6}" required>
+      </label>
+      <p class="error" id="mfaError" role="alert" hidden></p>
+      <button class="btn btn-primario btn-ancho" type="submit" id="mfaBoton">Verificar</button>
+    </form>
+
+    <p class="login-ayuda">¿Perdiste tu celular? <a class="js-ayuda">Escríbenos por WhatsApp</a> y te ayudamos.</p>
+    <button class="btn btn-texto btn-ancho js-salir" type="button">Usar otra cuenta</button>
   </div>
 </main>
 
@@ -691,6 +725,6 @@
 <!-- Aviso corto (guardado, errores) -->
 <div class="aviso" id="aviso" role="status" aria-live="polite" hidden></div>
 
-<script type="module" src="js/panel.js?v=27"></script>
+<script type="module" src="js/panel.js?v=28"></script>
 </body>
 </html>
