@@ -173,7 +173,7 @@ $("#formDoble").addEventListener("submit", (e) => {
 
 // Enlaces de ayuda
 $$(".js-ayuda").forEach((a) => {
-  a.href = "https://wa.me/" + WHATSAPP_SOPORTE + "?text=" +
+  a.href = "https://api.whatsapp.com/send?phone=" + WHATSAPP_SOPORTE + "&text=" +
     encodeURIComponent("Hola ProgramasGT, necesito ayuda con el panel de mi tienda.");
   a.target = "_blank";
   a.rel = "noopener";
@@ -1591,7 +1591,7 @@ async function abrirPedido(p) {
     : "Cuando ya acordaron envío y disponibilidad, mándale este link: revisa su pedido, llena su dirección y confirma. El pedido se confirma solo.";
   $("#pedNota").hidden = !p.nota;
   $("#pedNota").textContent = p.nota ? "Nota: " + p.nota : "";
-  $("#pedWhatsapp").href = "https://wa.me/" + p.telefono + "?text=" + encodeURIComponent(mensajeCliente(p));
+  $("#pedWhatsapp").href = "https://api.whatsapp.com/send?phone=" + p.telefono + "&text=" + encodeURIComponent(mensajeCliente(p));
   $("#pedWhatsappAyuda").textContent = AYUDA_MENSAJE[p.estado] || "";
 
   $("#pedPiezas").replaceChildren(
@@ -1808,7 +1808,7 @@ $("#pedLink").addEventListener("click", async () => {
     "✍️ *Confirma tus datos de entrega aquí* y lo preparamos:",
     link,
   ].join("\n");
-  const url = "https://wa.me/" + p.telefono + "?text=" + encodeURIComponent(texto);
+  const url = "https://api.whatsapp.com/send?phone=" + p.telefono + "&text=" + encodeURIComponent(texto);
   if (ventana) ventana.location.href = url;
   else location.href = url;
 
@@ -2433,7 +2433,7 @@ async function abrirCliente(c) {
   $("#cDireccionCli").value = c.direccion || "";
   $("#cNotasCli").value = c.notas || "";
   $("#cliError").hidden = true;
-  $("#cliWhatsapp").href = "https://wa.me/" + c.telefono + "?text=" +
+  $("#cliWhatsapp").href = "https://api.whatsapp.com/send?phone=" + c.telefono + "&text=" +
     encodeURIComponent("Hola " + (c.nombre || "").split(" ")[0] + " 👋\nTe escribimos de *" + estado.tienda.nombre + "*.");
 
   $("#cliPedidos").replaceChildren();

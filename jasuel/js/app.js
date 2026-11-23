@@ -14,7 +14,7 @@
 
   const enQuetzales = (n) => CONFIG.moneda + n.toLocaleString("es-GT");
   const enlaceWa = (texto) =>
-    "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(texto);
+    "https://api.whatsapp.com/send?phone=" + CONFIG.whatsapp + "&text=" + encodeURIComponent(texto);
 
   // Mientras el numero sea el de ejemplo, ningun pedido llega a nadie:
   // se avisa en la pagina, no solo en la consola, para no publicarlo asi.

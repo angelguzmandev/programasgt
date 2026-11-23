@@ -13,7 +13,7 @@
 
   const $ = (sel) => document.querySelector(sel);
   const enDinero = (n) => CONFIG.moneda + Number(n).toLocaleString("es-GT", { maximumFractionDigits: 2 });
-  const enlaceWa = (texto) => "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(texto);
+  const enlaceWa = (texto) => "https://api.whatsapp.com/send?phone=" + CONFIG.whatsapp + "&text=" + encodeURIComponent(texto);
   const fecha = new Intl.DateTimeFormat("es-GT", { day: "numeric", month: "long", hour: "numeric", minute: "2-digit" });
 
   document.querySelectorAll("[data-wa]").forEach((el) => {
@@ -76,11 +76,18 @@
     boton.disabled = true;
     boton.textContent = "Buscando…";
     try {
-      const r = await fetch(CONFIG.api + "rpc/consultar_pedido", {
-        method: "POST",
-        headers: { apikey: CONFIG.apiClave, "Content-Type": "application/json" },
-        body: JSON.stringify({ p_tienda: CONFIG.tienda, p_codigo: codigo, p_telefono: telefono }),
-      });
+      let r;
+      try {
+        r = await fetch(CONFIG.api + "rpc/consultar_pedido", {
+          method: "POST",
+          headers: { apikey: CONFIG.apiClave, "Content-Type": "application/json" },
+          body: JSON.stringify({ p_tienda: CONFIG.tienda, p_codigo: codigo, p_telefono: telefono }),
+        });
+      } catch (err) {
+        // Solo un fallo de red es "sin conexión"
+        console.warn(err);
+        return mostrarError("No hay conexión. Revisa tu internet e inténtalo de nuevo.");
+      }
       const datos = await r.json().catch(() => ({}));
       if (!r.ok) {
         const m = datos.message || "";
@@ -97,8 +104,8 @@
       }
       pintar(datos);
     } catch (err) {
-      console.warn(err);
-      mostrarError("No hay conexión. Revisa tu internet e inténtalo de nuevo.");
+      console.error(err);
+      mostrarError("No pudimos mostrar tu pedido. Escríbenos por WhatsApp y te ayudamos.");
     } finally {
       boton.disabled = false;
       boton.textContent = "Ver estado";
@@ -132,13 +139,13 @@
       ["En camino", p.enviado_en],
       ["Entregado", p.entregado_en],
     ];
-    const actual = pasos.reduce((ultimo, [, f], i) => (f ? i : ultimo), 0);
+    const pasoActual = pasos.reduce((ultimo, [, f], i) => (f ? i : ultimo), 0);
     $("#rPasos").classList.toggle("linea-cerrada", cerrado);
     $("#rPasos").replaceChildren(
       ...pasos.map(([nombre, f], i) => {
         const li = document.createElement("li");
         li.className = f ? "paso-hecho" : "paso-pendiente";
-        if (i === actual && !cerrado) li.setAttribute("aria-current", "step");
+        if (i === pasoActual && !cerrado) li.setAttribute("aria-current", "step");
         const t = document.createElement("strong");
         t.textContent = nombre;
         const d = document.createElement("span");

@@ -23,7 +23,7 @@
 
   function enlacesWhatsApp() {
     $$("[data-wa]").forEach((el) => {
-      el.href = "https://wa.me/" + whatsapp + "?text=" + encodeURIComponent(el.dataset.wa);
+      el.href = "https://api.whatsapp.com/send?phone=" + whatsapp + "&text=" + encodeURIComponent(el.dataset.wa);
       el.target = "_blank";
       el.rel = "noopener";
     });

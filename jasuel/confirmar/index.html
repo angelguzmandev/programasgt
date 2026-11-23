@@ -3,6 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- Política de seguridad: solo corre código propio (nada escrito dentro del
+     HTML ni de otros sitios) y los datos solo viajan a nuestro Supabase. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self';
+  connect-src 'self' https://ofsxybmioxyezjnzvvwj.supabase.co;
+  img-src 'self' data: https://ofsxybmioxyezjnzvvwj.supabase.co;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  base-uri 'none';
+  form-action 'self';
+  object-src 'none'">
 <title>Confirma tu pedido · JASUEL</title>
 <meta name="description" content="Revisa tu pedido de Jasuel y confirma tus datos de entrega.">
 <meta name="theme-color" content="#071F43">
@@ -14,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../css/estilos.css?v=20261122m">
+<link rel="stylesheet" href="../css/estilos.css?v=20261122n">
 </head>
 <body class="pagina-carrito">
 
@@ -140,7 +152,7 @@
 
 <p class="solo-lector" id="anuncio" role="status" aria-live="polite"></p>
 
-<script src="../js/datos.js?v=20261122m"></script>
-<script src="../js/confirmar.js?v=20261122m"></script>
+<script src="../js/datos.js?v=20261122n"></script>
+<script src="../js/confirmar.js?v=20261122n"></script>
 </body>
 </html>

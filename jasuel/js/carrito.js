@@ -11,7 +11,7 @@
 
   const enQuetzales = (n) => CONFIG.moneda + n.toLocaleString("es-GT");
   const enlaceWa = (texto) =>
-    "https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(texto);
+    "https://api.whatsapp.com/send?phone=" + CONFIG.whatsapp + "&text=" + encodeURIComponent(texto);
   // Las rutas de datos.js son relativas a /jasuel/; esta página vive un nivel abajo
   // Las fotos subidas desde el panel ya son URLs completas
   const ruta = (src) => (/^https?:\/\//.test(src) ? src : "../" + src);
